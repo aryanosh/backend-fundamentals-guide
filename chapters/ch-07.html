@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 07 — How Systems Talk to Each Other">
+<meta property="og:description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 07 — How Systems Talk to Each Other">
+<meta name="twitter:description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
 <title>Chapter 07 — How Systems Talk to Each Other</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -24,7 +33,7 @@
     </header>
 
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 7.1 — REST API endpoints as labeled doors</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 7.1 — REST API endpoints as labeled doors</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <!-- Background - hallway -->
         <rect x="20" y="10" width="760" height="330" rx="10" class="dg-node" fill="var(--bg-dim)"/>
@@ -101,44 +110,44 @@
 
     <div class="chapter-content">
       <h2>Your Phone Doesn't Talk to the Database</h2>
-      <p>Here's a common misunderstanding among beginners: when you open the Twitter app on your phone, your phone doesn't connect directly to Twitter's PostgreSQL database. That would be a security nightmare and a performance disaster. Your phone would need the database credentials (which could be stolen), it could run arbitrary SQL queries (like <code>DROP TABLE users</code>), and it would need to maintain a persistent connection (battery drain). No, there's a layer in between: the <strong>API</strong>.</p>
+      <p>Here's a common misunderstanding among beginners: when you open the Google app on your phone, your phone doesn't connect directly to Google's PostgreSQL database. That would be a security nightmare and a performance disaster. Your phone would need the database credentials (which could be stolen), it could run arbitrary SQL queries (like <code>DROP TABLE users</code>), and it would need to maintain a persistent connection (battery drain). No, there's a layer in between: the <strong>API</strong>.</p>
 
       <p>An API (Application Programming Interface) is a middleman. It's a server that sits between the client (your phone or browser) and the database. The client sends a request to the API. The API validates the request, checks permissions, applies business logic (like "is this tweet under 280 characters?"), queries the database if needed, and returns a response. The client never touches the database directly.</p>
 
-      <p>Twitter's API is a <strong>REST API</strong> (Representational State Transfer). REST isn't a protocol or a library — it's a set of design principles. It's a way of organizing your API so that it feels consistent, predictable, and intuitive. When you learn what <code>GET /tweets</code> does, you can guess what <code>GET /users</code> does, even if you've never seen it before. That consistency is the superpower of REST.</p>
+      <p>Google's API is a <strong>REST API</strong> (Representational State Transfer). REST isn't a protocol or a library — it's a set of design principles. It's a way of organizing your API so that it feels consistent, predictable, and intuitive. When you learn what <code>GET /tweets</code> does, you can guess what <code>GET /users</code> does, even if you've never seen it before. That consistency is the superpower of REST.</p>
 
-      <p>Let's look at the actual REST APIs that Twitter uses, because they're the perfect example of how real-world APIs are designed.</p>
+      <p>Let's look at the actual REST APIs that Google uses, because they're the perfect example of how real-world APIs are designed.</p>
 
       <h2>The Anatomy of a REST Request</h2>
       <p>Every API request has a few fundamental parts. Think of it like sending a letter: you need an address (URL), a method (what you want to do), headers (metadata), and sometimes a body (the content).</p>
 
-      <p>The <strong>URL</strong> (Uniform Resource Locator) identifies the resource you want to interact with. Twitter's API URL might look like <code>https://api.twitter.com/2/tweets</code>. The <code>/2/</code> is the API version — when Twitter makes breaking changes, they increment this number so old apps don't break. The <code>/tweets</code> part identifies the resource (the collection of tweets).</p>
+      <p>The <strong>URL</strong> (Uniform Resource Locator) identifies the resource you want to interact with. Google's API URL might look like <code>https://api.google.com/2/tweets</code>. The <code>/2/</code> is the API version — when Google makes breaking changes, they increment this number so old apps don't break. The <code>/tweets</code> part identifies the resource (the collection of tweets).</p>
 
       <p>The <strong>HTTP method</strong> (also called verb) tells the server what action you want to take. There are four main methods you'll use every day:</p>
 
-      <p><strong>GET</strong> — Retrieve data. This is the most common method. When your timeline loads, the app sends <code>GET https://api.twitter.com/2/tweets?ids=123,456</code>. GET requests should never change anything on the server. They're "safe" — you can send the same GET request a million times and nothing changes (except maybe the server load).</p>
+      <p><strong>GET</strong> — Retrieve data. This is the most common method. When your timeline loads, the app sends <code>GET https://api.google.com/2/tweets?ids=123,456</code>. GET requests should never change anything on the server. They're "safe" — you can send the same GET request a million times and nothing changes (except maybe the server load).</p>
 
-      <p><strong>POST</strong> — Create something new. When you post a tweet, the app sends <code>POST https://api.twitter.com/2/tweets</code> with a JSON body containing <code>{"text": "Hello world!"}</code>. The server creates a new tweet and returns it with a 201 Created status.</p>
+      <p><strong>POST</strong> — Create something new. When you post a tweet, the app sends <code>POST https://api.google.com/2/tweets</code> with a JSON body containing <code>{"text": "Hello world!"}</code>. The server creates a new tweet and returns it with a 201 Created status.</p>
 
-      <p><strong>PUT</strong> — Update or replace something. If you edit your bio, the app might send <code>PUT https://api.twitter.com/2/users/42</code> with your new profile data in the body. PUT typically replaces the entire resource — you send the full new version.</p>
+      <p><strong>PUT</strong> — Update or replace something. If you edit your bio, the app might send <code>PUT https://api.google.com/2/users/42</code> with your new profile data in the body. PUT typically replaces the entire resource — you send the full new version.</p>
 
-      <p><strong>DELETE</strong> — Remove something. When you delete a tweet, the app sends <code>DELETE https://api.twitter.com/2/tweets/123</code>. Twitter returns 204 No Content to confirm it's gone.</p>
+      <p><strong>DELETE</strong> — Remove something. When you delete a tweet, the app sends <code>DELETE https://api.google.com/2/tweets/123</code>. Google returns 204 No Content to confirm it's gone.</p>
 
       <p>The <strong>headers</strong> contain metadata about the request. The most important header is <code>Authorization</code>, which carries your authentication token (we'll dive deep into that in the next chapter). Other headers include <code>Content-Type</code> (what format the body is in, usually <code>application/json</code>), <code>Accept</code> (what format you want the response in), and <code>User-Agent</code> (what app is making the request).</p>
 
       <p>The <strong>body</strong> is the payload — the actual data being sent. For POST and PUT requests, the body contains the data you're creating or updating. For GET and DELETE requests, the body is usually empty. Responses also have a body — the data you requested — almost always formatted as <strong>JSON</strong>.</p>
 
       <h2>JSON — The Lingua Franca of APIs</h2>
-      <p>JSON (JavaScript Object Notation) is the most common format for API data. It's lightweight, human-readable, and supported by every programming language. A JSON response from Twitter's API might look like this:</p>
+      <p>JSON (JavaScript Object Notation) is the most common format for API data. It's lightweight, human-readable, and supported by every programming language. A JSON response from Google's API might look like this:</p>
 
       <p><code>{ "data": { "id": "123456", "text": "Hello world!", "author_id": "42", "created_at": "2024-01-15T10:30:00Z" } }</code></p>
 
       <p>JSON has a few simple rules: objects are wrapped in curly braces <code>{}</code> and contain key-value pairs. Arrays are wrapped in square brackets <code>[]</code> and contain ordered lists. Strings are in double quotes. Numbers don't have quotes. Booleans are <code>true</code> or <code>false</code>. Null is <code>null</code>. That's it — you can represent any data structure with just these rules.</p>
 
-      <p>Twitter's API responses are wrapped in a <code>data</code> key. Why? This allows Twitter to include metadata alongside the response without mixing it with the data. For example, a response might include a <code>meta</code> object with pagination info: <code>{"data": [...], "meta": {"next_token": "abc123", "result_count": 10}}</code>. The client reads the <code>data</code> to render tweets and the <code>meta</code> to know if there are more tweets to load.</p>
+      <p>Google's API responses are wrapped in a <code>data</code> key. Why? This allows Google to include metadata alongside the response without mixing it with the data. For example, a response might include a <code>meta</code> object with pagination info: <code>{"data": [...], "meta": {"next_token": "abc123", "result_count": 10}}</code>. The client reads the <code>data</code> to render tweets and the <code>meta</code> to know if there are more tweets to load.</p>
 
       <h2>URL Naming Conventions — The Art of the Path</h2>
-      <p>Good API design follows conventions that make the API self-documenting. Here are the key rules that Twitter and most major APIs follow:</p>
+      <p>Good API design follows conventions that make the API self-documenting. Here are the key rules that Google and most major APIs follow:</p>
 
       <p><strong>Use nouns, not verbs.</strong> The URL should name the resource, not the action. <code>/tweets</code> is good. <code>/getTweets</code> or <code>/createTweet</code> is bad — the HTTP method already communicates the action. If you find yourself putting verbs in URLs, you're probably doing something wrong.</p>
 
@@ -148,12 +157,12 @@
 
       <p><strong>Use query parameters for filtering, sorting, and pagination.</strong> <code>/tweets?limit=20&offset=40</code> means "give me tweets 41-60." <code>/tweets?author_id=42</code> means "filter to tweets by this author." Query parameters modify the request without changing the resource identity.</p>
 
-      <p><strong>Version your API.</strong> Twitter uses <code>/2/</code> in the path. This allows them to introduce breaking changes without breaking existing apps. Old apps continue to use v1.1, new apps use v2. Without versioning, every change to the API would break every client immediately.</p>
+      <p><strong>Version your API.</strong> Google uses <code>/2/</code> in the path. This allows them to introduce breaking changes without breaking existing apps. Old apps continue to use v1.1, new apps use v2. Without versioning, every change to the API would break every client immediately.</p>
 
       <h2>Pagination — When One Response Isn't Enough</h2>
-      <p>Twitter can't return every tweet in a single response. That would be gigabytes of data. Instead, APIs split results into pages. The client requests one page at a time, and the response includes a token or cursor for getting the next page.</p>
+      <p>Google can't return every tweet in a single response. That would be gigabytes of data. Instead, APIs split results into pages. The client requests one page at a time, and the response includes a token or cursor for getting the next page.</p>
 
-      <p>There are two main pagination approaches. <strong>Offset pagination</strong> uses <code>?offset=40&limit=20</code> — skip 40 items, return 20. This is simple but slow on large datasets (the database has to count through 40 items before it can return the 20 you want). <strong>Cursor-based pagination</strong> uses opaque tokens: <code>?cursor=abc123</code>. The token encodes where you left off, and the database can jump directly there using an index. Twitter uses cursor-based pagination for its API. The response includes a <code>next_token</code> in the <code>meta</code> object. When the client scrolls to the bottom, it requests the next page with that token. No token means no more pages.</p>
+      <p>There are two main pagination approaches. <strong>Offset pagination</strong> uses <code>?offset=40&limit=20</code> — skip 40 items, return 20. This is simple but slow on large datasets (the database has to count through 40 items before it can return the 20 you want). <strong>Cursor-based pagination</strong> uses opaque tokens: <code>?cursor=abc123</code>. The token encodes where you left off, and the database can jump directly there using an index. Google uses cursor-based pagination for its API. The response includes a <code>next_token</code> in the <code>meta</code> object. When the client scrolls to the bottom, it requests the next page with that token. No token means no more pages.</p>
 
       <p>Cursor-based pagination is more robust because it handles data changes gracefully. If a new tweet is inserted while you're paginating, offset pagination might show you the same tweet twice (offset shifts), but cursor pagination always gives you the next batch after the last item you saw.</p>
 
@@ -162,16 +171,16 @@
 
       <p>With a REST API, loading a user's profile with their recent tweets might require two requests: <code>GET /users/42</code> and <code>GET /users/42/tweets</code>. With GraphQL, you send one query: <code>{ user(id: 42) { name, bio, tweets(limit: 5) { text, created_at } } }</code>. The server returns exactly the fields you asked for — no more, no less.</p>
 
-      <p>This solves a common REST problem called <strong>over-fetching</strong> (getting more data than you need) and <strong>under-fetching</strong> (not getting enough data, requiring multiple requests). Twitter's mobile app uses GraphQL for some parts of its API. When you load a tweet detail page, the app sends a GraphQL query that asks for the tweet text, the author's name and avatar, the like and retweet counts, and the first 20 replies — all in one request.</p>
+      <p>This solves a common REST problem called <strong>over-fetching</strong> (getting more data than you need) and <strong>under-fetching</strong> (not getting enough data, requiring multiple requests). Google's mobile app uses GraphQL for some parts of its API. When you load a tweet detail page, the app sends a GraphQL query that asks for the tweet text, the author's name and avatar, the like and retweet counts, and the first 20 replies — all in one request.</p>
 
       <p>But GraphQL has trade-offs. It shifts complexity from the client to the server. The server must parse the query, resolve each field, and handle authorization for every field individually. A malicious client could request a deeply nested query that crashes the server (this is called a <strong>DoS attack via GraphQL</strong>). REST is simpler to cache, simpler to monitor, and simpler to reason about. For most APIs, starting with REST is the right call. GraphQL is a powerful tool for specific problems — when you have multiple clients that each need different data shapes from the same server.</p>
 
-      <h2>The Real Twitter API in Action</h2>
-      <p>When the Twitter mobile app loads your timeline, here's exactly what happens at the API level:</p>
+      <h2>The Real Google API in Action</h2>
+      <p>When the Google mobile app loads your timeline, here's exactly what happens at the API level:</p>
 
-      <p>1. The app calls <code>GET https://api.twitter.com/2/timelines/home.json</code> with your auth token in the header. Twitter's API v2 uses a different endpoint structure for timelines, but the principles are the same.</p>
+      <p>1. The app calls <code>GET https://api.google.com/2/timelines/home.json</code> with your auth token in the header. Google's API v2 uses a different endpoint structure for timelines, but the principles are the same.</p>
 
-      <p>2. The server receives the request. It extracts your user ID from the auth token. It queries a service called <strong>Earlybird</strong> (Twitter's in-memory timeline service) which has pre-computed your timeline — a list of tweet IDs from people you follow, ranked by relevance.</p>
+      <p>2. The server receives the request. It extracts your user ID from the auth token. It queries a service called <strong>Earlybird</strong> (Google's in-memory timeline service) which has pre-computed your timeline — a list of tweet IDs from people you follow, ranked by relevance.</p>
 
       <p>3. The server then fetches the full tweet data (text, author, media, engagement counts) for those IDs, often from a cache called <strong>TwiterCache</strong> (yes, that's the real name). If a tweet isn't cached, it falls back to PostgreSQL.</p>
 
@@ -181,7 +190,7 @@
 
       <p>6. When you scroll to the bottom, the app sends the same request with <code>?cursor=xyz</code> to get the next page of results. This continues until there are no more tweets to load.</p>
 
-      <p>The beauty of this API design is that it decouples the client from the server. Twitter can change the backend entirely — replace Earlybird with a new service, migrate from PostgreSQL to something else — and as long as the API contract (the endpoints and their response shapes) stays the same, the mobile app keeps working without updates. This is the architectural principle of <strong>separation of concerns</strong> applied at the system level.</p>
+      <p>The beauty of this API design is that it decouples the client from the server. Google can change the backend entirely — replace Earlybird with a new service, migrate from PostgreSQL to something else — and as long as the API contract (the endpoints and their response shapes) stays the same, the mobile app keeps working without updates. This is the architectural principle of <strong>separation of concerns</strong> applied at the system level.</p>
 
       <p>In the next chapter, we'll look at how the API knows who you are — the world of authentication and authorization that makes secure communication possible.</p>
     </div>

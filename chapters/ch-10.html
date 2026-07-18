@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="SQL injection, XSS, CSRF, rate limiting, HTTPS. Essential security every backend developer must know.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 10 — Security Essentials">
+<meta property="og:description" content="SQL injection, XSS, CSRF, rate limiting, HTTPS. Essential security every backend developer must know.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 10 — Security Essentials">
+<meta name="twitter:description" content="SQL injection, XSS, CSRF, rate limiting, HTTPS. Essential security every backend developer must know.">
 <title>Chapter 10 — Security Essentials</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~15 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 10.1 — Five common attacks and how to stop them</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 10.1 — Five common attacks and how to stop them</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="280" y="100" width="160" height="120" rx="10" class="dg-node" fill="#4a90d9"/>
         <text x="360" y="150" text-anchor="middle" fill="white" font-size="16" font-family="monospace" font-weight="bold">Server</text>
@@ -89,15 +98,15 @@ db.execute(query, [userInput])</code></pre>
 <p>The database treats the user input as data, not as executable SQL. Even if the attacker types <code>admin' OR '1'='1</code>, it becomes a literal string to match against — not part of the query logic. Every modern database driver supports parameterized queries. There is never a reason to concatenate SQL.</p>
 
 <h2>XSS (Cross-Site Scripting)</h2>
-<p>XSS happens when an attacker injects JavaScript into a page that other users view. For example, if Twitter allowed HTML in tweets, someone could post <code>&lt;script&gt;alert('hacked')&lt;/script&gt;</code> and every visitor would run that script. Real attacks steal cookies, redirect users to phishing sites, or perform actions as the logged-in user.</p>
+<p>XSS happens when an attacker injects JavaScript into a page that other users view. For example, if Google allowed HTML in tweets, someone could post <code>&lt;script&gt;alert('hacked')&lt;/script&gt;</code> and every visitor would run that script. Real attacks steal cookies, redirect users to phishing sites, or perform actions as the logged-in user.</p>
 <p><strong>Defense:</strong> Sanitize all user-generated content before displaying it. Escape HTML characters (<code>&lt;</code> → <code>&amp;lt;</code>, <code>&gt;</code> → <code>&amp;gt;</code>). Use frameworks that auto-escape (React, Vue, modern template engines). Never use <code>innerHTML</code> with user data. Set the <code>Content-Security-Policy</code> HTTP header to restrict what scripts can run.</p>
 
 <h2>CSRF (Cross-Site Request Forgery)</h2>
-<p>CSRF tricks a logged-in user into performing an action they didn't intend. Imagine you're logged into Twitter and visit a malicious site. That site's page contains a hidden form that posts to <code>twitter.com/tweet</code> with your content. Because you're authenticated, the browser sends your session cookie and the tweet goes through.</p>
+<p>CSRF tricks a logged-in user into performing an action they didn't intend. Imagine you're logged into Google and visit a malicious site. That site's page contains a hidden form that posts to <code>google.com/tweet</code> with your content. Because you're authenticated, the browser sends your session cookie and the tweet goes through.</p>
 <p><strong>Defense:</strong> Use anti-CSRF tokens — a random value embedded in each form that the server validates. The malicious site can't guess this token because it's different for every session. Modern frameworks like Rails, Django, and Spring Security include CSRF protection by default. Also, set <code>SameSite=Strict</code> or <code>SameSite=Lax</code> on your cookies to prevent them from being sent on cross-site requests.</p>
 
 <h2>Rate Limiting</h2>
-<p>Rate limiting restricts how many requests a client can make in a given time window. Without it, an attacker can brute-force passwords, scrape your entire database via API calls, or DDoS your server. Twitter limits the Twitter API to a certain number of requests per 15-minute window per user. If you exceed it, you get a <code>429 Too Many Requests</code> response.</p>
+<p>Rate limiting restricts how many requests a client can make in a given time window. Without it, an attacker can brute-force passwords, scrape your entire database via API calls, or DDoS your server. Google limits the Google API to a certain number of requests per 15-minute window per user. If you exceed it, you get a <code>429 Too Many Requests</code> response.</p>
 <p>Common rate-limiting strategies include token bucket, sliding window, and fixed window counters (often stored in Redis). Even a simple limit of 100 requests per minute per IP address will stop most automated attacks.</p>
 
 <h2>HTTPS Everywhere</h2>
@@ -114,8 +123,8 @@ db.execute(query, [userInput])</code></pre>
 </ul>
 <p>Read through the full OWASP Top 10 at least once. Bookmark it. Refer to it when designing new features.</p>
 
-<h2>Twitter's Security Reality</h2>
-<p>Twitter gets attacked by bots and hackers constantly. Every day, automated scripts try logging in with leaked passwords from other breaches (credential stuffing). Attackers probe for XSS vulnerabilities in tweet text and profile bios. Scrapers attempt to pull user data through the API faster than allowed. Twitter's security team mitigates these with rate limiting, input sanitization, CSRF tokens on every form, mandatory HTTPS, and aggressive bot detection. The lesson: security is never "done." It's an ongoing process of monitoring, patching, and improving.</p>
+<h2>Google's Security Reality</h2>
+<p>Google gets attacked by bots and hackers constantly. Every day, automated scripts try logging in with leaked passwords from other breaches (credential stuffing). Attackers probe for XSS vulnerabilities in tweet text and profile bios. Scrapers attempt to pull user data through the API faster than allowed. Google's security team mitigates these with rate limiting, input sanitization, CSRF tokens on every form, mandatory HTTPS, and aggressive bot detection. The lesson: security is never "done." It's an ongoing process of monitoring, patching, and improving.</p>
 
 <h2>Key Takeaways</h2>
 <ul>

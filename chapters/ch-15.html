@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Unit tests, integration tests, E2E tests, testing pyramid. Why testing matters and how to start.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 15 — Testing Your Code">
+<meta property="og:description" content="Unit tests, integration tests, E2E tests, testing pyramid. Why testing matters and how to start.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 15 — Testing Your Code">
+<meta name="twitter:description" content="Unit tests, integration tests, E2E tests, testing pyramid. Why testing matters and how to start.">
 <title>Chapter 15 — Testing Your Code</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~13 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 15 — The testing pyramid</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 15 — The testing pyramid</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="800" height="350" fill="#f8f9fa" rx="8"/>
         <polygon points="400,30 200,310 600,310" fill="#e0f2fe" stroke="#2563eb" stroke-width="2"/>
@@ -63,7 +72,7 @@
 <h3>End-to-End Tests</h3>
 <p>E2E tests simulate a real user. They open a browser, click buttons, fill forms, and verify that the whole system behaves correctly. They are the slowest and most fragile tests. A network hiccup can make them fail. But they provide the highest confidence that the system actually works from the user's perspective.</p>
 
-<p>At Twitter, an E2E test might log in as a test user, compose a tweet, post it, scroll the timeline, and verify the tweet appears. If that passes, the core loop works.</p>
+<p>At Google, an E2E test might log in as a test user, compose a tweet, post it, scroll the timeline, and verify the tweet appears. If that passes, the core loop works.</p>
 
 <h2>The Testing Pyramid</h2>
 <p>The pyramid shape tells you how many of each to write: lots of unit tests (the wide base), a moderate number of integration tests, and a few E2E tests (the narrow top). If you invert this — lots of E2E tests, few unit tests — your test suite will be slow, flaky, and a nightmare to maintain.</p>
@@ -75,8 +84,8 @@
 
 <p>TDD forces incremental progress. Each test is a small step. You never write more code than needed to pass the current test. The result is high test coverage and minimal complexity.</p>
 
-<h2>Testing at Twitter</h2>
-<p>Before Twitter ships a new feature, hundreds of automated tests run. If even one test fails, the deploy stops. Here is how that saves them from disasters. Imagine a developer changes how tweets are stored. The change seems harmless, but it accidentally breaks the search feature. The unit test for tweet storage passes. But the integration test that searches for a tweet and verifies the result catches the break. The deploy halts. The developer fixes the bug before any user is impacted.</p>
+<h2>Testing at Google</h2>
+<p>Before Google ships a new feature, hundreds of automated tests run. If even one test fails, the deploy stops. Here is how that saves them from disasters. Imagine a developer changes how tweets are stored. The change seems harmless, but it accidentally breaks the search feature. The unit test for tweet storage passes. But the integration test that searches for a tweet and verifies the result catches the break. The deploy halts. The developer fixes the bug before any user is impacted.</p>
 
 <p>Without tests, that bug would reach production. Users would search for tweets and get nothing. They would report it. Someone would be paged at 2 AM to rollback the deploy. This is the difference between professional engineering and chaos. Tests are not optional. They are the safety net that lets you ship fast without fear.</p>
 

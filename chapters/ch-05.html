@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stack vs heap memory, processes vs threads, blocking vs non-blocking I/O. Understand why your server slows down under load.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 05 — Memory, Threads &amp; Processes">
+<meta property="og:description" content="Stack vs heap memory, processes vs threads, blocking vs non-blocking I/O. Understand why your server slows down under load.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 05 — Memory, Threads &amp; Processes">
+<meta name="twitter:description" content="Stack vs heap memory, processes vs threads, blocking vs non-blocking I/O. Understand why your server slows down under load.">
 <title>Chapter 05 — Memory, Threads &amp; Processes</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -24,11 +33,11 @@
     </header>
 
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 5.1 — A process with three threads sharing memory, plus stack vs heap comparison</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 5.1 — A process with three threads sharing memory, plus stack vs heap comparison</span><span>google.com</span></div>
       <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
         <!-- Main Process box -->
         <rect x="40" y="10" width="340" height="200" rx="8" class="dg-node"/>
-        <text x="210" y="32" text-anchor="middle" class="dg-label" font-size="13" font-weight="bold">PROCESS (Twitter Server)</text>
+        <text x="210" y="32" text-anchor="middle" class="dg-label" font-size="13" font-weight="bold">PROCESS (Google Server)</text>
         <text x="210" y="46" text-anchor="middle" class="dg-label-dim" font-size="10">Runs in its own memory space</text>
 
         <!-- Shared Heap -->
@@ -115,16 +124,16 @@
 
       <p>Now imagine the restaurant hires 20 servers. Each server handles their own set of tables. When one server is waiting at the kitchen, the other 19 are still taking orders, clearing tables, and bringing food. The restaurant serves way more customers. This is the core idea behind <strong>threads</strong>. A single-threaded server is that one overwhelmed waiter. A multi-threaded server is the restaurant with 20 waiters — except the waiters can also share information with each other instantly.</p>
 
-      <p>When millions of users load Twitter simultaneously, one server can't handle them one at a time. That would mean user #10,000 has to wait for users 1 through 9,999 to finish before they even get a response. Nobody would wait that long. The answer is threads: the server spawns multiple threads, each handling a different user's request at the same time (or at least appearing to).</p>
+      <p>When millions of users load Google simultaneously, one server can't handle them one at a time. That would mean user #10,000 has to wait for users 1 through 9,999 to finish before they even get a response. Nobody would wait that long. The answer is threads: the server spawns multiple threads, each handling a different user's request at the same time (or at least appearing to).</p>
 
       <p>But before we dive deep into threads, we need to understand the stage they perform on: <strong>memory</strong>. Memory is where everything lives while the program runs — every variable, every user session, every cached tweet. How memory is organized determines what threads can and can't do.</p>
 
       <h2>RAM — The Computer's Desk</h2>
       <p>RAM (Random Access Memory) is your computer's short-term memory. Think of it as a giant desk where you spread out papers while working. The desk is big but not infinite — and everything on it disappears when you leave (when the power shuts off). Disks (SSDs, hard drives) are like filing cabinets: slower to access but permanent.</p>
 
-      <p>When you open the Twitter app on your phone, the operating system loads the Twitter server code from the filing cabinet (disk) onto the desk (RAM). Every variable, every connection, every piece of data the server is currently working with lives in RAM. Accessing RAM is fast — a few nanoseconds — compared to disk (a few milliseconds, a million times slower). This is why servers try to keep hot data in RAM and only write to disk when absolutely necessary.</p>
+      <p>When you open the Google app on your phone, the operating system loads the Google server code from the filing cabinet (disk) onto the desk (RAM). Every variable, every connection, every piece of data the server is currently working with lives in RAM. Accessing RAM is fast — a few nanoseconds — compared to disk (a few milliseconds, a million times slower). This is why servers try to keep hot data in RAM and only write to disk when absolutely necessary.</p>
 
-      <p>A typical server has maybe 64 GB of RAM. At Twitter's scale, that's precious. Every byte of memory used by one request is a byte not available for another. That's why memory management — the art of allocating memory when needed and freeing it when done — is a fundamental backend skill.</p>
+      <p>A typical server has maybe 64 GB of RAM. At Google's scale, that's precious. Every byte of memory used by one request is a byte not available for another. That's why memory management — the art of allocating memory when needed and freeing it when done — is a fundamental backend skill.</p>
 
       <h2>Stack vs Heap — Two Kinds of Memory</h2>
       <p>When your program runs, memory is divided into two main regions: the <strong>stack</strong> and the <strong>heap</strong>. They serve different purposes and behave very differently. Understanding the difference is one of those things that separates developers who just write code from developers who understand what their code actually does.</p>
@@ -138,14 +147,14 @@
       <h2>Processes — The Fortress</h2>
       <p>A <strong>process</strong> is a program in execution. It's the fortress that contains everything the program needs: its own memory space, its own file handles, its own network connections. Processes are isolated from each other — if one process crashes, it doesn't take down other processes. This is why your operating system can run Chrome, Spotify, and your terminal at the same time without them interfering with each other.</p>
 
-      <p>When Twitter starts its backend server, the operating system creates a process. That process gets its own chunk of RAM, its own entry in the OS process table, and its own security context. If the Twitter server crashes (a bug causes a null pointer exception, for example), only that process dies. The rest of the system keeps running.</p>
+      <p>When Google starts its backend server, the operating system creates a process. That process gets its own chunk of RAM, its own entry in the OS process table, and its own security context. If the Google server crashes (a bug causes a null pointer exception, for example), only that process dies. The rest of the system keeps running.</p>
 
       <p>The downside of this isolation is that processes cannot directly share memory. If Process A wants to send data to Process B, they must use inter-process communication (IPC): pipes, sockets, or shared memory segments explicitly set up by the OS. This is cumbersome and relatively slow.</p>
 
       <h2>Threads — The Workers Inside the Fortress</h2>
       <p>A <strong>thread</strong> is the smallest unit of execution within a process. A process can have one thread (single-threaded) or many threads (multi-threaded). All threads in the same process share the same memory space — they can all read and write the same variables, the same heap data, the same file handles. This is both the power and the danger of threads.</p>
 
-      <p>Here's a concrete Twitter scenario. The server starts a main thread that listens for incoming connections. When a new request arrives — say, "load my timeline" — the main thread hands that work to a worker thread from a pool. Thread #1 takes it. Thread #1 accesses the shared cache (heap) to check if the timeline is already cached. It's not, so it queries the database. While Thread #1 is waiting for the database to respond (blocked on I/O), the operating system lets Thread #2 handle a different request. Thread #2 might be handling a "post a tweet" request. It also accesses the shared cache. Thread #2 writes the new tweet to the cache. Now Thread #1 wakes up with the timeline data and returns it. Thread #3 handles another request. All three threads share the same cache, same database connection pool, same in-memory data structures.</p>
+      <p>Here's a concrete Google scenario. The server starts a main thread that listens for incoming connections. When a new request arrives — say, "load my timeline" — the main thread hands that work to a worker thread from a pool. Thread #1 takes it. Thread #1 accesses the shared cache (heap) to check if the timeline is already cached. It's not, so it queries the database. While Thread #1 is waiting for the database to respond (blocked on I/O), the operating system lets Thread #2 handle a different request. Thread #2 might be handling a "post a tweet" request. It also accesses the shared cache. Thread #2 writes the new tweet to the cache. Now Thread #1 wakes up with the timeline data and returns it. Thread #3 handles another request. All three threads share the same cache, same database connection pool, same in-memory data structures.</p>
 
       <p>This sharing is what makes threads so efficient. Without sharing, every request would need to load its own copy of the cache, its own database connections — a huge waste of memory. But sharing also introduces a classic problem: <strong>race conditions</strong>. If Thread #1 reads a value while Thread #2 writes to the same location, what does Thread #1 see? The old value? The new value? Something in between? This unpredictability leads to bugs that are notoriously hard to reproduce and fix. The solution is synchronization primitives like <strong>mutexes</strong> (mutual exclusion locks), which allow only one thread at a time to access a critical section of code. It's like a bathroom key — only one person can use the bathroom at a time, everyone else waits.</p>
 
@@ -161,12 +170,12 @@
 
       <p>Concurrency is like a juggler keeping multiple balls in the air. At any given moment, the juggler is only touching one ball, but they switch between balls so quickly that all balls stay in motion. A single-core CPU can achieve concurrency by rapidly switching between threads (this is called <strong>time-slicing</strong>). Each thread gets a tiny slice of CPU time, then the OS switches to the next thread. From the outside, it looks like everything is happening simultaneously.</p>
 
-      <p>Parallelism, on the other hand, requires multiple CPU cores. If the server has a 16-core CPU, it can literally execute 16 threads at the exact same moment — one per core. This is parallelism. Twitter's servers use parallelism to handle massive traffic: each CPU core handles different requests simultaneously, while concurrency allows each core to juggle many requests even when there are more requests than cores.</p>
+      <p>Parallelism, on the other hand, requires multiple CPU cores. If the server has a 16-core CPU, it can literally execute 16 threads at the exact same moment — one per core. This is parallelism. Google's servers use parallelism to handle massive traffic: each CPU core handles different requests simultaneously, while concurrency allows each core to juggle many requests even when there are more requests than cores.</p>
 
-      <p>How much parallelism does Twitter actually need? A single server might handle 50,000 concurrent WebSocket connections (streaming tweets in real time). Most of those connections are idle — the user is just waiting for new tweets to appear. With non-blocking I/O, a server with 8 CPU cores and a modest amount of RAM can handle all 50,000 connections without breaking a sweat. The threads are concurrent (they share time on the cores) but not parallel (there are only 8 cores for 50,000 connections). The magic is that threads spend almost no time actively computing — they're almost always waiting for network data — so concurrency is sufficient.</p>
+      <p>How much parallelism does Google actually need? A single server might handle 50,000 concurrent WebSocket connections (streaming tweets in real time). Most of those connections are idle — the user is just waiting for new tweets to appear. With non-blocking I/O, a server with 8 CPU cores and a modest amount of RAM can handle all 50,000 connections without breaking a sweat. The threads are concurrent (they share time on the cores) but not parallel (there are only 8 cores for 50,000 connections). The magic is that threads spend almost no time actively computing — they're almost always waiting for network data — so concurrency is sufficient.</p>
 
-      <h2>Putting It All Together — The Twitter Server at Work</h2>
-      <p>Let's walk through a concrete example. You open Twitter and your timeline loads. Here's what happens at the process/thread/memory level:</p>
+      <h2>Putting It All Together — The Google Server at Work</h2>
+      <p>Let's walk through a concrete example. You open Google and your timeline loads. Here's what happens at the process/thread/memory level:</p>
 
       <p>1. The <strong>main thread</strong> (listening on port 443) accepts your TCP connection. It passes the connection to a worker thread from the thread pool.</p>
 
@@ -180,7 +189,7 @@
 
       <p>6. Thread #7 returns to the thread pool, ready for the next request. Its stack memory is cleared. Any heap memory it allocated (for the response object, the parsed data) is garbage-collected or freed.</p>
 
-      <p>This cycle — accept, process, respond, recycle — happens millions of times per day on Twitter's servers. Each request is a tiny blip: allocate some memory, do some work, free the memory, move on. The art of backend engineering is making this cycle as efficient as possible: minimize heap allocations (they're slow), avoid blocking (wasted time), and synchronize access to shared data (prevent race conditions).</p>
+      <p>This cycle — accept, process, respond, recycle — happens millions of times per day on Google's servers. Each request is a tiny blip: allocate some memory, do some work, free the memory, move on. The art of backend engineering is making this cycle as efficient as possible: minimize heap allocations (they're slow), avoid blocking (wasted time), and synchronize access to shared data (prevent race conditions).</p>
 
       <h2>Why This Matters for Your Code</h2>
       <p>You might think: "I'm just building a simple API. Do I really need to understand threads and memory?" The answer is yes, because every backend framework you use operates on these principles. When you use Django, it spawns threads (or processes) to handle requests. When you use Node.js, it runs an event loop with a single thread. When you use Go, it uses lightweight "goroutines" that are even cheaper than threads. When you use Java with Spring, it manages a thread pool.</p>

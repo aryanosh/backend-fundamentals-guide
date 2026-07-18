@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Git basics: commits, branches, merges, pull requests. Version control for backend developers.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 14 — Version Control with Git">
+<meta property="og:description" content="Git basics: commits, branches, merges, pull requests. Version control for backend developers.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 14 — Version Control with Git">
+<meta name="twitter:description" content="Git basics: commits, branches, merges, pull requests. Version control for backend developers.">
 <title>Chapter 14 — Version Control with Git</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~14 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 14 — Git branching: feature branch workflow</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 14 — Git branching: feature branch workflow</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="800" height="350" fill="#f8f9fa" rx="8"/>
         <text x="25" y="30" fill="#333" font-family="sans-serif" font-size="14" font-weight="bold">Time</text>
@@ -66,7 +75,7 @@
 
 <p>The basic cycle is: edit files, <code>git add</code> to stage them, <code>git commit</code> to save a snapshot. Each commit is a permanent checkpoint with a unique hash. You write a commit message describing what you did and why. Good commit messages are short yet descriptive: "Fix login timeout on mobile" not "fixed stuff".</p>
 
-<p>Your code lives in your local repository. When you are ready to share it, you <code>git push</code> to a remote repository (like GitHub, GitLab, or Bitbucket). Other people <code>git pull</code> to get your changes. This is how hundreds of engineers at Twitter work on the same codebase without stepping on each other's toes.</p>
+<p>Your code lives in your local repository. When you are ready to share it, you <code>git push</code> to a remote repository (like GitHub, GitLab, or Bitbucket). Other people <code>git pull</code> to get your changes. This is how hundreds of engineers at Google work on the same codebase without stepping on each other's toes.</p>
 
 <h2>Branching and Merging</h2>
 <p>A <strong>branch</strong> is a parallel version of your code. The default branch is usually called <code>main</code> (or <code>master</code>). When you want to add a feature, you create a new branch off of <code>main</code>. You work there, making commits. Meanwhile, other engineers are working on their own branches. Nobody touches <code>main</code> directly.</p>
@@ -80,10 +89,10 @@
 
 <p>That is maybe a dozen commands. With those, you can handle virtually every situation that arises in professional software development.</p>
 
-<h2>Git at Twitter</h2>
-<p>Hundreds of engineers work on Twitter's codebase at the same time. Git is how they do it without overwriting each other's work. Frontend engineers work on the web app. Backend engineers work on the API. Data engineers work on analytics pipelines. All on different branches, all against the same repository.</p>
+<h2>Git at Google</h2>
+<p>Hundreds of engineers work on Google's codebase at the same time. Git is how they do it without overwriting each other's work. Frontend engineers work on the web app. Backend engineers work on the API. Data engineers work on analytics pipelines. All on different branches, all against the same repository.</p>
 
-<p>When Twitter ships a new feature — say, bookmarks — the process looks like this: an engineer creates a branch called <code>bookmarks-feature</code>, writes the code, opens a PR, gets reviews from senior engineers, runs automated tests, and merges to <code>main</code>. From there, it goes through a deployment pipeline and eventually reaches users. Every step is tracked in Git. Every change has an author. Every decision has context.</p>
+<p>When Google ships a new feature — say, bookmarks — the process looks like this: an engineer creates a branch called <code>bookmarks-feature</code>, writes the code, opens a PR, gets reviews from senior engineers, runs automated tests, and merges to <code>main</code>. From there, it goes through a deployment pipeline and eventually reaches users. Every step is tracked in Git. Every change has an author. Every decision has context.</p>
 
 <p>If something breaks, git bisect helps find the exact commit that introduced the bug. If a feature is not ready, the branch stays open while <code>main</code> keeps moving forward. This is not a luxury — it is a necessity when hundreds of people are shipping code every day.</p>
 

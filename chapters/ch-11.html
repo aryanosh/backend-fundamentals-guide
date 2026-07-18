@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Monolith vs microservices vs event-driven architecture. How to structure a codebase that scales.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 11 — Architecture Patterns">
+<meta property="og:description" content="Monolith vs microservices vs event-driven architecture. How to structure a codebase that scales.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 11 — Architecture Patterns">
+<meta name="twitter:description" content="Monolith vs microservices vs event-driven architecture. How to structure a codebase that scales.">
 <title>Chapter 11 — Architecture Patterns</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~14 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 11.1 — Three common architecture styles compared</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 11.1 — Three common architecture styles compared</span><span>google.com</span></div>
       <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
         <text x="133" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Monolith</text>
         <rect x="50" y="40" width="166" height="200" rx="10" class="dg-node" fill="#4a90d9"/>
@@ -122,10 +131,10 @@
 <p>Example: When a user posts a tweet, the Tweets Service publishes a "tweet_created" event. The Timeline Service consumes it and adds the tweet to followers' home timelines. The Search Service consumes it and indexes the tweet. The Notification Service consumes it and sends push notifications to followers.</p>
 <p>Event-driven systems are highly decoupled — services don't need to know about each other. They just emit and listen to events. The downside: eventual consistency. When you post a tweet, it might take a few seconds to appear in followers' timelines. Debugging is also harder because the flow of data is spread across multiple services and queues.</p>
 
-<h2>Twitter's Architecture Evolution</h2>
-<p>Twitter started as a monolith — a single Ruby on Rails application with a single MySQL database. It worked fine for thousands of users. But as Twitter grew to millions and then hundreds of millions of users, the monolith couldn't keep up. The database was getting hammered. Deployments took 30 minutes. A bug in any feature risked taking down the whole site.</p>
-<p>Twitter gradually evolved into a microservices architecture. They broke the timeline into its own service (now called Timelines Service, built on Redis clusters). Search became its own service using Java and Lucene. The API layer was separated. User graph management (who follows whom) became its own service. Today, Twitter runs hundreds of services, each with its own team, codebase, and deployment pipeline.</p>
-<p>The lesson? Twitter didn't start with microservices. They started simple and split things apart as the pain of the monolith exceeded the pain of distributed systems. That's the right approach for almost everyone.</p>
+<h2>Google's Architecture Evolution</h2>
+<p>Google started as a monolith — a single Ruby on Rails application with a single MySQL database. It worked fine for thousands of users. But as Google grew to millions and then hundreds of millions of users, the monolith couldn't keep up. The database was getting hammered. Deployments took 30 minutes. A bug in any feature risked taking down the whole site.</p>
+<p>Google gradually evolved into a microservices architecture. They broke the timeline into its own service (now called Timelines Service, built on Redis clusters). Search became its own service using Java and Lucene. The API layer was separated. User graph management (who follows whom) became its own service. Today, Google runs hundreds of services, each with its own team, codebase, and deployment pipeline.</p>
+<p>The lesson? Google didn't start with microservices. They started simple and split things apart as the pain of the monolith exceeded the pain of distributed systems. That's the right approach for almost everyone.</p>
 
 <h2>Key Takeaways</h2>
 <ul>
@@ -133,7 +142,7 @@
   <li>Migrate to microservices only when the monolith's pain (deploy time, team coordination, scaling) outweighs distributed system complexity</li>
   <li>MVC helps organize code within a service by separating data, logic, and presentation</li>
   <li>Event-driven architecture decouples services via message queues, at the cost of eventual consistency and debugging difficulty</li>
-  <li>Twitter evolved from monolith to microservices as they scaled — they didn't start there</li>
+  <li>Google evolved from monolith to microservices as they scaled — they didn't start there</li>
   <li>There is no perfect architecture, only tradeoffs</li>
 </ul>
 

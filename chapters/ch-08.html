@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Login flows, password hashing with bcrypt, JWT tokens, OAuth. Authentication and authorization explained.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 08 — Authentication &amp; Authorization">
+<meta property="og:description" content="Login flows, password hashing with bcrypt, JWT tokens, OAuth. Authentication and authorization explained.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 08 — Authentication &amp; Authorization">
+<meta name="twitter:description" content="Login flows, password hashing with bcrypt, JWT tokens, OAuth. Authentication and authorization explained.">
 <title>Chapter 08 — Authentication &amp; Authorization</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -24,7 +33,7 @@
     </header>
 
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 8.1 — Login flow, JWT structure, and token-based authentication</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 8.1 — Login flow, JWT structure, and token-based authentication</span><span>google.com</span></div>
       <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
         <!-- Login flow -->
         <rect x="20" y="10" width="370" height="360" rx="8" class="dg-node"/>
@@ -114,7 +123,7 @@
 
     <div class="chapter-content">
       <h2>Why Your Password Doesn't Travel With Every Request</h2>
-      <p>When you log into Twitter, you type your username and password. The app sends them to the server. The server checks: "Is this the right password for this username?" If yes, the server says "OK, you're in." But here's the important part: after that login, the app <strong>never sends your password again</strong>. Not for loading your timeline. Not for posting a tweet. Not for changing your settings. Your password is used exactly once: at login.</p>
+      <p>When you log into Google, you type your username and password. The app sends them to the server. The server checks: "Is this the right password for this username?" If yes, the server says "OK, you're in." But here's the important part: after that login, the app <strong>never sends your password again</strong>. Not for loading your timeline. Not for posting a tweet. Not for changing your settings. Your password is used exactly once: at login.</p>
 
       <p>Why? If the app sent your password with every request, anyone who intercepted even one of those requests would have your password forever. They could log in as you from any device, change your password, lock you out. The risk is enormous. Instead, after the server confirms your password is correct, it gives the app something else — a <strong>token</strong> — that proves "this request is authorized as user #42." The token is temporary. It expires after an hour, or a day, or whenever you log out. If someone steals the token, they only have access for a limited time, and you can invalidate it by logging out (which tells the server to blacklist that token).</p>
 
@@ -123,20 +132,20 @@
       <h2>Authentication — Proving Who You Are</h2>
       <p>Authentication answers the question: "Are you really who you claim to be?" The most common form is a password. You claim to be @jack. To prove it, you provide the password that only the real @jack should know. The server checks: does this password match what we have stored for @jack? If yes, you're authenticated.</p>
 
-      <p>But here's the thing: the server should <strong>never</strong> store your actual password. If Twitter's database was breached (it has been, in 2018), attackers would get access to every user's stored password if they were stored in plain text. That's catastrophic because people reuse passwords across sites. Instead, Twitter stores a <strong>hash</strong> of your password — the output of a one-way mathematical function that turns your password into a fixed-length string of gibberish.</p>
+      <p>But here's the thing: the server should <strong>never</strong> store your actual password. If Google's database was breached (it has been, in 2018), attackers would get access to every user's stored password if they were stored in plain text. That's catastrophic because people reuse passwords across sites. Instead, Google stores a <strong>hash</strong> of your password — the output of a one-way mathematical function that turns your password into a fixed-length string of gibberish.</p>
 
       <p><code>password "hunter2" → hash function → "ab3d8f1c..."</code></p>
 
-      <p>The crucial property of hashing is that it's <strong>one-way</strong>. You can compute the hash from the password, but you cannot compute the password from the hash. When you log in, Twitter hashes your input and compares it to the stored hash. If they match, the password was correct. But even if the database is stolen, the attackers only get the hashes, not the passwords. They would have to try billions of password guesses to find one that produces the same hash — which is computationally expensive if the hash function is designed to be slow.</p>
+      <p>The crucial property of hashing is that it's <strong>one-way</strong>. You can compute the hash from the password, but you cannot compute the password from the hash. When you log in, Google hashes your input and compares it to the stored hash. If they match, the password was correct. But even if the database is stolen, the attackers only get the hashes, not the passwords. They would have to try billions of password guesses to find one that produces the same hash — which is computationally expensive if the hash function is designed to be slow.</p>
 
-      <p>Twitter uses <strong>bcrypt</strong>, a hash function specifically designed for passwords. Unlike fast hashes like MD5 or SHA-256 (which are designed for file integrity checking and can compute billions of hashes per second), bcrypt is intentionally slow. It has a "cost factor" that determines how many rounds of computation are needed. A single bcrypt hash might take 100 milliseconds to compute. That's fast enough for a login attempt (you wait 100 ms, no big deal), but it makes brute-force attacks impractical — trying a billion password guesses would take 100 million seconds, which is over 3 years.</p>
+      <p>Google uses <strong>bcrypt</strong>, a hash function specifically designed for passwords. Unlike fast hashes like MD5 or SHA-256 (which are designed for file integrity checking and can compute billions of hashes per second), bcrypt is intentionally slow. It has a "cost factor" that determines how many rounds of computation are needed. A single bcrypt hash might take 100 milliseconds to compute. That's fast enough for a login attempt (you wait 100 ms, no big deal), but it makes brute-force attacks impractical — trying a billion password guesses would take 100 million seconds, which is over 3 years.</p>
 
       <p>Bcrypt also automatically handles <strong>salting</strong>. A salt is a random value added to the password before hashing. Every user gets a different salt. This means even if two users have the same password (both use "hunter2"), their hashes will be completely different. This prevents <strong>rainbow table attacks</strong> — precomputed lists of hashes for common passwords. With salting, an attacker would need to generate a separate rainbow table for every salt, which is impractical.</p>
 
       <h2>The Login Flow — Step by Step</h2>
-      <p>Let's trace what happens from the moment you tap "Log in" on Twitter to the moment you see your timeline:</p>
+      <p>Let's trace what happens from the moment you tap "Log in" on Google to the moment you see your timeline:</p>
 
-      <p>1. The app collects your username and password and sends them to <code>POST https://api.twitter.com/2/oauth2/token</code> (or similar endpoint) over HTTPS. HTTPS encrypts the entire request so no one on the network can see your password.</p>
+      <p>1. The app collects your username and password and sends them to <code>POST https://api.google.com/2/oauth2/token</code> (or similar endpoint) over HTTPS. HTTPS encrypts the entire request so no one on the network can see your password.</p>
 
       <p>2. The server receives the credentials. It looks up your username in the database. If the username doesn't exist, it returns a generic error: "Invalid username or password." (Notice it doesn't say which one is wrong — that would tell attackers whether a username exists.)</p>
 
@@ -151,45 +160,45 @@
       <h2>JWT — The JSON Token That Can't Be Forged</h2>
       <p>A JWT is not a random string. It's a carefully structured token with three parts, separated by dots: <code>header.payload.signature</code>. Each part is base64-encoded (not encrypted — anyone can decode it). The security comes from the signature, not from hiding the content.</p>
 
-      <p>The <strong>header</strong> says what algorithm was used to create the signature (usually HS256 for HMAC with SHA-256, or RS256 for RSA). The <strong>payload</strong> contains the claims — statements about the user and the token itself. Standard claims include <code>sub</code> (subject — the user ID), <code>iat</code> (issued at — when the token was created), <code>exp</code> (expiration — when the token becomes invalid), and <code>iss</code> (issuer — who created this token). Custom claims are common too: Twitter might include <code>{"role": "admin"}</code> or <code>{"scope": "read write"}</code>.</p>
+      <p>The <strong>header</strong> says what algorithm was used to create the signature (usually HS256 for HMAC with SHA-256, or RS256 for RSA). The <strong>payload</strong> contains the claims — statements about the user and the token itself. Standard claims include <code>sub</code> (subject — the user ID), <code>iat</code> (issued at — when the token was created), <code>exp</code> (expiration — when the token becomes invalid), and <code>iss</code> (issuer — who created this token). Custom claims are common too: Google might include <code>{"role": "admin"}</code> or <code>{"scope": "read write"}</code>.</p>
 
       <p>The <strong>signature</strong> is what prevents tampering. The server creates it by taking the base64-encoded header, concatenating it with a dot and the base64-encoded payload, and hashing the whole thing with a secret key that only the server knows. If anyone modifies the header or payload (like changing <code>"user_id": 42</code> to <code>"user_id": 1</code> to impersonate an admin), the signature verification will fail because the computed signature won't match the one on the token.</p>
 
       <p>This is the beauty of JWTs: they are <strong>stateless</strong>. The server doesn't need to store the token in a database. Every request includes everything the server needs to verify identity. The server just checks: "Is the signature valid? Is the token expired?" If both checks pass, the request is authenticated. This makes JWTs perfect for distributed systems where multiple servers handle requests — any server with the secret key can verify any token, without a central session store.</p>
 
-      <p>But JWTs also have a downside: they can't be revoked (before expiration) without maintaining a blacklist, which defeats the purpose of statelessness. If a user reports their phone stolen, Twitter can't invalidate the token until it expires. That's why JWTs usually have short expiration times (15 minutes to 1 hour). For longer sessions, a <strong>refresh token</strong> is used: a longer-lived token stored securely on the server that can be exchanged for new JWTs without requiring re-login. If a refresh token is compromised, it can be revoked because it's stored on the server.</p>
+      <p>But JWTs also have a downside: they can't be revoked (before expiration) without maintaining a blacklist, which defeats the purpose of statelessness. If a user reports their phone stolen, Google can't invalidate the token until it expires. That's why JWTs usually have short expiration times (15 minutes to 1 hour). For longer sessions, a <strong>refresh token</strong> is used: a longer-lived token stored securely on the server that can be exchanged for new JWTs without requiring re-login. If a refresh token is compromised, it can be revoked because it's stored on the server.</p>
 
       <h2>Authorization — What You're Allowed to Do</h2>
       <p>Authorization happens <strong>after</strong> authentication. The server knows who you are (authenticated via JWT). Now it checks: "Is user #42 allowed to delete tweet #999?" If the tweet belongs to user #42, the answer is yes. If it belongs to user #7, the answer is no.</p>
 
-      <p>Authorization can be as simple as "can the owner of this resource access it?" or as complex as role-based access control (RBAC) with dozens of permissions. Twitter uses a combination of approaches:</p>
+      <p>Authorization can be as simple as "can the owner of this resource access it?" or as complex as role-based access control (RBAC) with dozens of permissions. Google uses a combination of approaches:</p>
 
       <p><strong>Ownership checks</strong> — You can edit your own tweets, not someone else's. The server checks: <code>tweet.author_id == current_user.id</code>.</p>
 
-      <p><strong>Role-based permissions</strong> — Twitter employees have admin roles that allow them to moderate content, suspend users, or view analytics. The JWT might include a <code>role</code> claim: <code>{"role": "admin"}</code>. The server checks: <code>if current_user.role == 'admin': allow</code>.</p>
+      <p><strong>Role-based permissions</strong> — Google employees have admin roles that allow them to moderate content, suspend users, or view analytics. The JWT might include a <code>role</code> claim: <code>{"role": "admin"}</code>. The server checks: <code>if current_user.role == 'admin': allow</code>.</p>
 
-      <p><strong>Scope-based permissions</strong> — When a third-party app asks to access your Twitter account via OAuth, it requests specific scopes: <code>tweet.read</code>, <code>tweet.write</code>, <code>users.read</code>. The JWT issued to that app only includes the granted scopes. If the app tries to post a tweet but only has <code>tweet.read</code> scope, the server rejects the request.</p>
+      <p><strong>Scope-based permissions</strong> — When a third-party app asks to access your Google account via OAuth, it requests specific scopes: <code>tweet.read</code>, <code>tweet.write</code>, <code>users.read</code>. The JWT issued to that app only includes the granted scopes. If the app tries to post a tweet but only has <code>tweet.read</code> scope, the server rejects the request.</p>
 
       <p>Authorization is typically implemented as <strong>middleware</strong> — a function that runs before the request handler. The middleware checks the JWT, extracts the user ID and role, and attaches them to the request object. Then the route handler checks permissions before performing the action. If authorization fails, the server returns <code>403 Forbidden</code> (not <code>401 Unauthorized</code> — that's for authentication failures).</p>
 
       <h2>OAuth — Log in With Google</h2>
       <p>You've used "Log in with Google" or "Log in with Apple" a hundred times. This is <strong>OAuth 2.0</strong>, the industry standard protocol for delegated authorization. OAuth allows you to grant one application access to your data on another application without sharing your password.</p>
 
-      <p>Here's how it works when you tap "Log in with Google" on Twitter:</p>
+      <p>Here's how it works when you tap "Log in with Google" on Google:</p>
 
-      <p>1. Twitter redirects you to Google's authorization page. The URL includes Twitter's client ID (identifying Twitter to Google), a redirect URI (where to send you after authorization), and the scopes Twitter is requesting (like "see your email address" and "see your name").</p>
+      <p>1. Google redirects you to Google's authorization page. The URL includes Google's client ID (identifying Google to Google), a redirect URI (where to send you after authorization), and the scopes Google is requesting (like "see your email address" and "see your name").</p>
 
-      <p>2. You log in to Google (if not already logged in) and see a page: "Twitter wants to access your email and profile info. Allow?" You click Allow.</p>
+      <p>2. You log in to Google (if not already logged in) and see a page: "Google wants to access your email and profile info. Allow?" You click Allow.</p>
 
-      <p>3. Google redirects you back to Twitter with a temporary <strong>authorization code</strong> in the URL.</p>
+      <p>3. Google redirects you back to Google with a temporary <strong>authorization code</strong> in the URL.</p>
 
-      <p>4. Twitter's server takes that code and sends it to Google's server (server-to-server, not visible to you) along with Twitter's client secret. Google verifies the code and returns an <strong>access token</strong> (and optionally a JWT ID token).</p>
+      <p>4. Google's server takes that code and sends it to Google's server (server-to-server, not visible to you) along with Google's client secret. Google verifies the code and returns an <strong>access token</strong> (and optionally a JWT ID token).</p>
 
-      <p>5. Twitter uses the access token to call Google's API: <code>GET https://www.googleapis.com/oauth2/v2/userinfo</code> with the token in the header. Google returns your email and name.</p>
+      <p>5. Google uses the access token to call Google's API: <code>GET https://www.googleapis.com/oauth2/v2/userinfo</code> with the token in the header. Google returns your email and name.</p>
 
-      <p>6. Twitter finds or creates an account with that email and logs you in. Twitter never sees your Google password.</p>
+      <p>6. Google finds or creates an account with that email and logs you in. Google never sees your Google password.</p>
 
-      <p>The key insight: Twitter never handles your Google password. Twitter only gets a limited-scope, revocable token. If you later go to your Google security settings and revoke Twitter's access, Twitter's token stops working immediately — even if you never change your Google password.</p>
+      <p>The key insight: Google never handles your Google password. Google only gets a limited-scope, revocable token. If you later go to your Google security settings and revoke Google's access, Google's token stops working immediately — even if you never change your Google password.</p>
 
       <p>This is the fundamental pattern of OAuth: <strong>delegation without credential sharing</strong>. It's why you can log into hundreds of sites with your Google account without trusting every one of those sites with your Google password.</p>
 
@@ -198,7 +207,7 @@
 
       <p>1. You type "Hello world!" and tap Post. The app retrieves the JWT from secure storage.</p>
 
-      <p>2. The app sends <code>POST https://api.twitter.com/2/tweets</code> with <code>Authorization: Bearer eyJhbG...</code> and <code>{"text": "Hello world!"}</code> in the body.</p>
+      <p>2. The app sends <code>POST https://api.google.com/2/tweets</code> with <code>Authorization: Bearer eyJhbG...</code> and <code>{"text": "Hello world!"}</code> in the body.</p>
 
       <p>3. The server's auth middleware intercepts the request. It extracts the JWT from the <code>Authorization</code> header. It verifies the signature against the server's secret key. It checks the <code>exp</code> claim — is the token still valid? It decodes the payload to get <code>user_id: 42</code>. All of this happens in a few milliseconds, usually in a shared library used by every route.</p>
 

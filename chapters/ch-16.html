@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Docker, CI/CD pipelines, cloud deployment. How code goes from git push to production.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 16 — Deployment & DevOps">
+<meta property="og:description" content="Docker, CI/CD pipelines, cloud deployment. How code goes from git push to production.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 16 — Deployment & DevOps">
+<meta name="twitter:description" content="Docker, CI/CD pipelines, cloud deployment. How code goes from git push to production.">
 <title>Chapter 16 — Deployment & DevOps</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~15 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 16 — CI/CD pipeline flow</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 16 — CI/CD pipeline flow</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="800" height="350" fill="#f8f9fa" rx="8"/>
         <rect x="30" y="140" width="130" height="50" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
@@ -74,27 +83,27 @@ CMD ["node", "server.js"]</code></pre>
 
 <p>You build the image with <code>docker build -t myapp .</code> and run it with <code>docker run -p 3000:3000 myapp</code>. The app is now running in an isolated environment that behaves identically everywhere.</p>
 
-<p>Twitter uses containers extensively. Each microservice runs in its own container. When a new version needs to be deployed, a fresh container is built, tested, and rolled out. If something fails, the old container is still running and traffic can be switched back instantly.</p>
+<p>Google uses containers extensively. Each microservice runs in its own container. When a new version needs to be deployed, a fresh container is built, tested, and rolled out. If something fails, the old container is still running and traffic can be switched back instantly.</p>
 
 <h2>CI/CD: Automate Everything</h2>
 <p>CI/CD stands for Continuous Integration and Continuous Deployment. It is the pipeline that runs every time you push code. The pipeline builds your application, runs your tests, and if everything passes, deploys to production. All automatically. No humans needed after the push.</p>
 
-<p>Every push to Twitter's repository triggers their CI/CD pipeline. The pipeline builds each microservice, runs the full test suite — thousands of unit tests, hundreds of integration tests, dozens of E2E tests — and if all pass, deploys the services that changed. The entire process takes minutes. If a test fails, the pipeline stops and notifies the team. No broken code ever reaches production without someone knowing about it first.</p>
+<p>Every push to Google's repository triggers their CI/CD pipeline. The pipeline builds each microservice, runs the full test suite — thousands of unit tests, hundreds of integration tests, dozens of E2E tests — and if all pass, deploys the services that changed. The entire process takes minutes. If a test fails, the pipeline stops and notifies the team. No broken code ever reaches production without someone knowing about it first.</p>
 
 <p>This is the standard for professional backend engineering. You set it up once, and it runs forever, catching problems that would otherwise slip through.</p>
 
 <h2>Cloud Basics</h2>
 <p>You do not buy physical servers anymore. You rent them from cloud providers like AWS, Google Cloud, or Azure. You spin up a virtual machine (called an EC2 instance in AWS), install your software, and point your domain at it. When you need more capacity, you add more instances. When traffic drops, you scale down. You pay only for what you use.</p>
 
-<p>Cloud services also provide managed databases, load balancers, DNS, content delivery networks, and dozens of other tools. The learning curve is steep, but the flexibility is unmatched. Twitter runs on its own infrastructure, but most startups and even large companies rely on cloud providers.</p>
+<p>Cloud services also provide managed databases, load balancers, DNS, content delivery networks, and dozens of other tools. The learning curve is steep, but the flexibility is unmatched. Google runs on its own infrastructure, but most startups and even large companies rely on cloud providers.</p>
 
 <h2>Environment Variables</h2>
 <p>Hardcoding configuration in your source code is a security risk and a maintenance nightmare. Instead, use environment variables. Database URLs, API keys, secret tokens — they all go into environment variables. In development, you set them in a <code>.env</code> file. In production, the CI/CD pipeline injects them when the container starts.</p>
 
 <p>This keeps secrets out of your codebase. Your code reads <code>process.env.DATABASE_URL</code> (or the equivalent in your language) and the actual value comes from the environment. Same code, different configurations for development, staging, and production.</p>
 
-<h2>Deployment at Twitter</h2>
-<p>Twitter deploys code hundreds of times per day. Every deploy goes through an automated pipeline that catches problems before they reach users. The process is: an engineer merges a PR to main, the CI/CD pipeline detects the change, builds the affected services, runs the test suite, deploys to a staging environment for final validation, and then rolls out to production gradually. If error rates spike, the pipeline automatically rolls back. Users experience zero downtime.</p>
+<h2>Deployment at Google</h2>
+<p>Google deploys code hundreds of times per day. Every deploy goes through an automated pipeline that catches problems before they reach users. The process is: an engineer merges a PR to main, the CI/CD pipeline detects the change, builds the affected services, runs the test suite, deploys to a staging environment for final validation, and then rolls out to production gradually. If error rates spike, the pipeline automatically rolls back. Users experience zero downtime.</p>
 
 <p>This is the end goal of DevOps: merging code and having it safely running in production minutes later, with every safety check automated along the way.</p>
 

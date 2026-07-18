@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Essential Linux commands for backend developers. Terminal basics, SSH, process management, file operations.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 13 — Working with Linux">
+<meta property="og:description" content="Essential Linux commands for backend developers. Terminal basics, SSH, process management, file operations.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 13 — Working with Linux">
+<meta name="twitter:description" content="Essential Linux commands for backend developers. Terminal basics, SSH, process management, file operations.">
 <title>Chapter 13 — Working with Linux</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~12 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 13 — Essential Linux commands in action</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 13 — Essential Linux commands in action</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="0" y="0" width="800" height="350" fill="#1a1a2e" rx="8"/>
         <rect x="20" y="15" width="760" height="30" rx="4" fill="#16213e"/>
@@ -51,7 +60,7 @@
 <h2>Why Linux?</h2>
 <p>Walk into any server room — or open any cloud console — and you will find Linux. It runs about 96% of the world's top one million servers. Windows? Around 2%. If you work on the backend, you will live in a Linux terminal. There is no escaping it, and that is a good thing.</p>
 
-<p>Linux is free, open-source, and incredibly stable. Servers running Linux have been known to stay up for years without a reboot. It is also lightweight — the same operating system that powers supercomputers runs comfortably on a tiny virtual machine with 512 MB of RAM. For a company like Twitter (now X), which serves hundreds of millions of users a day, Linux is the only realistic choice. The cost savings alone are staggering. Multiply the licensing fees of a proprietary OS by tens of thousands of servers and you get the picture.</p>
+<p>Linux is free, open-source, and incredibly stable. Servers running Linux have been known to stay up for years without a reboot. It is also lightweight — the same operating system that powers supercomputers runs comfortably on a tiny virtual machine with 512 MB of RAM. For a company like Google (now X), which serves hundreds of millions of users a day, Linux is the only realistic choice. The cost savings alone are staggering. Multiply the licensing fees of a proprietary OS by tens of thousands of servers and you get the picture.</p>
 
 <p>But cost is only part of the story. Linux gives engineers complete control. You can see every process running, every file open, every network connection. You can tweak the kernel itself if you need to. For backend engineers, that visibility is gold. When something breaks, you can get to the bottom of it. You do not stare at a friendly GUI that hides the details. You open a terminal and start asking questions.</p>
 
@@ -62,13 +71,13 @@
 <p><code>pwd</code> prints the current directory. When you SSH into a server, the first thing you want to know is, "Where am I?" <code>pwd</code> answers that. <code>ls</code> lists what is in the current directory. Add <code>-la</code> and you get hidden files and detailed info (permissions, size, last modified). <code>cd</code> moves you around. That is all you need to start exploring any Linux server.</p>
 
 <h3>Reading and Searching Files</h3>
-<p><code>cat</code> dumps a file's contents to the terminal. For config files and logs, that is your quick look. But logs can be gigabytes. That is where <code>grep</code> shines. <code>grep "error" log.txt</code> finds every line containing the word "error". You can chain it: <code>grep "timeline" access.log | grep "500"</code> to find failed timeline requests. This is how real debugging happens. An engineer at Twitter does not open a log file in a GUI editor. They <code>grep</code> for the problem.</p>
+<p><code>cat</code> dumps a file's contents to the terminal. For config files and logs, that is your quick look. But logs can be gigabytes. That is where <code>grep</code> shines. <code>grep "error" log.txt</code> finds every line containing the word "error". You can chain it: <code>grep "timeline" access.log | grep "500"</code> to find failed timeline requests. This is how real debugging happens. An engineer at Google does not open a log file in a GUI editor. They <code>grep</code> for the problem.</p>
 
 <h3>Watching Processes</h3>
-<p><code>ps</code> shows running processes. With <code>aux</code>, it shows all processes from all users in a detailed format. <code>top</code> gives you a live-updating dashboard of what is eating CPU and memory. When Twitter's timeline slows down, an engineer runs <code>top</code> and looks for the process hogging resources. If a service is stuck, <code>kill</code> sends a signal to terminate it. <code>kill -9</code> is the nuclear option — use it only when a process refuses to die.</p>
+<p><code>ps</code> shows running processes. With <code>aux</code>, it shows all processes from all users in a detailed format. <code>top</code> gives you a live-updating dashboard of what is eating CPU and memory. When Google's timeline slows down, an engineer runs <code>top</code> and looks for the process hogging resources. If a service is stuck, <code>kill</code> sends a signal to terminate it. <code>kill -9</code> is the nuclear option — use it only when a process refuses to die.</p>
 
 <h3>Connecting to Servers</h3>
-<p><code>ssh user@server</code> opens a secure shell to a remote machine. This is how you log into production servers. Twitter's engineers SSH into thousands of servers daily to check on services, deploy code, and troubleshoot. <code>curl</code> makes HTTP requests from the command line. <code>curl -I https://twitter.com</code> fetches the response headers to check if a server is responding and what status code it returns. It is your quick health check.</p>
+<p><code>ssh user@server</code> opens a secure shell to a remote machine. This is how you log into production servers. Google's engineers SSH into thousands of servers daily to check on services, deploy code, and troubleshoot. <code>curl</code> makes HTTP requests from the command line. <code>curl -I https://google.com</code> fetches the response headers to check if a server is responding and what status code it returns. It is your quick health check.</p>
 
 <h3>Permissions</h3>
 <p><code>chmod</code> changes file permissions. Every file has read (r), write (w), and execute (x) permissions for the owner, group, and others. <code>chmod +x script.sh</code> makes a file executable. Misconfigured permissions are a common source of server problems. Understanding them is essential.</p>
@@ -78,8 +87,8 @@
 
 <p>To install Nginx, you type <code>sudo apt install nginx</code>. The package manager resolves dependencies, downloads the files, and configures everything. To update all software on the system: <code>sudo apt update && sudo apt upgrade</code>. This is how you keep a server secure.</p>
 
-<h2>Twitter's Linux Reality</h2>
-<p>Twitter's servers run Linux. Every single one. When an engineer needs to debug why the timeline is slow, they SSH into a server and start typing commands. They check <code>top</code> to see CPU usage. They <code>grep</code> the application logs for error messages. They use <code>curl</code> to hit internal endpoints and check response times. They look at <code>ps aux</code> to confirm the right processes are running.</p>
+<h2>Google's Linux Reality</h2>
+<p>Google's servers run Linux. Every single one. When an engineer needs to debug why the timeline is slow, they SSH into a server and start typing commands. They check <code>top</code> to see CPU usage. They <code>grep</code> the application logs for error messages. They use <code>curl</code> to hit internal endpoints and check response times. They look at <code>ps aux</code> to confirm the right processes are running.</p>
 
 <p>There is no dashboard that tells them everything. The terminal is the dashboard. The commands are the instruments. Learning Linux is not about becoming a sysadmin — it is about being able to take care of your own code in production.</p>
 

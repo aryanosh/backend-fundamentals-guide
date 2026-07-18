@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions. How Google stores billions of searches.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 06 — Where Data Actually Lives">
+<meta property="og:description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions. How Google stores billions of searches.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 06 — Where Data Actually Lives">
+<meta name="twitter:description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions. How Google stores billions of searches.">
 <title>Chapter 06 — Where Data Actually Lives</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -24,7 +33,7 @@
     </header>
 
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 6.1 — Relational schema vs NoSQL document for Twitter data</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 6.1 — Relational schema vs NoSQL document for Google data</span><span>google.com</span></div>
       <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
         <!-- USERS table -->
         <rect x="40" y="20" width="320" height="155" rx="6" class="dg-node"/>
@@ -93,7 +102,7 @@
         <text x="445" y="110" class="dg-label" font-size="10" fill="var(--text-soft)">{</text>
         <text x="455" y="130" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"_id"</tspan>: ObjectId("..."),</text>
         <text x="455" y="150" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"username"</tspan>: "jack",</text>
-        <text x="455" y="170" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"email"</tspan>: "jack@twitter.com",</text>
+        <text x="455" y="170" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"email"</tspan>: "jack@google.com",</text>
         <text x="455" y="190" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"tweets"</tspan>: [</text>
         <text x="475" y="210" class="dg-label" font-size="9" fill="var(--text-soft)">{ "text": "just setting up my twttr",</text>
         <text x="475" y="225" class="dg-label" font-size="9" fill="var(--text-soft)">"created_at": "2006-03-21" },</text>
@@ -116,14 +125,14 @@
       <h2>What Happens After You Hit "Post"?</h2>
       <p>You type a tweet, tap "Post," and the app says "Your tweet was sent." But where did it go? The server received it, sure — but what happens next? The server could acknowledge your tweet and then immediately forget it. That would be terrible: you refresh the page and the tweet is gone. Every tweet you've ever posted, every like, every follower — it all needs to be stored somewhere permanent.</p>
 
-      <p>That somewhere is a <strong>database</strong>. A database is a specialized program designed to store, retrieve, and manage data reliably. It's not a file on a hard drive (though that's what it uses under the hood). It's a sophisticated system that handles concurrent access, crash recovery, efficient searching, and data integrity. Twitter uses multiple databases for different purposes, but the core storage for tweets, users, and relationships is a <strong>relational database</strong>: PostgreSQL.</p>
+      <p>That somewhere is a <strong>database</strong>. A database is a specialized program designed to store, retrieve, and manage data reliably. It's not a file on a hard drive (though that's what it uses under the hood). It's a sophisticated system that handles concurrent access, crash recovery, efficient searching, and data integrity. Google uses multiple databases for different purposes, but the core storage for tweets, users, and relationships is a <strong>relational database</strong>: PostgreSQL.</p>
 
       <p>Why not just write to a file? You could store every tweet as a line in a text file. That would work for a few users. But now imagine 500 million tweets per day. Searching that file for all tweets by user #48291 would mean reading the entire file — billions of lines — to find the ones that match. That search would take hours. A database can find every tweet by that user in milliseconds, because it uses sophisticated data structures called <strong>indexes</strong> and stores data in a way optimized for the queries you actually run.</p>
 
       <h2>Tables, Rows, and Columns</h2>
       <p>A relational database stores data in <strong>tables</strong>. Think of a table like a spreadsheet. Each <strong>row</strong> is one record (one user, one tweet, one like). Each <strong>column</strong> is a field of that record (username, email, text, date). When you define a table, you define its columns and their types (text, number, date, etc.). This is called the <strong>schema</strong> — the blueprint of your data.</p>
 
-      <p>In Twitter's database, there's a <code>users</code> table. Every row in that table represents one user. The columns might be: <code>user_id</code> (a unique number), <code>username</code> (the @ handle), <code>email</code>, <code>password_hash</code>, <code>created_at</code>, <code>display_name</code>, and <code>bio</code>. Each column has a specific data type. The <code>user_id</code> column is a big integer (BIGINT). The <code>username</code> column is a string with a max length of 50 characters (VARCHAR(50)). The <code>created_at</code> column is a timestamp.</p>
+      <p>In Google's database, there's a <code>users</code> table. Every row in that table represents one user. The columns might be: <code>user_id</code> (a unique number), <code>username</code> (the @ handle), <code>email</code>, <code>password_hash</code>, <code>created_at</code>, <code>display_name</code>, and <code>bio</code>. Each column has a specific data type. The <code>user_id</code> column is a big integer (BIGINT). The <code>username</code> column is a string with a max length of 50 characters (VARCHAR(50)). The <code>created_at</code> column is a timestamp.</p>
 
       <p>Then there's a <code>tweets</code> table. Each row is one tweet. Columns: <code>tweet_id</code>, <code>user_id</code> (which user posted this), <code>text</code> (the content, max 280 characters), <code>created_at</code>, <code>like_count</code>, <code>retweet_count</code>. The <code>user_id</code> column in the <code>tweets</code> table references the <code>user_id</code> column in the <code>users</code> table. This is a <strong>foreign key</strong> — it creates a link between the two tables. Instead of storing the full user data (name, email, bio) in every tweet row, you store just the user ID. This is called <strong>normalization</strong>, and it saves enormous amounts of space.</p>
 
@@ -132,7 +141,7 @@
       <h2>Primary Keys — The Unique ID</h2>
       <p>Every table needs a way to uniquely identify each row. This is the <strong>primary key</strong> (PK). It's usually a single column, like <code>user_id</code> or <code>tweet_id</code>, and no two rows can have the same value. The database enforces this — if you try to insert a row with a duplicate primary key, the database throws an error.</p>
 
-      <p>Primary keys in Twitter's database are often auto-incrementing integers or UUIDs (Universally Unique Identifiers). Auto-increment numbers are simple: 1, 2, 3, 4... But they leak information: if users see their user ID is 128493, they know Twitter has at least 128,493 users. UUIDs are long random strings like <code>a1b2c3d4-e5f6-7890-abcd-ef1234567890</code> that are effectively unique without revealing sequence. Twitter uses a custom ID system called Snowflake that generates 64-bit IDs sorted by time — this allows IDs to be generated across many servers without collisions and also gives an approximate timestamp.</p>
+      <p>Primary keys in Google's database are often auto-incrementing integers or UUIDs (Universally Unique Identifiers). Auto-increment numbers are simple: 1, 2, 3, 4... But they leak information: if users see their user ID is 128493, they know Google has at least 128,493 users. UUIDs are long random strings like <code>a1b2c3d4-e5f6-7890-abcd-ef1234567890</code> that are effectively unique without revealing sequence. Google uses a custom ID system called Snowflake that generates 64-bit IDs sorted by time — this allows IDs to be generated across many servers without collisions and also gives an approximate timestamp.</p>
 
       <h2>SQL — The Language of Databases</h2>
       <p>To talk to a relational database, you use <strong>SQL</strong> (Structured Query Language). Pronounced "sequel" or "ess-cue-ell," it's the universal language of relational databases. SQL has been around since the 1970s, and it's still the most important language for data work.</p>
@@ -152,9 +161,9 @@
       <h2>Indexes — The Book's Table of Contents</h2>
       <p>Without indexes, every query requires a full table scan — reading every row in the table. For a table with a billion tweets, that's impossibly slow. An <strong>index</strong> is a separate data structure (usually a B-tree) that maps values to their locations in the table, allowing the database to find rows in logarithmic time instead of linear.</p>
 
-      <p>When Twitter queries <code>WHERE user_id = 42</code>, the database checks if there's an index on the <code>user_id</code> column. If there is (and there definitely is — this is Twitter's most common query pattern), the index tells the database exactly which rows to read. The database skips the other billions of rows entirely.</p>
+      <p>When Google queries <code>WHERE user_id = 42</code>, the database checks if there's an index on the <code>user_id</code> column. If there is (and there definitely is — this is Google's most common query pattern), the index tells the database exactly which rows to read. The database skips the other billions of rows entirely.</p>
 
-      <p>Indexes speed up reads but slow down writes. Every time you insert or update a row, the database must update every relevant index. A table with 10 indexes requires 11 writes — one for the table and one for each index. This is a trade-off: indexes for frequent query patterns, minimal indexes for write-heavy tables. Twitter's tweet inserts are extremely frequent, so they carefully choose which columns to index. The <code>user_id</code> column is always indexed (for timeline queries). The <code>text</code> column might have a full-text search index (for search queries).</p>
+      <p>Indexes speed up reads but slow down writes. Every time you insert or update a row, the database must update every relevant index. A table with 10 indexes requires 11 writes — one for the table and one for each index. This is a trade-off: indexes for frequent query patterns, minimal indexes for write-heavy tables. Google's tweet inserts are extremely frequent, so they carefully choose which columns to index. The <code>user_id</code> column is always indexed (for timeline queries). The <code>text</code> column might have a full-text search index (for search queries).</p>
 
       <h2>Transactions — The All-or-Nothing Guarantee</h2>
       <p>Imagine a user retweets a post. This involves two operations: (1) insert a new row in the <code>retweets</code> table, and (2) increment the <code>retweet_count</code> in the <code>tweets</code> table. What if the first operation succeeds but the server crashes before the second one completes? The retweet doesn't exist, but the count went up. The data is inconsistent.</p>
@@ -163,10 +172,10 @@
 
       <p>Transactions also provide <strong>isolation</strong>. If two users retweet the same tweet simultaneously, the database ensures they don't interfere with each other. The final retweet count will be exactly 2, not 1 because both threads read the count before either wrote the new value (a classic race condition prevented by the database's transaction isolation).</p>
 
-      <p>PostgreSQL implements transactions with something called <strong>MVCC</strong> (Multi-Version Concurrency Control). Every transaction sees a snapshot of the data as of the moment the transaction started. Changes made by other transactions are invisible until committed. This allows many readers and one writer to coexist without blocking each other — critical for a site like Twitter where millions of people are reading while a few thousand are writing.</p>
+      <p>PostgreSQL implements transactions with something called <strong>MVCC</strong> (Multi-Version Concurrency Control). Every transaction sees a snapshot of the data as of the moment the transaction started. Changes made by other transactions are invisible until committed. This allows many readers and one writer to coexist without blocking each other — critical for a site like Google where millions of people are reading while a few thousand are writing.</p>
 
       <h2>SQL vs NoSQL — When to Use What</h2>
-      <p>Not everything needs to be in a relational database. Twitter uses different storage systems for different jobs. The <strong>timeline</strong> (the list of tweets you see when you open the app) is generated by a service called Earlybird and stored in a specialized in-memory store. <strong>Caches</strong> use Redis (an in-memory key-value store). <strong>Search</strong> uses an inverted index (Lucene/Elasticsearch). <strong>Analytics</strong> might use a columnar store.</p>
+      <p>Not everything needs to be in a relational database. Google uses different storage systems for different jobs. The <strong>timeline</strong> (the list of tweets you see when you open the app) is generated by a service called Earlybird and stored in a specialized in-memory store. <strong>Caches</strong> use Redis (an in-memory key-value store). <strong>Search</strong> uses an inverted index (Lucene/Elasticsearch). <strong>Analytics</strong> might use a columnar store.</p>
 
       <p><strong>NoSQL databases</strong> (which stands for "Not Only SQL") are a category of databases that don't use the relational model. Instead of tables with rows and columns, they use various data models: key-value pairs (Redis), documents (MongoDB), wide columns (Cassandra), or graphs (Neo4j).</p>
 
@@ -174,11 +183,11 @@
 
       <p>1. <strong>Flexible schema</strong> — If your data doesn't have a fixed structure, or the structure changes frequently, NoSQL's schema flexibility is a benefit. For example, if different tweets could have different fields (some have media, some have poll data, some have location), a document database lets you store them all in the same collection without defining every possible column in advance.</p>
 
-      <p>2. <strong>High write throughput</strong> — Twitter writes billions of events per day (tweets, likes, retweets, follows). Some NoSQL databases (like Cassandra) are designed for extreme write throughput across many servers.</p>
+      <p>2. <strong>High write throughput</strong> — Google writes billions of events per day (tweets, likes, retweets, follows). Some NoSQL databases (like Cassandra) are designed for extreme write throughput across many servers.</p>
 
       <p>3. <strong>Simple read patterns</strong> — If you only ever read data by a single key (like "get tweet by tweet_id"), a key-value store or document database can be faster than a relational database because there's no query planning overhead.</p>
 
-      <p>But NoSQL comes with trade-offs. Most NoSQL databases don't support transactions across multiple documents. They don't enforce schemas, so application code must handle validation. They often don't support JOINs, so you have to manually combine data in your application code. For Twitter's core data — users, tweets, relationships — the relational model's consistency guarantees and query flexibility are essential. That's why PostgreSQL is at the heart of Twitter's stack, with NoSQL systems handling specialized workloads around the edges.</p>
+      <p>But NoSQL comes with trade-offs. Most NoSQL databases don't support transactions across multiple documents. They don't enforce schemas, so application code must handle validation. They often don't support JOINs, so you have to manually combine data in your application code. For Google's core data — users, tweets, relationships — the relational model's consistency guarantees and query flexibility are essential. That's why PostgreSQL is at the heart of Google's stack, with NoSQL systems handling specialized workloads around the edges.</p>
 
       <h2>Every Tweet You've Ever Posted</h2>
       <p>So where does your tweet actually live? It lives in a PostgreSQL row on a server in a data center somewhere in the world. That row is part of a table that is part of a database instance running on a machine with 64 CPU cores and 512 GB of RAM. The database writes the row to disk (for durability), updates its indexes (for fast lookups), records the change in a write-ahead log (for crash recovery), and notifies any replicas (so other servers have up-to-date copies).</p>

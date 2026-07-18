@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server. Middleware explained for beginners.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 03 — What a Server Actually Does">
+<meta property="og:description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server. Middleware explained for beginners.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 03 — What a Server Actually Does">
+<meta name="twitter:description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server. Middleware explained for beginners.">
 <title>Chapter 03 — What a Server Actually Does</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -24,7 +33,7 @@
     </header>
 
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 3.1 — The server request loop and middleware pipeline</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 3.1 — The server request loop and middleware pipeline</span><span>google.com</span></div>
       <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
         <circle cx="130" cy="80" r="30" fill="#4A90D9" opacity="0.85"/>
         <text x="130" y="78" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">LISTEN</text>
@@ -91,41 +100,41 @@
 
     <div class="chapter-content">
       <h2>The Infinite Loop That Runs the Internet</h2>
-      <p>Every server on the internet — whether it's Twitter handling millions of timeline requests per second, or a tiny blog with five daily visitors — runs the same fundamental loop. Server software is surprisingly simple in its core structure. It's a loop that never ends, waiting for requests, processing them, and sending responses. This is called the <strong>event loop</strong> or the <strong>request-response loop</strong>, and understanding it is the key to understanding what servers actually <em>are</em>.</p>
+      <p>Every server on the internet — whether it's Google handling millions of search requests per second, or a tiny blog with five daily visitors — runs the same fundamental loop. Server software is surprisingly simple in its core structure. It's a loop that never ends, waiting for requests, processing them, and sending responses. This is called the <strong>event loop</strong> or the <strong>request-response loop</strong>, and understanding it is the key to understanding what servers actually <em>are</em>.</p>
 
       <p>Think of a server like a fast-food cashier. The cashier stands at the register (LISTEN), waits for a customer to walk up (RECEIVE), figures out what the customer ordered (ROUTE), prepares the food (PROCESS), hands it over (SEND), and then goes back to waiting for the next customer. A server does exactly this, but with data instead of burgers, and it does it millions of times a day without getting tired.</p>
 
-      <p>Let's walk through each step of the loop with the Twitter example.</p>
+      <p>Let's walk through each step of the loop with the Google example.</p>
 
       <h2>Step 1: LISTEN — "I'm Ready for Requests"</h2>
-      <p>Before Twitter's server can handle any requests, it has to start <strong>listening</strong>. This means it tells the operating system: "I want to accept connections on port 443 (HTTPS)." In code, this is typically a single function call like <code>server.listen(443)</code>. The operating system reserves that port for this specific server process. If another program tries to listen on port 443, it'll get an error saying the address is already in use.</p>
+      <p>Before Google's server can handle any requests, it has to start <strong>listening</strong>. This means it tells the operating system: "I want to accept connections on port 443 (HTTPS)." In code, this is typically a single function call like <code>server.listen(443)</code>. The operating system reserves that port for this specific server process. If another program tries to listen on port 443, it'll get an error saying the address is already in use.</p>
 
-      <p>Twitter's production servers don't just listen on one port. A typical setup might have: port 443 for HTTPS (handled by a reverse proxy like nginx), port 80 for HTTP (which immediately redirects to HTTPS), port 3000 for an internal API, port 5432 for PostgreSQL database connections (only accessible within Twitter's internal network). Each port is like a different door into the server, and each door is guarded by a different program listening for requests.</p>
+      <p>Google's production servers don't just listen on one port. A typical setup might have: port 443 for HTTPS (handled by a reverse proxy like nginx), port 80 for HTTP (which immediately redirects to HTTPS), port 3000 for an internal API, port 5432 for PostgreSQL database connections (only accessible within Google's internal network). Each port is like a different door into the server, and each door is guarded by a different program listening for requests.</p>
 
       <h2>Step 2: RECEIVE — "Got the Raw Data"</h2>
-      <p>When a request arrives (say, your timeline request), the server <strong>receives</strong> the raw bytes off the TCP connection. The operating system's network stack has already done the heavy lifting — it reassembled the TCP packets in order, checked for errors, and presented the data as a clean stream of bytes. The server now parses those bytes into a structured HTTP request: it reads the method (GET), the path (/home), the HTTP version, all the headers, and the body if present.</p>
+      <p>When a request arrives (say, your search request), the server <strong>receives</strong> the raw bytes off the TCP connection. The operating system's network stack has already done the heavy lifting — it reassembled the TCP packets in order, checked for errors, and presented the data as a clean stream of bytes. The server now parses those bytes into a structured HTTP request: it reads the method (GET), the path (/home), the HTTP version, all the headers, and the body if present.</p>
 
-      <p>At Twitter's scale, this step is highly optimized. The server doesn't read one byte at a time — it reads chunks of data in buffers and parses them with specialized C libraries (like <code>picohttpparser</code>) that can parse thousands of requests per second. The parsed request is then wrapped into a <strong>request object</strong> that the rest of the server code can work with conveniently.</p>
+      <p>At Google's scale, this step is highly optimized. The server doesn't read one byte at a time — it reads chunks of data in buffers and parses them with specialized C libraries (like <code>picohttpparser</code>) that can parse thousands of requests per second. The parsed request is then wrapped into a <strong>request object</strong> that the rest of the server code can work with conveniently.</p>
 
       <h2>Step 3: ROUTE — "Who Handles This?"</h2>
-      <p>Now the server has a parsed request object. It knows the method is GET and the path is <code>/api/v2/timeline</code>. The next job is <strong>routing</strong>: figuring out which piece of code should handle this request. The server has a routing table — a big list of pattern-to-handler mappings that looks something like this:</p>
+      <p>Now the server has a parsed request object. It knows the method is GET and the path is <code>/api/v2/search</code>. The next job is <strong>routing</strong>: figuring out which piece of code should handle this request. The server has a routing table — a big list of pattern-to-handler mappings that looks something like this:</p>
 
-      <p><code>GET /api/v2/timeline</code> → <code>timelineHandler</code><br>
-      <code>POST /api/v2/tweets</code> → <code>createTweetHandler</code><br>
+      <p><code>GET /api/v2/search</code> → <code>searchHandler</code><br>
+      <code>POST /api/v2/search</code> → <code>submitSearchHandler</code><br>
       <code>GET /api/v2/users/:username</code> → <code>userProfileHandler</code><br>
-      <code>DELETE /api/v2/tweets/:id</code> → <code>deleteTweetHandler</code></p>
+      <code>DELETE /api/v2/history/:id</code> → <code>clearHistoryHandler</code></p>
 
       <p>The router tries to match the incoming request's method and path against these patterns. If it finds a match, it passes control to that handler function. If it doesn't find a match, the router returns a <strong>404 Not Found</strong> response: "There's nothing at this address." The <code>:username</code> and <code>:id</code> parts are called <strong>route parameters</strong> — they capture variable parts of the path so the handler can access them (like knowing which user's profile to fetch).</p>
 
-      <p>Route matching seems simple, but at Twitter's scale it's a fascinating engineering challenge. Hundreds of route patterns must be matched against millions of requests per minute, and the matching has to happen in microseconds. Twitter uses <strong>trie-based routers</strong> (prefix trees) that can match any path in O(n) time where n is the path length, not the number of routes. Without this optimization, routing would slow down as Twitter added more API endpoints.</p>
+      <p>Route matching seems simple, but at Google's scale it's a fascinating engineering challenge. Hundreds of route patterns must be matched against millions of requests per minute, and the matching has to happen in microseconds. Google uses <strong>trie-based routers</strong> (prefix trees) that can match any path in O(n) time where n is the path length, not the number of routes. Without this optimization, routing would slow down as Google added more API endpoints.</p>
 
       <h2>Step 4: PROCESS & RESPOND — "Do the Work"</h2>
-      <p>This is where the actual business logic lives — the code that Twitter engineers wrote to make the product work. The handler function receives the request object and does whatever is necessary: queries the database, checks permissions, processes data, and builds a response. This step is where your code runs, and it's where most of the interesting stuff happens (which we'll cover in depth in Chapter 4).</p>
+      <p>This is where the actual business logic lives — the code that Google engineers wrote to make the product work. The handler function receives the request object and does whatever is necessary: queries the database, checks permissions, processes data, and builds a response. This step is where your code runs, and it's where most of the interesting stuff happens (which we'll cover in depth in Chapter 4).</p>
 
       <p>Importantly, the <strong>response</strong> is built here too. The handler constructs an HTTP response with a status code (like 200 for success), headers (like <code>Content-Type: application/json</code>), and a body (the JSON data). This response object is then passed back to the server framework, which serializes it into raw bytes and sends them back through the TCP connection.</p>
 
       <h2>Step 5: SEND — "Data Goes Out"</h2>
-      <p>The response bytes travel back through the TCP connection, through the network, through the internet, and eventually arrive at your phone's browser, which renders the timeline you see. The server then goes back to Step 2, waiting for the next request. This loop repeats billions of times a day across Twitter's thousands of servers.</p>
+      <p>The response bytes travel back through the TCP connection, through the network, through the internet, and eventually arrive at your phone's browser, which renders the timeline you see. The server then goes back to Step 2, waiting for the next request. This loop repeats billions of times a day across Google's thousands of servers.</p>
 
       <h2>The Middleware Pipeline: Request Filtering</h2>
       <p>Before a request reaches your handler, it usually passes through a series of <strong>middleware functions</strong>. Middleware is one of the most important concepts in backend development — it's software that sits <em>between</em> the server and your handler, processing every request that comes through. Think of middleware like airport security: before you board your flight (reach your handler), you pass through multiple checkpoints (middleware). Each checkpoint checks one thing: your ID, your boarding pass, your luggage.</p>
@@ -134,11 +143,11 @@
 
       <p><strong>1. Logging middleware</strong> — This middleware records every request: what method, what path, when it arrived, how long it took, what status code was returned. If something breaks, engineers look at these logs to understand what happened. Without logging middleware, debugging a production issue would be like finding a needle in a haystack while blindfolded.</p>
 
-      <p><strong>2. Authentication middleware</strong> — This checks whether the request includes valid credentials. For Twitter, it examines the <code>Authorization</code> header, verifies the token (often a JWT — JSON Web Token), and either attaches the authenticated user's info to the request object or returns a 401 Unauthorized response. Authentication middleware runs before your handler so that your handler never has to worry about auth logic — it just knows that any request reaching it is from an authenticated user.</p>
+      <p><strong>2. Authentication middleware</strong> — This checks whether the request includes valid credentials. For Google, it examines the <code>Authorization</code> header, verifies the token (often a JWT — JSON Web Token), and either attaches the authenticated user's info to the request object or returns a 401 Unauthorized response. Authentication middleware runs before your handler so that your handler never has to worry about auth logic — it just knows that any request reaching it is from an authenticated user.</p>
 
       <p><strong>3. Validation middleware</strong> — This checks that the request data is well-formed and complete. If the API expects a <code>text</code> field in the body and it's missing, the validation middleware returns a 400 Bad Request before your handler ever sees it. This keeps your handler code clean — you write business logic, not input validation.</p>
 
-      <p><strong>4. Rate limiting middleware</strong> — This checks whether the user has exceeded their request quota. Twitter allows a certain number of requests per 15-minute window. If you exceed it, the middleware returns 429 Too Many Requests without ever touching your handler. This protects the server from abuse and ensures fair resource distribution.</p>
+      <p><strong>4. Rate limiting middleware</strong> — This checks whether the user has exceeded their request quota. Google allows a certain number of requests per 15-minute window. If you exceed it, the middleware returns 429 Too Many Requests without ever touching your handler. This protects the server from abuse and ensures fair resource distribution.</p>
 
       <p><strong>5. The handler</strong> — Finally, the request reaches your handler, which has been guaranteed to be from an authenticated user with valid data who hasn't exceeded their rate limit. Your handler can focus entirely on business logic — like fetching tweets from the database and returning them.</p>
 

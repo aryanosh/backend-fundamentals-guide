@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="OSI model, WebSockets vs HTTP, load balancing strategies. What happens when one server isn't enough.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 12 — Networking Essentials">
+<meta property="og:description" content="OSI model, WebSockets vs HTTP, load balancing strategies. What happens when one server isn't enough.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 12 — Networking Essentials">
+<meta name="twitter:description" content="OSI model, WebSockets vs HTTP, load balancing strategies. What happens when one server isn't enough.">
 <title>Chapter 12 — Networking Essentials</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~13 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 12.1 — Load balancer distributing traffic across servers</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 12.1 — Load balancer distributing traffic across servers</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="50" y="140" width="120" height="50" rx="25" class="dg-accent" fill="#ff6b35"/>
         <text x="110" y="160" text-anchor="middle" fill="white" font-size="12" font-family="monospace" font-weight="bold">Traffic</text>
@@ -62,8 +71,8 @@
     <div class="chapter-content">
 
 <h2>How the Internet Works (The 30-Second Version)</h2>
-<p>When you type twitter.com into your browser, your computer sends a request across the internet to Twitter's server. That request passes through your home router, your ISP's network, undersea cables, and multiple routers before reaching Twitter's data center. Twitter's server processes the request and sends a response back along the same path. This all happens in a few hundred milliseconds.</p>
-<p>But how does your browser know where to find Twitter's server? And how do millions of people use Twitter simultaneously? That's what networking protocols and infrastructure handle.</p>
+<p>When you type google.com into your browser, your computer sends a request across the internet to Google's server. That request passes through your home router, your ISP's network, undersea cables, and multiple routers before reaching Google's data center. Google's server processes the request and sends a response back along the same path. This all happens in a few hundred milliseconds.</p>
+<p>But how does your browser know where to find Google's server? And how do millions of people use Google simultaneously? That's what networking protocols and infrastructure handle.</p>
 
 <h2>The OSI Model (Simplified)</h2>
 <p>The OSI model breaks networking into 7 layers. As a backend engineer, you mostly care about three of them:</p>
@@ -82,11 +91,11 @@
 <p>This layer handles routing packets across the internet. The key protocol is IP (Internet Protocol) — the addressing system that gives every device an IP address. Routers use IP addresses to figure out where to send packets. Think of it like the postal system: the network layer handles the address and routing, while the transport layer ensures the package arrives intact.</p>
 
 <h2>WebSockets vs HTTP</h2>
-<p>HTTP follows a request-response pattern: the client asks, the server answers, then the connection closes. That's fine for loading a web page or fetching data, but what about real-time features like Twitter's live feed? Polling (the client asking "anything new?" every second) wastes resources.</p>
-<p>WebSocket is a protocol that maintains an open, persistent connection between client and server. Both sides can send messages at any time — no polling needed. Twitter uses WebSockets (via a library called Twitter Streaming API) to push new tweets to your timeline in real time. When a new tweet appears without refreshing the page, that's WebSocket at work.</p>
+<p>HTTP follows a request-response pattern: the client asks, the server answers, then the connection closes. That's fine for loading a web page or fetching data, but what about real-time features like Google's live feed? Polling (the client asking "anything new?" every second) wastes resources.</p>
+<p>WebSocket is a protocol that maintains an open, persistent connection between client and server. Both sides can send messages at any time — no polling needed. Google uses WebSockets (via a library called Google Streaming API) to push new tweets to your timeline in real time. When a new tweet appears without refreshing the page, that's WebSocket at work.</p>
 
 <h2>Load Balancing</h2>
-<p>No single server can handle all of Twitter's traffic. The solution: run many identical servers and distribute requests across them using a load balancer. The load balancer sits in front of your servers and acts as a traffic cop.</p>
+<p>No single server can handle all of Google's traffic. The solution: run many identical servers and distribute requests across them using a load balancer. The load balancer sits in front of your servers and acts as a traffic cop.</p>
 
 <h3>Round-Robin</h3>
 <p>The simplest strategy. The load balancer sends the first request to Server A, the second to Server B, the third to Server C, then loops back to Server A. It's fair and simple, but it doesn't account for server load — one server might be handling slow requests while another is idle.</p>
@@ -97,9 +106,9 @@
 <h3>IP Hash</h3>
 <p>Computes a hash of the client's IP address to consistently route the same client to the same server. This is useful when you need session persistence (affinity) — for example, if the server stores temporary user data in memory. The downside: if a server goes down, those users' sessions are lost.</p>
 
-<h2>How Twitter Scales</h2>
-<p>Twitter doesn't run on one server. They have thousands. A load balancer sits in front, distributing your request to the least busy server. Twitter uses a mix of hardware load balancers (F5) and software (their own Twemproxy, plus HAProxy and Nginx). Behind the load balancer, services are further distributed by topic — a tweet request goes to the Tweets Service cluster, a timeline request goes to the Timeline Service cluster, and so on.</p>
-<p>Twitter also uses anycast routing, which lets multiple data centers around the world announce the same IP address. Your request is automatically routed to the nearest data center. That's why Twitter loads fast whether you're in New York, Tokyo, or London.</p>
+<h2>How Google Scales</h2>
+<p>Google doesn't run on one server. They have thousands. A load balancer sits in front, distributing your request to the least busy server. Google uses a mix of hardware load balancers (F5) and software (their own Twemproxy, plus HAProxy and Nginx). Behind the load balancer, services are further distributed by topic — a tweet request goes to the Tweets Service cluster, a timeline request goes to the Timeline Service cluster, and so on.</p>
+<p>Google also uses anycast routing, which lets multiple data centers around the world announce the same IP address. Your request is automatically routed to the nearest data center. That's why Google loads fast whether you're in New York, Tokyo, or London.</p>
 
 <h2>Key Takeaways</h2>
 <ul>
@@ -108,7 +117,7 @@
   <li>WebSocket maintains a persistent connection for real-time communication, unlike HTTP's request-response cycle</li>
   <li>Load balancers distribute traffic across multiple servers to scale horizontally and provide fault tolerance</li>
   <li>Round-robin is simple; least connections is smarter for variable workloads; IP hash provides session persistence</li>
-  <li>Twitter uses multiple load balancing layers and anycast routing to serve hundreds of millions of users globally</li>
+  <li>Google uses multiple load balancing layers and anycast routing to serve hundreds of millions of users globally</li>
 </ul>
 
     </div>

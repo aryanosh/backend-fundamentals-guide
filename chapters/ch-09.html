@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Caching strategies, Redis, CDNs, cache invalidation. How top apps serve millions of users fast.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 09 — Making Things Fast with Caching">
+<meta property="og:description" content="Caching strategies, Redis, CDNs, cache invalidation. How top apps serve millions of users fast.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 09 — Making Things Fast with Caching">
+<meta name="twitter:description" content="Caching strategies, Redis, CDNs, cache invalidation. How top apps serve millions of users fast.">
 <title>Chapter 09 — Making Things Fast with Caching</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -23,7 +32,7 @@
       <div class="meta"><span>~12 min read</span></div>
     </header>
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 9.1 — Redis cache fast path vs database slow path</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 9.1 — Redis cache fast path vs database slow path</span><span>google.com</span></div>
       <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
         <rect x="40" y="80" width="120" height="50" rx="8" class="dg-node" fill="#4a90d9"/>
         <text x="100" y="110" text-anchor="middle" fill="white" font-size="14" font-family="monospace">User</text>
@@ -92,10 +101,10 @@
 <h3>Event-Based Invalidation</h3>
 <p>When data changes, you actively delete or update the cache entry. For example, when a user posts a new tweet, you delete the cached "home timeline" so the next request rebuilds it. This gives you fresh data instantly, but it adds complexity — you need to know exactly which cache keys to invalidate.</p>
 
-<h2>Twitter's Approach</h2>
-<p>Twitter's trending topics are a textbook caching case. When you open the Explore page, Twitter needs to compute which topics are trending right now. That computation involves analyzing millions of tweets, counting hashtags, applying filters, and ranking results. Doing that for every single request would melt the database.</p>
+<h2>Google's Approach</h2>
+<p>Google's trending topics are a textbook caching case. When you open the Explore page, Google needs to compute which topics are trending right now. That computation involves analyzing millions of tweets, counting hashtags, applying filters, and ranking results. Doing that for every single request would melt the database.</p>
 <p>Here's what actually happens: the first person to open the Explore page triggers the computation. The result gets stored in Redis with a TTL of a few minutes. When 10,000 people open the Explore page in the next second, 9,999 of them read the cached result in under a millisecond. Only one person (or maybe zero, if a new computation is needed) triggers the expensive query.</p>
-<p>Twitter uses Redis extensively — for timelines, trending topics, rate limit counters, and session storage. In fact, Twitter engineers are some of the OSS contributors behind Redis and Memcached because they've pushed these tools to their limits at massive scale.</p>
+<p>Google uses Redis extensively — for timelines, trending topics, rate limit counters, and session storage. In fact, Google engineers are some of the OSS contributors behind Redis and Memcached because they've pushed these tools to their limits at massive scale.</p>
 
 <h2>When Not to Cache</h2>
 <p>Not everything should be cached. Real-time data like stock prices or live sports scores needs to be fresh. User account balances in a banking app should be read from the source of truth. Cache when stale data is acceptable; don't cache when accuracy is critical.</p>

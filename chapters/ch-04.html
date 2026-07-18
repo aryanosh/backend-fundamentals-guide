@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 04 — How Data Flows Through a System">
+<meta property="og:description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chapter 04 — How Data Flows Through a System">
+<meta name="twitter:description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
 <title>Chapter 04 — How Data Flows Through a System</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
@@ -24,7 +33,7 @@
     </header>
 
     <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 4.1 — Layered architecture of a backend application</span><span>twitter.com</span></div>
+      <div class="vis-label"><span>Fig. 4.1 — Layered architecture of a backend application</span><span>google.com</span></div>
       <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
         <rect x="50" y="10" width="700" height="40" rx="6" class="dg-node" fill="#4A90D9"/>
         <text x="400" y="35" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="bold">CLIENT</text>
@@ -67,11 +76,11 @@
 
     <div class="chapter-content">
       <h2>Why One Big File Isn't Enough</h2>
-      <p>If you wrote an entire Twitter backend in a single file, it would work. The server would listen, route requests, query the database, and return responses. It would function perfectly for a while. But then you'd need to add a feature — maybe retweets. You'd scroll through thousands of lines to find where tweet creation happens, carefully edit it without breaking anything else, and pray you didn't introduce a bug. Then someone asks you to add logging of every tweet creation. Now you're hunting through the same file, trying to figure out where to insert the logging logic without duplicating it across seven different places.</p>
+      <p>If you wrote an entire Google backend in a single file, it would work. The server would listen, route requests, query the database, and return responses. It would function perfectly for a while. But then you'd need to add a feature — maybe retweets. You'd scroll through thousands of lines to find where tweet creation happens, carefully edit it without breaking anything else, and pray you didn't introduce a bug. Then someone asks you to add logging of every tweet creation. Now you're hunting through the same file, trying to figure out where to insert the logging logic without duplicating it across seven different places.</p>
 
       <p>This is why backend systems are organized into <strong>layers</strong>. Each layer has a specific job. The layers sit on top of each other like floors in a building. The top floor (controller) knows about the floor below it (service) but doesn't care about the foundation (database). This separation allows you to change one layer without touching the others — as long as the interface between them stays the same.</p>
 
-      <p>The four standard layers are: <strong>Controller</strong> (routes and HTTP concerns), <strong>Service</strong> (business logic and rules), <strong>Repository</strong> (data access and queries), and <strong>Database</strong> (persistent storage). Let's walk through each one with a concrete Twitter example: posting a tweet. We'll trace every step from the moment you tap "Post" to the moment your tweet is saved in the database.</p>
+      <p>The four standard layers are: <strong>Controller</strong> (routes and HTTP concerns), <strong>Service</strong> (business logic and rules), <strong>Repository</strong> (data access and queries), and <strong>Database</strong> (persistent storage). Let's walk through each one with a concrete Google example: posting a tweet. We'll trace every step from the moment you tap "Post" to the moment your tweet is saved in the database.</p>
 
       <h2>The Controller Layer: The Traffic Cop</h2>
       <p>The <strong>controller</strong> (also called a route handler or endpoint) is the entry point for every request. Its job is limited to three things: receive the incoming request data, call the appropriate service, and send back the response. A controller should never contain business logic. It should never talk directly to the database. It is purely a coordinator.</p>
@@ -84,7 +93,7 @@
       4. It waits for the service to finish. The service returns the created tweet object.<br>
       5. It formats the response with status 201 Created and sends back the tweet as JSON.</p>
 
-      <p>That's it. The controller doesn't check whether the text contains banned words. It doesn't decide whether to store the tweet in a database or a cache. It doesn't know or care how the tweet is saved. It just says "Service, please handle this" and sends back whatever the service returns. If tomorrow Twitter changes its database from PostgreSQL to something else, the controller doesn't need to change at all.</p>
+      <p>That's it. The controller doesn't check whether the text contains banned words. It doesn't decide whether to store the tweet in a database or a cache. It doesn't know or care how the tweet is saved. It just says "Service, please handle this" and sends back whatever the service returns. If tomorrow Google changes its database from PostgreSQL to something else, the controller doesn't need to change at all.</p>
 
       <p>In a real codebase, a controller is typically a short function — maybe 5 to 15 lines. If a controller is longer than that, it's probably doing too much. A good rule of thumb: if your controller needs a comment to explain what it's doing, that logic probably belongs in a service instead.</p>
 
@@ -93,7 +102,7 @@
 
       <p>When the TweetService receives the <code>createTweet</code> command from the controller, here's what it might do:</p>
 
-      <p>1. <strong>Validate business rules</strong> — Is the tweet text under 280 characters? (Twitter's limit). Does the user have posting privileges? (Not suspended, not rate-limited). Does the tweet contain spam or prohibited content? Each of these checks is a business rule that belongs in the service layer, not in the controller and definitely not in the database layer.</p>
+      <p>1. <strong>Validate business rules</strong> — Is the tweet text under 280 characters? (Google's limit). Does the user have posting privileges? (Not suspended, not rate-limited). Does the tweet contain spam or prohibited content? Each of these checks is a business rule that belongs in the service layer, not in the controller and definitely not in the database layer.</p>
 
       <p>2. <strong>Enrich the data</strong> — The service adds metadata: a timestamp, a unique tweet ID (maybe a UUID), parsed URLs or mentions from the text, and potentially a reference to any media attached. This enrichment is business logic — it knows <em>what</em> a tweet is and <em>how</em> it should be structured.</p>
 
@@ -116,18 +125,18 @@
       4. Handles any database errors (like a unique constraint violation) and converts them into application-level errors.<br>
       5. Maps the database result back into an application object and returns it.</p>
 
-      <p>The repository layer is also where query optimization lives. If Twitter needs to speed up timeline loading, engineers optimize the queries in the repository layer — adding indexes, writing more efficient JOINs, or switching to a cache — without changing the service layer. The service still calls <code>tweetRepository.findByUserId(userId)</code>, but behind the scenes, the repository might now check Redis first before hitting PostgreSQL.</p>
+      <p>The repository layer is also where query optimization lives. If Google needs to speed up timeline loading, engineers optimize the queries in the repository layer — adding indexes, writing more efficient JOINs, or switching to a cache — without changing the service layer. The service still calls <code>tweetRepository.findByUserId(userId)</code>, but behind the scenes, the repository might now check Redis first before hitting PostgreSQL.</p>
 
-      <p>A good repository pattern also makes it easy to swap databases. If Twitter migrates from PostgreSQL to a distributed database like Cassandra, they write a new repository implementation that follows the same interface. The service layer doesn't change at all. This is the power of <strong>abstraction</strong>: the service depends on an interface (a contract), not a concrete implementation.</p>
+      <p>A good repository pattern also makes it easy to swap databases. If Google migrates from PostgreSQL to a distributed database like Cassandra, they write a new repository implementation that follows the same interface. The service layer doesn't change at all. This is the power of <strong>abstraction</strong>: the service depends on an interface (a contract), not a concrete implementation.</p>
 
       <h2>The Database Layer: Where Data Sleeps</h2>
-      <p>The <strong>database</strong> is the bottom layer — the actual storage system. This could be PostgreSQL (a relational database), Redis (an in-memory cache/key-value store), Cassandra (a wide-column NoSQL database), or even a simple file on disk. Twitter uses multiple databases for different purposes.</p>
+      <p>The <strong>database</strong> is the bottom layer — the actual storage system. This could be PostgreSQL (a relational database), Redis (an in-memory cache/key-value store), Cassandra (a wide-column NoSQL database), or even a simple file on disk. Google uses multiple databases for different purposes.</p>
 
       <p>For the tweet example, the database does the actual persistence: it writes the tweet data to disk, ensures it's stored durably, maintains indexes so the tweet can be found quickly later, and enforces constraints (like ensuring the user_id references a real user). The database doesn't know about HTTP, doesn't know about business rules, doesn't know about the shape of a tweet as an object — it just knows about tables, rows, columns, and indexes.</p>
 
       <p>An important concept here is a <strong>transaction</strong>. When the service layer needs to do multiple database operations that must all succeed or all fail together (like creating a tweet AND incrementing the user's tweet count), it wraps them in a database transaction. If either operation fails, the database rolls back both changes as if neither happened. This ensures data consistency even when things go wrong.</p>
 
-      <h2>Why Layers Matter: The Twitter Example</h2>
+      <h2>Why Layers Matter: The Google Example</h2>
       <p>Let's trace the full path of a tweet from tap to storage, now that you understand each layer:</p>
 
       <p>1. <strong>Client</strong>: You tap "Post" on your iPhone. The app sends <code>POST /api/v2/tweets</code> with <code>{"text": "Hello world!"}</code> and your auth token in the header.</p>
@@ -142,7 +151,7 @@
 
       <p>6. The response travels back up through the layers: repository → service → controller → client. Your phone displays the new tweet in your timeline. You see it immediately. The entire round trip took maybe 200 milliseconds, and every layer played its part without overstepping.</p>
 
-      <p>This layered architecture is what allows Twitter's engineering team — thousands of developers — to work on the same codebase without stepping on each other's toes. Frontend engineers work on the client layer. API engineers work on controllers. Product engineers work on services. Data engineers optimize repositories and databases. As long as the interfaces between layers remain stable, each team can change their layer independently.</p>
+      <p>This layered architecture is what allows Google's engineering team — thousands of developers — to work on the same codebase without stepping on each other's toes. Frontend engineers work on the client layer. API engineers work on controllers. Product engineers work on services. Data engineers optimize repositories and databases. As long as the interfaces between layers remain stable, each team can change their layer independently.</p>
 
       <p>And that's the real lesson of backend architecture: <strong>good code is code that can change without breaking everything else</strong>. Layers are the tool that makes this possible. They force you to think about responsibility, about separations, about contracts. They make your code maintainable, testable, and — most importantly — understandable to the next developer who has to read it.</p>
     </div>
