@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 11 — Architecture Patterns</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 11</div>
+      <h1>Architecture Patterns</h1>
+      <p class="subtitle">Monoliths, microservices, MVC, and event-driven design — and when to use each</p>
+      <div class="meta"><span>~14 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 11.1 — Three common architecture styles compared</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+        <text x="133" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Monolith</text>
+        <rect x="50" y="40" width="166" height="200" rx="10" class="dg-node" fill="#4a90d9"/>
+        <text x="133" y="90" text-anchor="middle" fill="white" font-size="12" font-family="monospace">UI</text>
+        <line x1="80" y1="100" x2="186" y2="100" stroke="#3a7abf" stroke-width="1"/>
+        <text x="133" y="120" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Business Logic</text>
+        <line x1="80" y1="130" x2="186" y2="130" stroke="#3a7abf" stroke-width="1"/>
+        <text x="133" y="150" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Database Access</text>
+        <line x1="80" y1="160" x2="186" y2="160" stroke="#3a7abf" stroke-width="1"/>
+        <text x="133" y="180" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Auth</text>
+        <text x="133" y="200" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Notifications</text>
+        <text x="133" y="220" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Everything</text>
+
+        <text x="400" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Microservices</text>
+        <rect x="290" y="40" width="100" height="180" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="340" y="100" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Users</text>
+        <text x="340" y="120" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Service</text>
+        <rect x="400" y="40" width="100" height="180" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="450" y="100" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Tweets</text>
+        <text x="450" y="120" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Service</text>
+        <rect x="510" y="40" width="100" height="180" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="560" y="100" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Timeline</text>
+        <text x="560" y="120" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Service</text>
+
+        <path d="M390 130 L400 130" class="dg-line" stroke="#7cb342" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+        <path d="M500 130 L510 130" class="dg-line" stroke="#7cb342" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+
+        <text x="133" y="290" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">Everything in one deployable unit</text>
+        <text x="425" y="290" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">Independent services, each with its own DB</text>
+
+        <text x="700" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Event-Driven</text>
+        <rect x="630" y="50" width="120" height="40" rx="8" class="dg-node" fill="#9b59b6"/>
+        <text x="690" y="75" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Publisher</text>
+        <rect x="630" y="120" width="120" height="40" rx="8" class="dg-accent" fill="#ff6b35"/>
+        <text x="690" y="145" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Message Queue</text>
+        <rect x="630" y="190" width="120" height="40" rx="8" class="dg-node" fill="#9b59b6"/>
+        <text x="690" y="215" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Consumer</text>
+
+        <path d="M690 90 L690 118" class="dg-line" stroke="#ff6b35" stroke-width="2" fill="none" marker-end="url(#arrowOrange)"/>
+        <path d="M690 160 L690 188" class="dg-line" stroke="#9b59b6" stroke-width="2" fill="none" marker-end="url(#arrowPurple)"/>
+
+        <defs>
+          <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#7cb342"/>
+          </marker>
+          <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#ff6b35"/>
+          </marker>
+          <marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#9b59b6"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>Monoliths keep everything together (simple early on). Microservices split concerns into independent deployable units. Event-driven systems communicate asynchronously through a message queue.</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>No "Right" Architecture — Only Tradeoffs</h2>
+<p>Architecture isn't about picking the trendiest pattern. It's about understanding tradeoffs. A monolith is simple but can become unwieldy at scale. Microservices offer flexibility but add operational complexity. Event-driven systems decouple services but make debugging harder. The best architecture is the one that solves your current problem without overcomplicating things.</p>
+
+<h2>Monolith: Start Here</h2>
+<p>A monolith is a single application that handles everything — user interface, business logic, database access, authentication, email sending, everything. It runs as one process, deploys as one unit, and is usually one codebase. Monoliths are simple to build, test, and deploy. They're the default choice for startups, small teams, and early-stage products.</p>
+<p>The downsides come with scale. As the codebase grows, it becomes harder to reason about. A tiny change to one feature can break something unrelated. Deploy times increase. Teams step on each other's toes. But here's the secret: many successful companies ran monoliths for years before splitting them up.</p>
+
+<h2>Microservices: Split When It Hurts</h2>
+<p>Microservices break your application into smaller, independent services that communicate over the network (usually via HTTP or message queues). Each service owns its data and can be developed, deployed, and scaled independently.</p>
+<p>You might have a Users Service (handles signup, login, profiles), a Tweets Service (stores and serves tweets), a Timeline Service (computes your home feed), and a Search Service (indexes and queries tweets). Each has its own database and its own API.</p>
+
+<h3>The Good</h3>
+<ul>
+  <li><strong>Independent scaling:</strong> If the Timeline Service needs 100 instances but Users Service needs only 2, you can scale them separately</li>
+  <li><strong>Team autonomy:</strong> Different teams own different services and can deploy independently</li>
+  <li><strong>Isolation:</strong> A bug in one service doesn't take down the whole system</li>
+  <li><strong>Technology diversity:</strong> Use the best tool for each job — Postgres for user data, Redis for caching, Elasticsearch for search</li>
+</ul>
+
+<h3>The Bad</h3>
+<ul>
+  <li><strong>Operational complexity:</strong> You now manage N services instead of 1 — monitoring, logging, deployment, networking</li>
+  <li><strong>Distributed systems are hard:</strong> Network latency, partial failures, data consistency, retries, timeouts</li>
+  <li><strong>Testing is harder:</strong> You need to test interactions between services</li>
+  <li><strong>Data duplication:</strong> Each service may need its own copy of data that another service owns</li>
+</ul>
+
+<h2>MVC: Model-View-Controller</h2>
+<p>MVC is a design pattern that separates your code into three layers:</p>
+<ul>
+  <li><strong>Model:</strong> The data and business logic — represents real-world things like User, Tweet, Like. Handles database queries and validation.</li>
+  <li><strong>View:</strong> What the user sees — HTML templates, JSON responses, or mobile app screens. In modern backends, this is often an API response rather than rendered HTML.</li>
+  <li><strong>Controller:</strong> The glue — receives HTTP requests, asks the Model for data, and passes it to the View. Think of it as the waiter who takes your order and brings your food.</li>
+</ul>
+<p>MVC isn't a full system architecture — it's a way to organize code within a single service. Frameworks like Rails (Ruby), Django (Python), and Spring Boot (Java) are heavily MVC-oriented. Even if you don't use a strict MVC framework, separating concerns into data, presentation, and logic layers is a good practice.</p>
+
+<h2>Event-Driven Architecture</h2>
+<p>In an event-driven system, services communicate by publishing and consuming events. When something happens (a user signs up, a tweet is posted, a like is recorded), the service publishes an event to a message queue (like RabbitMQ, Kafka, or Amazon SQS). Other services consume those events and react accordingly.</p>
+<p>Example: When a user posts a tweet, the Tweets Service publishes a "tweet_created" event. The Timeline Service consumes it and adds the tweet to followers' home timelines. The Search Service consumes it and indexes the tweet. The Notification Service consumes it and sends push notifications to followers.</p>
+<p>Event-driven systems are highly decoupled — services don't need to know about each other. They just emit and listen to events. The downside: eventual consistency. When you post a tweet, it might take a few seconds to appear in followers' timelines. Debugging is also harder because the flow of data is spread across multiple services and queues.</p>
+
+<h2>Twitter's Architecture Evolution</h2>
+<p>Twitter started as a monolith — a single Ruby on Rails application with a single MySQL database. It worked fine for thousands of users. But as Twitter grew to millions and then hundreds of millions of users, the monolith couldn't keep up. The database was getting hammered. Deployments took 30 minutes. A bug in any feature risked taking down the whole site.</p>
+<p>Twitter gradually evolved into a microservices architecture. They broke the timeline into its own service (now called Timelines Service, built on Redis clusters). Search became its own service using Java and Lucene. The API layer was separated. User graph management (who follows whom) became its own service. Today, Twitter runs hundreds of services, each with its own team, codebase, and deployment pipeline.</p>
+<p>The lesson? Twitter didn't start with microservices. They started simple and split things apart as the pain of the monolith exceeded the pain of distributed systems. That's the right approach for almost everyone.</p>
+
+<h2>Key Takeaways</h2>
+<ul>
+  <li>Start with a monolith — it's simpler and faster to build</li>
+  <li>Migrate to microservices only when the monolith's pain (deploy time, team coordination, scaling) outweighs distributed system complexity</li>
+  <li>MVC helps organize code within a service by separating data, logic, and presentation</li>
+  <li>Event-driven architecture decouples services via message queues, at the cost of eventual consistency and debugging difficulty</li>
+  <li>Twitter evolved from monolith to microservices as they scaled — they didn't start there</li>
+  <li>There is no perfect architecture, only tradeoffs</li>
+</ul>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-10.html"><div class="dir">Previous</div><div class="title">Chapter 10 — Security Essentials</div></a>
+      <a href="ch-12.html"><div class="dir">Next</div><div class="title">Chapter 12 — Networking Essentials</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 06 — Where Data Actually Lives</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 06</div>
+      <h1>Where Data Actually Lives</h1>
+      <p class="subtitle">Relational databases, SQL, tables, keys, indexes, and when to go NoSQL</p>
+      <div class="meta"><span>~13 min read</span></div>
+    </header>
+
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 6.1 — Relational schema vs NoSQL document for Twitter data</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- USERS table -->
+        <rect x="40" y="20" width="320" height="155" rx="6" class="dg-node"/>
+        <rect x="60" y="30" width="280" height="28" rx="4" class="dg-accent"/>
+        <text x="200" y="49" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">USERS</text>
+
+        <rect x="60" y="65" width="40" height="22" rx="3" class="dg-accent2"/>
+        <text x="80" y="80" text-anchor="middle" class="dg-label" font-size="9">PK</text>
+        <text x="110" y="80" class="dg-label" font-size="10">user_id</text>
+        <text x="240" y="80" text-anchor="end" class="dg-label-dim" font-size="9">BIGINT</text>
+
+        <rect x="60" y="92" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="107" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="107" class="dg-label" font-size="10">username</text>
+        <text x="240" y="107" text-anchor="end" class="dg-label-dim" font-size="9">VARCHAR(50)</text>
+
+        <rect x="60" y="119" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="134" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="134" class="dg-label" font-size="10">email</text>
+        <text x="240" y="134" text-anchor="end" class="dg-label-dim" font-size="9">VARCHAR(255)</text>
+
+        <rect x="60" y="146" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="161" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="161" class="dg-label" font-size="10">created_at</text>
+        <text x="240" y="161" text-anchor="end" class="dg-label-dim" font-size="9">TIMESTAMP</text>
+
+        <!-- TWEETS table -->
+        <rect x="40" y="195" width="320" height="170" rx="6" class="dg-node"/>
+        <rect x="60" y="205" width="280" height="28" rx="4" class="dg-accent"/>
+        <text x="200" y="224" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">TWEETS</text>
+
+        <rect x="60" y="240" width="40" height="22" rx="3" class="dg-accent2"/>
+        <text x="80" y="255" text-anchor="middle" class="dg-label" font-size="9">PK</text>
+        <text x="110" y="255" class="dg-label" font-size="10">tweet_id</text>
+        <text x="240" y="255" text-anchor="end" class="dg-label-dim" font-size="9">BIGINT</text>
+
+        <rect x="60" y="267" width="40" height="22" rx="3" class="dg-line-dash"/>
+        <rect x="60" y="267" width="40" height="22" rx="3" class="dg-accent" fill-opacity="0.6"/>
+        <text x="80" y="282" text-anchor="middle" class="dg-label" font-size="9">FK</text>
+        <text x="110" y="282" class="dg-label" font-size="10">user_id</text>
+        <text x="240" y="282" text-anchor="end" class="dg-label-dim" font-size="9">BIGINT</text>
+
+        <rect x="60" y="294" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="309" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="309" class="dg-label" font-size="10">text</text>
+        <text x="240" y="309" text-anchor="end" class="dg-label-dim" font-size="9">VARCHAR(280)</text>
+
+        <rect x="60" y="321" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="336" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="336" class="dg-label" font-size="10">created_at</text>
+        <text x="240" y="336" text-anchor="end" class="dg-label-dim" font-size="9">TIMESTAMP</text>
+
+        <!-- Foreign key arrow -->
+        <line x1="100" y1="267" x2="100" y2="187" class="dg-line-accent"/>
+        <polygon points="96,190 100,183 104,190" fill="var(--accent)"/>
+        <text x="115" y="230" class="dg-label-dim" font-size="9">FK: user_id → USERS</text>
+
+        <!-- MongoDB side -->
+        <rect x="420" y="20" width="340" height="340" rx="6" class="dg-node"/>
+        <rect x="440" y="30" width="300" height="28" rx="4" class="dg-accent2"/>
+        <text x="590" y="49" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">MongoDB Document (NoSQL)</text>
+
+        <text x="440" y="80" class="dg-label-dim" font-size="10">db.users.findOne({ username: "jack" })</text>
+
+        <rect x="440" y="90" width="300" height="210" rx="4" class="dg-node" fill="var(--bg-dim)"/>
+        <text x="445" y="110" class="dg-label" font-size="10" fill="var(--text-soft)">{</text>
+        <text x="455" y="130" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"_id"</tspan>: ObjectId("..."),</text>
+        <text x="455" y="150" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"username"</tspan>: "jack",</text>
+        <text x="455" y="170" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"email"</tspan>: "jack@twitter.com",</text>
+        <text x="455" y="190" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"tweets"</tspan>: [</text>
+        <text x="475" y="210" class="dg-label" font-size="9" fill="var(--text-soft)">{ "text": "just setting up my twttr",</text>
+        <text x="475" y="225" class="dg-label" font-size="9" fill="var(--text-soft)">"created_at": "2006-03-21" },</text>
+        <text x="475" y="245" class="dg-label" font-size="9" fill="var(--text-soft)">{ "text": "Hello world",</text>
+        <text x="475" y="260" class="dg-label" font-size="9" fill="var(--text-soft)">"created_at": "2024-01-15" }</text>
+        <text x="455" y="280" class="dg-label" font-size="10">]</text>
+        <text x="445" y="300" class="dg-label" font-size="10" fill="var(--text-soft)">}</text>
+
+        <!-- Annotation -->
+        <line x1="560" y1="215" x2="640" y2="215" class="dg-line-dash"/>
+        <text x="648" y="219" class="dg-label-dim" font-size="9">Embedded sub-array</text>
+
+        <line x1="560" y1="130" x2="640" y2="130" class="dg-line-dash"/>
+        <text x="648" y="134" class="dg-label-dim" font-size="9">No schema enforced</text>
+      </svg>
+      <figcaption>Left: normalized relational schema with USERS and TWEETS tables linked by a foreign key. Right: the same data as a single MongoDB document with embedded tweets. SQL enforces structure; NoSQL prioritizes flexibility and speed.</figcaption>
+    </figure>
+
+    <div class="chapter-content">
+      <h2>What Happens After You Hit "Post"?</h2>
+      <p>You type a tweet, tap "Post," and the app says "Your tweet was sent." But where did it go? The server received it, sure — but what happens next? The server could acknowledge your tweet and then immediately forget it. That would be terrible: you refresh the page and the tweet is gone. Every tweet you've ever posted, every like, every follower — it all needs to be stored somewhere permanent.</p>
+
+      <p>That somewhere is a <strong>database</strong>. A database is a specialized program designed to store, retrieve, and manage data reliably. It's not a file on a hard drive (though that's what it uses under the hood). It's a sophisticated system that handles concurrent access, crash recovery, efficient searching, and data integrity. Twitter uses multiple databases for different purposes, but the core storage for tweets, users, and relationships is a <strong>relational database</strong>: PostgreSQL.</p>
+
+      <p>Why not just write to a file? You could store every tweet as a line in a text file. That would work for a few users. But now imagine 500 million tweets per day. Searching that file for all tweets by user #48291 would mean reading the entire file — billions of lines — to find the ones that match. That search would take hours. A database can find every tweet by that user in milliseconds, because it uses sophisticated data structures called <strong>indexes</strong> and stores data in a way optimized for the queries you actually run.</p>
+
+      <h2>Tables, Rows, and Columns</h2>
+      <p>A relational database stores data in <strong>tables</strong>. Think of a table like a spreadsheet. Each <strong>row</strong> is one record (one user, one tweet, one like). Each <strong>column</strong> is a field of that record (username, email, text, date). When you define a table, you define its columns and their types (text, number, date, etc.). This is called the <strong>schema</strong> — the blueprint of your data.</p>
+
+      <p>In Twitter's database, there's a <code>users</code> table. Every row in that table represents one user. The columns might be: <code>user_id</code> (a unique number), <code>username</code> (the @ handle), <code>email</code>, <code>password_hash</code>, <code>created_at</code>, <code>display_name</code>, and <code>bio</code>. Each column has a specific data type. The <code>user_id</code> column is a big integer (BIGINT). The <code>username</code> column is a string with a max length of 50 characters (VARCHAR(50)). The <code>created_at</code> column is a timestamp.</p>
+
+      <p>Then there's a <code>tweets</code> table. Each row is one tweet. Columns: <code>tweet_id</code>, <code>user_id</code> (which user posted this), <code>text</code> (the content, max 280 characters), <code>created_at</code>, <code>like_count</code>, <code>retweet_count</code>. The <code>user_id</code> column in the <code>tweets</code> table references the <code>user_id</code> column in the <code>users</code> table. This is a <strong>foreign key</strong> — it creates a link between the two tables. Instead of storing the full user data (name, email, bio) in every tweet row, you store just the user ID. This is called <strong>normalization</strong>, and it saves enormous amounts of space.</p>
+
+      <p>Normalization also prevents inconsistency. If a user changes their display name, you update one row in the <code>users</code> table. Because tweets only reference the user ID, every tweet by that user automatically shows the new name. If you had stored the display name in every tweet row, you'd need to update millions of rows to change one name.</p>
+
+      <h2>Primary Keys — The Unique ID</h2>
+      <p>Every table needs a way to uniquely identify each row. This is the <strong>primary key</strong> (PK). It's usually a single column, like <code>user_id</code> or <code>tweet_id</code>, and no two rows can have the same value. The database enforces this — if you try to insert a row with a duplicate primary key, the database throws an error.</p>
+
+      <p>Primary keys in Twitter's database are often auto-incrementing integers or UUIDs (Universally Unique Identifiers). Auto-increment numbers are simple: 1, 2, 3, 4... But they leak information: if users see their user ID is 128493, they know Twitter has at least 128,493 users. UUIDs are long random strings like <code>a1b2c3d4-e5f6-7890-abcd-ef1234567890</code> that are effectively unique without revealing sequence. Twitter uses a custom ID system called Snowflake that generates 64-bit IDs sorted by time — this allows IDs to be generated across many servers without collisions and also gives an approximate timestamp.</p>
+
+      <h2>SQL — The Language of Databases</h2>
+      <p>To talk to a relational database, you use <strong>SQL</strong> (Structured Query Language). Pronounced "sequel" or "ess-cue-ell," it's the universal language of relational databases. SQL has been around since the 1970s, and it's still the most important language for data work.</p>
+
+      <p>Here are the basic SQL commands every backend developer should know:</p>
+
+      <p><strong>SELECT</strong> — Retrieve data. <code>SELECT text, created_at FROM tweets WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20;</code> This says: "Give me the text and date of the 20 most recent tweets by user #42." The database uses an index on the <code>user_id</code> column to find the matching rows without scanning the entire table.</p>
+
+      <p><strong>INSERT</strong> — Add data. <code>INSERT INTO tweets (user_id, text) VALUES (42, 'Hello world!');</code> This creates a new tweet row. The database assigns a new <code>tweet_id</code> automatically, records the current timestamp, and returns the created row.</p>
+
+      <p><strong>UPDATE</strong> — Modify data. <code>UPDATE users SET display_name = 'New Name' WHERE user_id = 42;</code> This changes the display name for user #42. The database ensures the change is persistent immediately.</p>
+
+      <p><strong>DELETE</strong> — Remove data. <code>DELETE FROM tweets WHERE tweet_id = 999;</code> This deletes the tweet with that ID. But should it? Most apps use "soft deletes" — they set a <code>deleted_at</code> column instead of actually removing the row. This allows undoing deletes and maintaining data integrity.</p>
+
+      <p><strong>JOIN</strong> — Combine tables. <code>SELECT tweets.text, users.username FROM tweets JOIN users ON tweets.user_id = users.user_id WHERE users.username = 'jack';</code> This joins the tweets and users tables, matching each tweet to its author, and returns only tweets by the user "jack." JOINs are the superpower of relational databases — they let you query across multiple tables in a single operation.</p>
+
+      <h2>Indexes — The Book's Table of Contents</h2>
+      <p>Without indexes, every query requires a full table scan — reading every row in the table. For a table with a billion tweets, that's impossibly slow. An <strong>index</strong> is a separate data structure (usually a B-tree) that maps values to their locations in the table, allowing the database to find rows in logarithmic time instead of linear.</p>
+
+      <p>When Twitter queries <code>WHERE user_id = 42</code>, the database checks if there's an index on the <code>user_id</code> column. If there is (and there definitely is — this is Twitter's most common query pattern), the index tells the database exactly which rows to read. The database skips the other billions of rows entirely.</p>
+
+      <p>Indexes speed up reads but slow down writes. Every time you insert or update a row, the database must update every relevant index. A table with 10 indexes requires 11 writes — one for the table and one for each index. This is a trade-off: indexes for frequent query patterns, minimal indexes for write-heavy tables. Twitter's tweet inserts are extremely frequent, so they carefully choose which columns to index. The <code>user_id</code> column is always indexed (for timeline queries). The <code>text</code> column might have a full-text search index (for search queries).</p>
+
+      <h2>Transactions — The All-or-Nothing Guarantee</h2>
+      <p>Imagine a user retweets a post. This involves two operations: (1) insert a new row in the <code>retweets</code> table, and (2) increment the <code>retweet_count</code> in the <code>tweets</code> table. What if the first operation succeeds but the server crashes before the second one completes? The retweet doesn't exist, but the count went up. The data is inconsistent.</p>
+
+      <p><strong>Transactions</strong> solve this. A transaction wraps multiple operations into a single atomic unit. Either all operations succeed (the transaction is <strong>committed</strong>), or none of them take effect (the transaction is <strong>rolled back</strong>). The database guarantees this no matter what — even if the server loses power mid-transaction.</p>
+
+      <p>Transactions also provide <strong>isolation</strong>. If two users retweet the same tweet simultaneously, the database ensures they don't interfere with each other. The final retweet count will be exactly 2, not 1 because both threads read the count before either wrote the new value (a classic race condition prevented by the database's transaction isolation).</p>
+
+      <p>PostgreSQL implements transactions with something called <strong>MVCC</strong> (Multi-Version Concurrency Control). Every transaction sees a snapshot of the data as of the moment the transaction started. Changes made by other transactions are invisible until committed. This allows many readers and one writer to coexist without blocking each other — critical for a site like Twitter where millions of people are reading while a few thousand are writing.</p>
+
+      <h2>SQL vs NoSQL — When to Use What</h2>
+      <p>Not everything needs to be in a relational database. Twitter uses different storage systems for different jobs. The <strong>timeline</strong> (the list of tweets you see when you open the app) is generated by a service called Earlybird and stored in a specialized in-memory store. <strong>Caches</strong> use Redis (an in-memory key-value store). <strong>Search</strong> uses an inverted index (Lucene/Elasticsearch). <strong>Analytics</strong> might use a columnar store.</p>
+
+      <p><strong>NoSQL databases</strong> (which stands for "Not Only SQL") are a category of databases that don't use the relational model. Instead of tables with rows and columns, they use various data models: key-value pairs (Redis), documents (MongoDB), wide columns (Cassandra), or graphs (Neo4j).</p>
+
+      <p>When would you choose NoSQL over SQL? Here are some scenarios:</p>
+
+      <p>1. <strong>Flexible schema</strong> — If your data doesn't have a fixed structure, or the structure changes frequently, NoSQL's schema flexibility is a benefit. For example, if different tweets could have different fields (some have media, some have poll data, some have location), a document database lets you store them all in the same collection without defining every possible column in advance.</p>
+
+      <p>2. <strong>High write throughput</strong> — Twitter writes billions of events per day (tweets, likes, retweets, follows). Some NoSQL databases (like Cassandra) are designed for extreme write throughput across many servers.</p>
+
+      <p>3. <strong>Simple read patterns</strong> — If you only ever read data by a single key (like "get tweet by tweet_id"), a key-value store or document database can be faster than a relational database because there's no query planning overhead.</p>
+
+      <p>But NoSQL comes with trade-offs. Most NoSQL databases don't support transactions across multiple documents. They don't enforce schemas, so application code must handle validation. They often don't support JOINs, so you have to manually combine data in your application code. For Twitter's core data — users, tweets, relationships — the relational model's consistency guarantees and query flexibility are essential. That's why PostgreSQL is at the heart of Twitter's stack, with NoSQL systems handling specialized workloads around the edges.</p>
+
+      <h2>Every Tweet You've Ever Posted</h2>
+      <p>So where does your tweet actually live? It lives in a PostgreSQL row on a server in a data center somewhere in the world. That row is part of a table that is part of a database instance running on a machine with 64 CPU cores and 512 GB of RAM. The database writes the row to disk (for durability), updates its indexes (for fast lookups), records the change in a write-ahead log (for crash recovery), and notifies any replicas (so other servers have up-to-date copies).</p>
+
+      <p>When you reload your profile page, the server queries that PostgreSQL row (<code>SELECT * FROM tweets WHERE tweet_id = 12345</code>), the database finds it via the primary key index in microseconds, and the server sends the data back to your phone. The entire journey — from your phone to the data center and back — takes less than 200 milliseconds. And you did none of that work. The database did it all.</p>
+
+      <p>In the next chapter, we'll explore how the server and the database actually talk to each other — the APIs that make data flow possible.</p>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-05.html"><div class="dir">Previous</div><div class="title">Memory, Threads &amp; Processes</div></a>
+      <a href="ch-07.html"><div class="dir">Next</div><div class="title">How Systems Talk to Each Other</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

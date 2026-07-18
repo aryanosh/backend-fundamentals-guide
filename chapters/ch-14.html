@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 14 — Version Control with Git</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 14</div>
+      <h1>Version Control with Git</h1>
+      <p class="subtitle">Never lose your work — and collaborate without chaos</p>
+      <div class="meta"><span>~14 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 14 — Git branching: feature branch workflow</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="350" fill="#f8f9fa" rx="8"/>
+        <text x="25" y="30" fill="#333" font-family="sans-serif" font-size="14" font-weight="bold">Time</text>
+        <polygon points="55,22 45,28 55,34" fill="#333"/>
+        <line x1="60" y1="175" x2="750" y2="175" stroke="#2563eb" stroke-width="3"/>
+        <text x="60" y="168" fill="#2563eb" font-family="monospace" font-size="13" font-weight="bold">main</text>
+        <circle cx="130" cy="175" r="6" fill="#2563eb"/>
+        <text x="120" y="200" fill="#555" font-family="monospace" font-size="11">C1</text>
+        <circle cx="250" cy="175" r="6" fill="#2563eb"/>
+        <text x="240" y="200" fill="#555" font-family="monospace" font-size="11">C2</text>
+        <circle cx="370" cy="175" r="6" fill="#2563eb"/>
+        <text x="360" y="200" fill="#555" font-family="monospace" font-size="11">C3</text>
+        <circle cx="600" cy="175" r="6" fill="#2563eb"/>
+        <text x="590" y="200" fill="#555" font-family="monospace" font-size="11">C6 (merged)</text>
+        <line x1="370" y1="175" x2="440" y2="100" stroke="#ea580c" stroke-width="2" stroke-dasharray="6,3"/>
+        <text x="390" y="90" fill="#ea580c" font-family="monospace" font-size="13" font-weight="bold">feature/login</text>
+        <circle cx="440" cy="100" r="6" fill="#ea580c"/>
+        <text x="425" y="78" fill="#555" font-family="monospace" font-size="11">C4</text>
+        <circle cx="530" cy="100" r="6" fill="#ea580c"/>
+        <text x="515" y="78" fill="#555" font-family="monospace" font-size="11">C5</text>
+        <line x1="530" y1="100" x2="600" y2="175" stroke="#ea580c" stroke-width="2" stroke-dasharray="6,3"/>
+        <rect x="640" y="155" width="100" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+        <text x="690" y="180" text-anchor="middle" fill="#92400e" font-family="sans-serif" font-size="12" font-weight="bold">Merge</text>
+        <line x1="640" y1="175" x2="606" y2="175" stroke="#d97706" stroke-width="1.5"/>
+        <text x="260" y="250" fill="#666" font-family="sans-serif" font-size="12" font-style="italic">git branch feature/login  &amp;&amp;  git checkout feature/login</text>
+        <text x="260" y="270" fill="#666" font-family="sans-serif" font-size="12" font-style="italic">(edit files, git add, git commit) × 2</text>
+        <text x="260" y="290" fill="#666" font-family="sans-serif" font-size="12" font-style="italic">git checkout main  &amp;&amp;  git merge feature/login</text>
+      </svg>
+      <figcaption>A feature branch diverges from main, accumulates commits, and merges back</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>What is Git?</h2>
+<p>Git is a version control system. That is a fancy way of saying it tracks every change made to your code, forever. Every edit, every new file, every deletion — Git records it with a timestamp, a message explaining why the change was made, and the author's name. You can rewind to any point in history, compare versions, and branch off to try ideas without risking the main codebase.</p>
+
+<p>Before Git, teams shared code by copying files over a network drive or emailing ZIP archives. It was a nightmare. Files got overwritten. Changes disappeared. People cried. Git, created by Linus Torvalds (the same person who created Linux), solved this for good.</p>
+
+<h2>How Git Works</h2>
+<p>A Git <strong>repository</strong> is a folder that Git is watching. You create one with <code>git init</code>. Inside that folder, Git creates a hidden <code>.git</code> directory that stores the entire history. Once initialized, you can start tracking changes.</p>
+
+<p>The basic cycle is: edit files, <code>git add</code> to stage them, <code>git commit</code> to save a snapshot. Each commit is a permanent checkpoint with a unique hash. You write a commit message describing what you did and why. Good commit messages are short yet descriptive: "Fix login timeout on mobile" not "fixed stuff".</p>
+
+<p>Your code lives in your local repository. When you are ready to share it, you <code>git push</code> to a remote repository (like GitHub, GitLab, or Bitbucket). Other people <code>git pull</code> to get your changes. This is how hundreds of engineers at Twitter work on the same codebase without stepping on each other's toes.</p>
+
+<h2>Branching and Merging</h2>
+<p>A <strong>branch</strong> is a parallel version of your code. The default branch is usually called <code>main</code> (or <code>master</code>). When you want to add a feature, you create a new branch off of <code>main</code>. You work there, making commits. Meanwhile, other engineers are working on their own branches. Nobody touches <code>main</code> directly.</p>
+
+<p>When your feature is complete, you open a <strong>pull request</strong> (PR). A PR is a request to merge your branch into <code>main</code>. Other engineers review your code, leave comments, and suggest changes. Once it passes review and all tests pass, it gets merged. <code>git merge</code> combines the commits from your branch into <code>main</code>.</p>
+
+<p>This is the branching strategy used by most professional teams: protect <code>main</code>, branch for everything, merge through PRs. It keeps the main branch stable and deployable at all times.</p>
+
+<h2>Essential Commands</h2>
+<p><code>git init</code> — create a new repository. <code>git add</code> — stage changes for commit. <code>git commit -m "message"</code> — save a snapshot. <code>git branch feature-x</code> — create a branch. <code>git checkout feature-x</code> — switch to it. <code>git merge feature-x</code> — merge it into the current branch. <code>git push</code> — send commits to the remote. <code>git pull</code> — fetch and integrate remote changes. <code>git log</code> — view commit history. <code>git status</code> — see what has changed.</p>
+
+<p>That is maybe a dozen commands. With those, you can handle virtually every situation that arises in professional software development.</p>
+
+<h2>Git at Twitter</h2>
+<p>Hundreds of engineers work on Twitter's codebase at the same time. Git is how they do it without overwriting each other's work. Frontend engineers work on the web app. Backend engineers work on the API. Data engineers work on analytics pipelines. All on different branches, all against the same repository.</p>
+
+<p>When Twitter ships a new feature — say, bookmarks — the process looks like this: an engineer creates a branch called <code>bookmarks-feature</code>, writes the code, opens a PR, gets reviews from senior engineers, runs automated tests, and merges to <code>main</code>. From there, it goes through a deployment pipeline and eventually reaches users. Every step is tracked in Git. Every change has an author. Every decision has context.</p>
+
+<p>If something breaks, git bisect helps find the exact commit that introduced the bug. If a feature is not ready, the branch stays open while <code>main</code> keeps moving forward. This is not a luxury — it is a necessity when hundreds of people are shipping code every day.</p>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-13.html"><div class="dir">Previous</div><div class="title">Chapter 13 — Working with Linux</div></a>
+      <a href="ch-15.html"><div class="dir">Next</div><div class="title">Chapter 15 — Testing Your Code</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

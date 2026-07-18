@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 13 — Working with Linux</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 13</div>
+      <h1>Working with Linux</h1>
+      <p class="subtitle">The operating system that runs the internet</p>
+      <div class="meta"><span>~12 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 13 — Essential Linux commands in action</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="350" fill="#1a1a2e" rx="8"/>
+        <rect x="20" y="15" width="760" height="30" rx="4" fill="#16213e"/>
+        <circle cx="38" cy="30" r="5" fill="#ff5f56"/>
+        <circle cx="58" cy="30" r="5" fill="#ffbd2e"/>
+        <circle cx="78" cy="30" r="5" fill="#27c93f"/>
+        <text x="400" y="35" text-anchor="middle" fill="#888" font-family="monospace" font-size="12">user@server:~$</text>
+        <text x="25" y="75" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">pwd</tspan></text>
+        <text x="25" y="95" fill="#a0d6a0" font-family="monospace" font-size="13">/home/deploy</text>
+        <text x="25" y="125" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">ls -la</tspan></text>
+        <text x="25" y="145" fill="#a0d6a0" font-family="monospace" font-size="13">drwxr-xr-x  5 deploy deploy  4096 Jul 18 12:34 .</text>
+        <text x="25" y="162" fill="#a0d6a0" font-family="monospace" font-size="13">-rw-r--r--  1 deploy deploy  2048 Jul 18 12:30 config.yml</text>
+        <text x="25" y="179" fill="#a0d6a0" font-family="monospace" font-size="13">-rw-r--r--  1 deploy deploy 65536 Jul 18 11:00 log.txt</text>
+        <text x="25" y="209" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">grep "error" log.txt</tspan></text>
+        <text x="25" y="229" fill="#f5a623" font-family="monospace" font-size="13">2026-07-18 10:32:15 [ERROR] connection timeout on endpoint /api/timeline</text>
+        <text x="25" y="246" fill="#f5a623" font-family="monospace" font-size="13">2026-07-18 10:33:01 [ERROR] memory usage exceeded threshold (92%)</text>
+        <text x="25" y="276" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">ps aux | grep nginx</tspan></text>
+        <text x="25" y="296" fill="#a0d6a0" font-family="monospace" font-size="13">root    1234  0.1  0.2  45672  1024 ?   Ss   10:00   0:00 nginx: master</text>
+        <text x="25" y="313" fill="#a0d6a0" font-family="monospace" font-size="13">www    1235  0.0  0.1  45928   892 ?   S    10:00   0:00 nginx: worker</text>
+      </svg>
+      <figcaption>A live terminal session showing common server diagnostics commands</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>Why Linux?</h2>
+<p>Walk into any server room — or open any cloud console — and you will find Linux. It runs about 96% of the world's top one million servers. Windows? Around 2%. If you work on the backend, you will live in a Linux terminal. There is no escaping it, and that is a good thing.</p>
+
+<p>Linux is free, open-source, and incredibly stable. Servers running Linux have been known to stay up for years without a reboot. It is also lightweight — the same operating system that powers supercomputers runs comfortably on a tiny virtual machine with 512 MB of RAM. For a company like Twitter (now X), which serves hundreds of millions of users a day, Linux is the only realistic choice. The cost savings alone are staggering. Multiply the licensing fees of a proprietary OS by tens of thousands of servers and you get the picture.</p>
+
+<p>But cost is only part of the story. Linux gives engineers complete control. You can see every process running, every file open, every network connection. You can tweak the kernel itself if you need to. For backend engineers, that visibility is gold. When something breaks, you can get to the bottom of it. You do not stare at a friendly GUI that hides the details. You open a terminal and start asking questions.</p>
+
+<h2>The Terminal is Your Cockpit</h2>
+<p>If Linux is the engine, the terminal is the cockpit. Every command you type is an instrument. You do not need to memorize everything — nobody does — but you do need to know the essentials. Think of these as your go-to instruments for daily server work.</p>
+
+<h3>Navigating the Filesystem</h3>
+<p><code>pwd</code> prints the current directory. When you SSH into a server, the first thing you want to know is, "Where am I?" <code>pwd</code> answers that. <code>ls</code> lists what is in the current directory. Add <code>-la</code> and you get hidden files and detailed info (permissions, size, last modified). <code>cd</code> moves you around. That is all you need to start exploring any Linux server.</p>
+
+<h3>Reading and Searching Files</h3>
+<p><code>cat</code> dumps a file's contents to the terminal. For config files and logs, that is your quick look. But logs can be gigabytes. That is where <code>grep</code> shines. <code>grep "error" log.txt</code> finds every line containing the word "error". You can chain it: <code>grep "timeline" access.log | grep "500"</code> to find failed timeline requests. This is how real debugging happens. An engineer at Twitter does not open a log file in a GUI editor. They <code>grep</code> for the problem.</p>
+
+<h3>Watching Processes</h3>
+<p><code>ps</code> shows running processes. With <code>aux</code>, it shows all processes from all users in a detailed format. <code>top</code> gives you a live-updating dashboard of what is eating CPU and memory. When Twitter's timeline slows down, an engineer runs <code>top</code> and looks for the process hogging resources. If a service is stuck, <code>kill</code> sends a signal to terminate it. <code>kill -9</code> is the nuclear option — use it only when a process refuses to die.</p>
+
+<h3>Connecting to Servers</h3>
+<p><code>ssh user@server</code> opens a secure shell to a remote machine. This is how you log into production servers. Twitter's engineers SSH into thousands of servers daily to check on services, deploy code, and troubleshoot. <code>curl</code> makes HTTP requests from the command line. <code>curl -I https://twitter.com</code> fetches the response headers to check if a server is responding and what status code it returns. It is your quick health check.</p>
+
+<h3>Permissions</h3>
+<p><code>chmod</code> changes file permissions. Every file has read (r), write (w), and execute (x) permissions for the owner, group, and others. <code>chmod +x script.sh</code> makes a file executable. Misconfigured permissions are a common source of server problems. Understanding them is essential.</p>
+
+<h2>Package Managers</h2>
+<p>Installing software on Linux is not like downloading from a website. You use a package manager — a tool that downloads, installs, and updates software from trusted repositories. On Ubuntu and Debian, that is <code>apt</code>. On Red Hat and CentOS, it is <code>yum</code>. On Alpine (popular with Docker), it is <code>apk</code>.</p>
+
+<p>To install Nginx, you type <code>sudo apt install nginx</code>. The package manager resolves dependencies, downloads the files, and configures everything. To update all software on the system: <code>sudo apt update && sudo apt upgrade</code>. This is how you keep a server secure.</p>
+
+<h2>Twitter's Linux Reality</h2>
+<p>Twitter's servers run Linux. Every single one. When an engineer needs to debug why the timeline is slow, they SSH into a server and start typing commands. They check <code>top</code> to see CPU usage. They <code>grep</code> the application logs for error messages. They use <code>curl</code> to hit internal endpoints and check response times. They look at <code>ps aux</code> to confirm the right processes are running.</p>
+
+<p>There is no dashboard that tells them everything. The terminal is the dashboard. The commands are the instruments. Learning Linux is not about becoming a sysadmin — it is about being able to take care of your own code in production.</p>
+
+<p>If you are new to Linux, start by installing it on a virtual machine or using the Windows Subsystem for Linux. Open the terminal and practice these commands until they become reflex. Your future self, debugging a production issue at 2 AM, will thank you.</p>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-12.html"><div class="dir">Previous</div><div class="title">Chapter 12 — ...</div></a>
+      <a href="ch-14.html"><div class="dir">Next</div><div class="title">Chapter 14 — Version Control with Git</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

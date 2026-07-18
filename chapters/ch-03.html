@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 03 — What a Server Actually Does</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 03</div>
+      <h1>What a Server Actually Does</h1>
+      <p class="subtitle">The listen-receive-route-process-respond loop and the middleware pipeline that handles every request</p>
+      <div class="meta"><span>~10 min read</span></div>
+    </header>
+
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 3.1 — The server request loop and middleware pipeline</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="130" cy="80" r="30" fill="#4A90D9" opacity="0.85"/>
+        <text x="130" y="78" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">LISTEN</text>
+        <text x="130" y="90" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">(443)</text>
+
+        <circle cx="300" cy="80" r="30" fill="#E67E22" opacity="0.85"/>
+        <text x="300" y="78" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">RECEIVE</text>
+        <text x="300" y="90" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">request</text>
+
+        <circle cx="400" cy="160" r="30" fill="#9B59B6" opacity="0.85"/>
+        <text x="400" y="158" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">ROUTE</text>
+        <text x="400" y="170" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">path</text>
+
+        <circle cx="300" cy="240" r="30" fill="#27AE60" opacity="0.85"/>
+        <text x="300" y="238" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">PROCESS</text>
+        <text x="300" y="250" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">+ respond</text>
+
+        <circle cx="130" cy="240" r="30" fill="#E74C3C" opacity="0.85"/>
+        <text x="130" y="242" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">SEND</text>
+        <text x="130" y="254" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">response</text>
+
+        <line x1="160" y1="80" x2="270" y2="80" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="265,76 275,80 265,84" fill="#888"/>
+
+        <line x1="315" y1="107" x2="385" y2="135" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="381,131 391,139 383,141" fill="#888"/>
+
+        <line x1="385" y1="187" x2="325" y2="215" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="329,211 319,219 327,221" fill="#888"/>
+
+        <line x1="270" y1="240" x2="160" y2="240" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="165,236 155,240 165,244" fill="#888"/>
+
+        <line x1="130" y1="210" x2="130" y2="110" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="126,115 130,105 134,115" fill="#888"/>
+
+        <rect x="460" y="50" width="300" height="200" rx="8" fill="#f0f4f8" stroke="#ccc" stroke-width="1.5"/>
+        <text x="610" y="75" text-anchor="middle" class="dg-label" font-weight="bold" fill="#2C3E50" font-size="13">MIDDLEWARE PIPELINE</text>
+
+        <rect x="480" y="90" width="80" height="30" rx="4" fill="#E74C3C" opacity="0.8"/>
+        <text x="520" y="109" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">Logging</text>
+        <line x1="560" y1="105" x2="580" y2="105" class="dg-line" stroke="#888"/>
+        <polygon points="576,101 586,105 576,109" fill="#888"/>
+
+        <rect x="590" y="90" width="80" height="30" rx="4" fill="#9B59B6" opacity="0.8"/>
+        <text x="630" y="109" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">Auth</text>
+        <line x1="670" y1="105" x2="690" y2="105" class="dg-line" stroke="#888"/>
+        <polygon points="686,101 696,105 686,109" fill="#888"/>
+
+        <rect x="700" y="90" width="40" height="30" rx="4" fill="#3498DB" opacity="0.8"/>
+        <text x="720" y="109" text-anchor="middle" fill="#fff" font-size="8" font-family="system-ui">Val</text>
+
+        <line x1="720" y1="120" x2="720" y2="150" class="dg-line" stroke="#888"/>
+        <polygon points="716,146 720,156 724,146" fill="#888"/>
+
+        <rect x="640" y="155" width="100" height="40" rx="4" fill="#27AE60" opacity="0.9"/>
+        <text x="690" y="175" text-anchor="middle" fill="#fff" font-size="10" font-family="system-ui" font-weight="bold">HANDLER</text>
+        <text x="690" y="188" text-anchor="middle" fill="#fff" font-size="8" font-family="system-ui">(your code)</text>
+
+        <text x="610" y="220" text-anchor="middle" class="dg-label" fill="#999" font-size="9">→ request flows through each box first ←</text>
+      </svg>
+      <figcaption>Top: the five-step circular loop every server runs on each request. Right: the middleware pipeline that filters and enriches requests before they reach your handler code.</figcaption>
+    </figure>
+
+    <div class="chapter-content">
+      <h2>The Infinite Loop That Runs the Internet</h2>
+      <p>Every server on the internet — whether it's Twitter handling millions of timeline requests per second, or a tiny blog with five daily visitors — runs the same fundamental loop. Server software is surprisingly simple in its core structure. It's a loop that never ends, waiting for requests, processing them, and sending responses. This is called the <strong>event loop</strong> or the <strong>request-response loop</strong>, and understanding it is the key to understanding what servers actually <em>are</em>.</p>
+
+      <p>Think of a server like a fast-food cashier. The cashier stands at the register (LISTEN), waits for a customer to walk up (RECEIVE), figures out what the customer ordered (ROUTE), prepares the food (PROCESS), hands it over (SEND), and then goes back to waiting for the next customer. A server does exactly this, but with data instead of burgers, and it does it millions of times a day without getting tired.</p>
+
+      <p>Let's walk through each step of the loop with the Twitter example.</p>
+
+      <h2>Step 1: LISTEN — "I'm Ready for Requests"</h2>
+      <p>Before Twitter's server can handle any requests, it has to start <strong>listening</strong>. This means it tells the operating system: "I want to accept connections on port 443 (HTTPS)." In code, this is typically a single function call like <code>server.listen(443)</code>. The operating system reserves that port for this specific server process. If another program tries to listen on port 443, it'll get an error saying the address is already in use.</p>
+
+      <p>Twitter's production servers don't just listen on one port. A typical setup might have: port 443 for HTTPS (handled by a reverse proxy like nginx), port 80 for HTTP (which immediately redirects to HTTPS), port 3000 for an internal API, port 5432 for PostgreSQL database connections (only accessible within Twitter's internal network). Each port is like a different door into the server, and each door is guarded by a different program listening for requests.</p>
+
+      <h2>Step 2: RECEIVE — "Got the Raw Data"</h2>
+      <p>When a request arrives (say, your timeline request), the server <strong>receives</strong> the raw bytes off the TCP connection. The operating system's network stack has already done the heavy lifting — it reassembled the TCP packets in order, checked for errors, and presented the data as a clean stream of bytes. The server now parses those bytes into a structured HTTP request: it reads the method (GET), the path (/home), the HTTP version, all the headers, and the body if present.</p>
+
+      <p>At Twitter's scale, this step is highly optimized. The server doesn't read one byte at a time — it reads chunks of data in buffers and parses them with specialized C libraries (like <code>picohttpparser</code>) that can parse thousands of requests per second. The parsed request is then wrapped into a <strong>request object</strong> that the rest of the server code can work with conveniently.</p>
+
+      <h2>Step 3: ROUTE — "Who Handles This?"</h2>
+      <p>Now the server has a parsed request object. It knows the method is GET and the path is <code>/api/v2/timeline</code>. The next job is <strong>routing</strong>: figuring out which piece of code should handle this request. The server has a routing table — a big list of pattern-to-handler mappings that looks something like this:</p>
+
+      <p><code>GET /api/v2/timeline</code> → <code>timelineHandler</code><br>
+      <code>POST /api/v2/tweets</code> → <code>createTweetHandler</code><br>
+      <code>GET /api/v2/users/:username</code> → <code>userProfileHandler</code><br>
+      <code>DELETE /api/v2/tweets/:id</code> → <code>deleteTweetHandler</code></p>
+
+      <p>The router tries to match the incoming request's method and path against these patterns. If it finds a match, it passes control to that handler function. If it doesn't find a match, the router returns a <strong>404 Not Found</strong> response: "There's nothing at this address." The <code>:username</code> and <code>:id</code> parts are called <strong>route parameters</strong> — they capture variable parts of the path so the handler can access them (like knowing which user's profile to fetch).</p>
+
+      <p>Route matching seems simple, but at Twitter's scale it's a fascinating engineering challenge. Hundreds of route patterns must be matched against millions of requests per minute, and the matching has to happen in microseconds. Twitter uses <strong>trie-based routers</strong> (prefix trees) that can match any path in O(n) time where n is the path length, not the number of routes. Without this optimization, routing would slow down as Twitter added more API endpoints.</p>
+
+      <h2>Step 4: PROCESS & RESPOND — "Do the Work"</h2>
+      <p>This is where the actual business logic lives — the code that Twitter engineers wrote to make the product work. The handler function receives the request object and does whatever is necessary: queries the database, checks permissions, processes data, and builds a response. This step is where your code runs, and it's where most of the interesting stuff happens (which we'll cover in depth in Chapter 4).</p>
+
+      <p>Importantly, the <strong>response</strong> is built here too. The handler constructs an HTTP response with a status code (like 200 for success), headers (like <code>Content-Type: application/json</code>), and a body (the JSON data). This response object is then passed back to the server framework, which serializes it into raw bytes and sends them back through the TCP connection.</p>
+
+      <h2>Step 5: SEND — "Data Goes Out"</h2>
+      <p>The response bytes travel back through the TCP connection, through the network, through the internet, and eventually arrive at your phone's browser, which renders the timeline you see. The server then goes back to Step 2, waiting for the next request. This loop repeats billions of times a day across Twitter's thousands of servers.</p>
+
+      <h2>The Middleware Pipeline: Request Filtering</h2>
+      <p>Before a request reaches your handler, it usually passes through a series of <strong>middleware functions</strong>. Middleware is one of the most important concepts in backend development — it's software that sits <em>between</em> the server and your handler, processing every request that comes through. Think of middleware like airport security: before you board your flight (reach your handler), you pass through multiple checkpoints (middleware). Each checkpoint checks one thing: your ID, your boarding pass, your luggage.</p>
+
+      <p>A typical middleware pipeline might look like this:</p>
+
+      <p><strong>1. Logging middleware</strong> — This middleware records every request: what method, what path, when it arrived, how long it took, what status code was returned. If something breaks, engineers look at these logs to understand what happened. Without logging middleware, debugging a production issue would be like finding a needle in a haystack while blindfolded.</p>
+
+      <p><strong>2. Authentication middleware</strong> — This checks whether the request includes valid credentials. For Twitter, it examines the <code>Authorization</code> header, verifies the token (often a JWT — JSON Web Token), and either attaches the authenticated user's info to the request object or returns a 401 Unauthorized response. Authentication middleware runs before your handler so that your handler never has to worry about auth logic — it just knows that any request reaching it is from an authenticated user.</p>
+
+      <p><strong>3. Validation middleware</strong> — This checks that the request data is well-formed and complete. If the API expects a <code>text</code> field in the body and it's missing, the validation middleware returns a 400 Bad Request before your handler ever sees it. This keeps your handler code clean — you write business logic, not input validation.</p>
+
+      <p><strong>4. Rate limiting middleware</strong> — This checks whether the user has exceeded their request quota. Twitter allows a certain number of requests per 15-minute window. If you exceed it, the middleware returns 429 Too Many Requests without ever touching your handler. This protects the server from abuse and ensures fair resource distribution.</p>
+
+      <p><strong>5. The handler</strong> — Finally, the request reaches your handler, which has been guaranteed to be from an authenticated user with valid data who hasn't exceeded their rate limit. Your handler can focus entirely on business logic — like fetching tweets from the database and returning them.</p>
+
+      <p>Middleware is often described as an <strong>onion</strong> — the request passes through each layer going in, and the response passes through each layer going out (in reverse order). The logging middleware that logged the incoming request can also log the outgoing response. The auth middleware added the user object to the request going in, and can add security headers to the response going out.</p>
+
+      <p>This pipeline architecture is what makes frameworks like Express.js (Node.js), Django (Python), and Rails (Ruby) so powerful. They provide the infrastructure — the listen loop, the router, the middleware system — and you just write the handlers. You don't need to worry about how TCP connections work or how to parse HTTP headers. The framework handles all of that, and you focus on what makes your application unique.</p>
+
+      <p>Now that you understand what a server does with each request, the next logical question is: <strong>where does the data actually come from?</strong> Chapter 4 traces that journey through the backend layers.</p>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-02.html" class="prev"><div class="dir">Previous</div><div class="title">The Anatomy of a Request</div></a>
+      <a href="ch-04.html" class="next"><div class="dir">Next</div><div class="title">How Data Flows Through a System</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

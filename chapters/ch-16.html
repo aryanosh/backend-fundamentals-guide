@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 16 — Deployment & DevOps</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 16</div>
+      <h1>Deployment &amp; DevOps</h1>
+      <p class="subtitle">Getting your code from your laptop to the world</p>
+      <div class="meta"><span>~15 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 16 — CI/CD pipeline flow</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="350" fill="#f8f9fa" rx="8"/>
+        <rect x="30" y="140" width="130" height="50" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+        <text x="95" y="170" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="13" font-weight="bold">git push</text>
+        <line x1="160" y1="165" x2="200" y2="165" stroke="#6366f1" stroke-width="2"/>
+        <polygon points="200,160 210,165 200,170" fill="#6366f1"/>
+        <rect x="210" y="140" width="130" height="50" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+        <text x="275" y="170" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="13" font-weight="bold">Build</text>
+        <line x1="340" y1="165" x2="380" y2="165" stroke="#6366f1" stroke-width="2"/>
+        <polygon points="380,160 390,165 380,170" fill="#6366f1"/>
+        <rect x="390" y="140" width="130" height="50" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="2"/>
+        <text x="455" y="170" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="13" font-weight="bold">Run Tests</text>
+        <line x1="520" y1="165" x2="560" y2="165" stroke="#6366f1" stroke-width="2"/>
+        <polygon points="560,160 570,165 560,170" fill="#6366f1"/>
+        <rect x="570" y="125" width="130" height="50" rx="8" fill="#d1fae5" stroke="#16a34a" stroke-width="2"/>
+        <text x="635" y="155" text-anchor="middle" fill="#166534" font-family="sans-serif" font-size="13" font-weight="bold">All Passing?</text>
+        <line x1="635" y1="175" x2="635" y2="260" stroke="#16a34a" stroke-width="2"/>
+        <line x1="635" y1="260" x2="400" y2="260" stroke="#16a34a" stroke-width="2"/>
+        <line x1="400" y1="260" x2="400" y2="210" stroke="#16a34a" stroke-width="2"/>
+        <polygon points="400,210 395,220 405,220" fill="#16a34a"/>
+        <rect x="300" y="220" width="100" height="30" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+        <text x="350" y="239" text-anchor="middle" fill="#92400e" font-family="sans-serif" font-size="11" font-weight="bold">Fail → Alert</text>
+        <line x1="700" y1="150" x2="750" y2="150" stroke="#16a34a" stroke-width="2"/>
+        <polygon points="750,145 760,150 750,155" fill="#16a34a"/>
+        <rect x="670" y="260" width="100" height="50" rx="8" fill="#d1fae5" stroke="#16a34a" stroke-width="2"/>
+        <text x="720" y="290" text-anchor="middle" fill="#166534" font-family="sans-serif" font-size="13" font-weight="bold">Deploy</text>
+        <line x1="700" y1="175" x2="720" y2="260" stroke="#16a34a" stroke-width="2"/>
+      </svg>
+      <figcaption>Every push triggers the same pipeline: build, test, and deploy if green</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>From Laptop to Production</h2>
+<p>You have written your code. It works on your machine. Now how do you get it to the world? That is what deployment is about. And it is not as simple as copying files to a server. Modern deployment is automated, tested, and repeatable. It involves containers, pipelines, and cloud infrastructure.</p>
+
+<h2>Docker: It Works on My Machine</h2>
+<p>The most famous phrase in software engineering is "It works on my machine." Docker exists to kill that phrase. Docker packages your application and everything it needs — the runtime, libraries, environment variables, config files — into a container. A container is like a lightweight virtual machine. It runs the same way on your laptop, your teammate's laptop, and the production server.</p>
+
+<p>A <code>Dockerfile</code> describes how to build the container. Here is a simple one for a Node.js app:</p>
+
+<pre><code>FROM node:18
+WORKDIR /app
+COPY package.json .
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]</code></pre>
+
+<p>You build the image with <code>docker build -t myapp .</code> and run it with <code>docker run -p 3000:3000 myapp</code>. The app is now running in an isolated environment that behaves identically everywhere.</p>
+
+<p>Twitter uses containers extensively. Each microservice runs in its own container. When a new version needs to be deployed, a fresh container is built, tested, and rolled out. If something fails, the old container is still running and traffic can be switched back instantly.</p>
+
+<h2>CI/CD: Automate Everything</h2>
+<p>CI/CD stands for Continuous Integration and Continuous Deployment. It is the pipeline that runs every time you push code. The pipeline builds your application, runs your tests, and if everything passes, deploys to production. All automatically. No humans needed after the push.</p>
+
+<p>Every push to Twitter's repository triggers their CI/CD pipeline. The pipeline builds each microservice, runs the full test suite — thousands of unit tests, hundreds of integration tests, dozens of E2E tests — and if all pass, deploys the services that changed. The entire process takes minutes. If a test fails, the pipeline stops and notifies the team. No broken code ever reaches production without someone knowing about it first.</p>
+
+<p>This is the standard for professional backend engineering. You set it up once, and it runs forever, catching problems that would otherwise slip through.</p>
+
+<h2>Cloud Basics</h2>
+<p>You do not buy physical servers anymore. You rent them from cloud providers like AWS, Google Cloud, or Azure. You spin up a virtual machine (called an EC2 instance in AWS), install your software, and point your domain at it. When you need more capacity, you add more instances. When traffic drops, you scale down. You pay only for what you use.</p>
+
+<p>Cloud services also provide managed databases, load balancers, DNS, content delivery networks, and dozens of other tools. The learning curve is steep, but the flexibility is unmatched. Twitter runs on its own infrastructure, but most startups and even large companies rely on cloud providers.</p>
+
+<h2>Environment Variables</h2>
+<p>Hardcoding configuration in your source code is a security risk and a maintenance nightmare. Instead, use environment variables. Database URLs, API keys, secret tokens — they all go into environment variables. In development, you set them in a <code>.env</code> file. In production, the CI/CD pipeline injects them when the container starts.</p>
+
+<p>This keeps secrets out of your codebase. Your code reads <code>process.env.DATABASE_URL</code> (or the equivalent in your language) and the actual value comes from the environment. Same code, different configurations for development, staging, and production.</p>
+
+<h2>Deployment at Twitter</h2>
+<p>Twitter deploys code hundreds of times per day. Every deploy goes through an automated pipeline that catches problems before they reach users. The process is: an engineer merges a PR to main, the CI/CD pipeline detects the change, builds the affected services, runs the test suite, deploys to a staging environment for final validation, and then rolls out to production gradually. If error rates spike, the pipeline automatically rolls back. Users experience zero downtime.</p>
+
+<p>This is the end goal of DevOps: merging code and having it safely running in production minutes later, with every safety check automated along the way.</p>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-15.html"><div class="dir">Previous</div><div class="title">Chapter 15 — Testing Your Code</div></a>
+      <a href="ch-17.html"><div class="dir">Next</div><div class="title">Chapter 17 — The Learning Roadmap</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

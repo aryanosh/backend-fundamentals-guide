@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 09 — Making Things Fast with Caching</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 09</div>
+      <h1>Making Things Fast with Caching</h1>
+      <p class="subtitle">Why waiting 200ms for a database query is too slow — and what to do about it</p>
+      <div class="meta"><span>~12 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 9.1 — Redis cache fast path vs database slow path</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="40" y="80" width="120" height="50" rx="8" class="dg-node" fill="#4a90d9"/>
+        <text x="100" y="110" text-anchor="middle" fill="white" font-size="14" font-family="monospace">User</text>
+
+        <rect x="260" y="80" width="140" height="50" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="330" y="110" text-anchor="middle" fill="white" font-size="14" font-family="monospace">App Server</text>
+
+        <rect x="500" y="30" width="130" height="60" rx="10" class="dg-accent" fill="#ff6b35" stroke="#e55a2b" stroke-width="2"/>
+        <text x="565" y="55" text-anchor="middle" fill="white" font-size="13" font-family="monospace">Redis Cache</text>
+        <text x="565" y="75" text-anchor="middle" fill="#ffe0cc" font-size="11" font-family="monospace">~1 ms</text>
+
+        <rect x="500" y="160" width="130" height="60" rx="8" class="dg-node" fill="#7b68ee"/>
+        <text x="565" y="185" text-anchor="middle" fill="white" font-size="13" font-family="monospace">Database</text>
+        <text x="565" y="205" text-anchor="middle" fill="#dcd0ff" font-size="11" font-family="monospace">~200 ms</text>
+
+        <path d="M160 105 L250 105" class="dg-line" stroke="#999" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <path d="M400 105 L490 60" class="dg-line" stroke="#ff6b35" stroke-width="2.5" fill="none" stroke-dasharray="6 3" marker-end="url(#arrowAccent)"/>
+        <text x="420" y="55" font-size="11" class="dg-label" fill="#ff6b35" font-family="monospace">Fast path ✅</text>
+
+        <path d="M400 105 L490 190" class="dg-line" stroke="#7b68ee" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <text x="420" y="200" font-size="11" class="dg-label-dim" fill="#7b68ee" font-family="monospace">Slow path ❌</text>
+
+        <defs>
+          <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#999"/>
+          </marker>
+          <marker id="arrowAccent" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#ff6b35"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>When data is in Redis, the app serves it in ~1 ms. Otherwise it falls through to the database at ~200 ms — a 200× difference.</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>What Is Caching?</h2>
+<p>Caching means storing a copy of data somewhere fast so you don't have to fetch it from the original slow source every time. Think of it like your kitchen pantry: instead of driving to the grocery store (database) every time you need salt, you keep a small jar of it in your cupboard (cache). It's the same salt — you just saved yourself a trip.</p>
+<p>In backend systems, the "slow source" is usually a database that takes 50 to 500 milliseconds to answer a query. The "fast source" is something like Redis or an in-memory store that can answer in under a millisecond. When you serve millions of requests, shaving off those milliseconds is the difference between a snappy app and a slow one.</p>
+<p>Caching is one of the most powerful performance tools in a backend engineer's toolbox. It's also one of the easiest to get wrong — because now you have to keep those copies in sync.</p>
+
+<h2>Types of Caches</h2>
+<h3>1. Browser Cache</h3>
+<p>Your browser caches things automatically. Images, CSS files, JavaScript — when you visit a site, the browser says "I'll keep this for a while" so the next visit loads faster. The server tells the browser how long to cache via HTTP headers like <code>Cache-Control: max-age=3600</code>. This is the first line of defense: it keeps traffic off your servers entirely.</p>
+
+<h3>2. CDN (Content Delivery Network)</h3>
+<p>A CDN is a network of servers distributed around the world. When someone in Tokyo visits a site hosted in New York, a CDN serves cached static assets from a server in Tokyo. Companies like Cloudflare, Fastly, and Akamai specialize in this. For users far from your origin server, a CDN can cut load times from seconds to milliseconds.</p>
+
+<h3>3. Application Cache (Redis / Memcached)</h3>
+<p>This is where you store computed data in memory so subsequent requests don't recompute it. Redis is the most popular choice — it's an in-memory key-value store that can persist data to disk. You might cache:</p>
+<ul>
+  <li>Database query results (e.g., "all tweets for the Explore page")</li>
+  <li>Session data (user logged in? here's their info)</li>
+  <li>Rate limiter counters</li>
+  <li>Computed values (leaderboards, trending topics)</li>
+</ul>
+
+<h3>4. Database Cache</h3>
+<p>Databases cache too. MySQL keeps frequently queried rows in its buffer pool (in memory). Postgres has shared buffers. Even with a cache in front, the database itself uses memory to speed up reads. Tuning these buffers is a common DBA task.</p>
+
+<h2>Cache Invalidation: The Hardest Problem in Computer Science</h2>
+<p>Phil Karlton famously said: "There are only two hard things in computer science: cache invalidation and naming things." Here's why it's hard: once you cache data, the original data can change. If a user updates their profile, the cached copy is now stale. You need a strategy to either remove or update that stale data.</p>
+<p>Two common approaches:</p>
+<h3>TTL (Time-To-Live)</h3>
+<p>You set a timer on cached data. After 60 seconds (or 5 minutes, or an hour), the cache entry expires and the next request fetches fresh data. This is simple and reliable. The downside: some users might see data that's up to 60 seconds old. For most apps, that's fine.</p>
+
+<h3>Event-Based Invalidation</h3>
+<p>When data changes, you actively delete or update the cache entry. For example, when a user posts a new tweet, you delete the cached "home timeline" so the next request rebuilds it. This gives you fresh data instantly, but it adds complexity — you need to know exactly which cache keys to invalidate.</p>
+
+<h2>Twitter's Approach</h2>
+<p>Twitter's trending topics are a textbook caching case. When you open the Explore page, Twitter needs to compute which topics are trending right now. That computation involves analyzing millions of tweets, counting hashtags, applying filters, and ranking results. Doing that for every single request would melt the database.</p>
+<p>Here's what actually happens: the first person to open the Explore page triggers the computation. The result gets stored in Redis with a TTL of a few minutes. When 10,000 people open the Explore page in the next second, 9,999 of them read the cached result in under a millisecond. Only one person (or maybe zero, if a new computation is needed) triggers the expensive query.</p>
+<p>Twitter uses Redis extensively — for timelines, trending topics, rate limit counters, and session storage. In fact, Twitter engineers are some of the OSS contributors behind Redis and Memcached because they've pushed these tools to their limits at massive scale.</p>
+
+<h2>When Not to Cache</h2>
+<p>Not everything should be cached. Real-time data like stock prices or live sports scores needs to be fresh. User account balances in a banking app should be read from the source of truth. Cache when stale data is acceptable; don't cache when accuracy is critical.</p>
+<p>Also: caching adds operational complexity. You need to run Redis (or similar), configure eviction policies, handle cache misses gracefully, and monitor cache hit ratios. If your app is small, you might not need caching at all.</p>
+
+<h2>Key Takeaways</h2>
+<ul>
+  <li>Caching stores a copy of data closer to the user or in faster storage to avoid slow queries</li>
+  <li>Browser cache and CDNs keep traffic off your servers entirely</li>
+  <li>Redis is the go-to in-memory cache for backend applications</li>
+  <li>TTL-based expiration is simple; event-based invalidation gives fresher data with more complexity</li>
+  <li>Cache invalidation is genuinely tricky — plan your strategy upfront</li>
+  <li>A cache hit ratio above 90% is generally considered healthy</li>
+</ul>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-08.html"><div class="dir">Previous</div><div class="title">Chapter 08</div></a>
+      <a href="ch-10.html"><div class="dir">Next</div><div class="title">Chapter 10 — Security Essentials</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

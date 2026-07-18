@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 10 — Security Essentials</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 10</div>
+      <h1>Security Essentials</h1>
+      <p class="subtitle">Defending your backend against the internet's worst</p>
+      <div class="meta"><span>~15 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 10.1 — Five common attacks and how to stop them</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="280" y="100" width="160" height="120" rx="10" class="dg-node" fill="#4a90d9"/>
+        <text x="360" y="150" text-anchor="middle" fill="white" font-size="16" font-family="monospace" font-weight="bold">Server</text>
+        <text x="360" y="175" text-anchor="middle" fill="#cce0ff" font-size="11" font-family="monospace">Your Backend</text>
+
+        <path d="M50 50 L280 120" class="dg-line" stroke="#e74c3c" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+        <rect x="10" y="10" width="130" height="30" rx="6" fill="#e74c3c" opacity="0.9"/>
+        <text x="75" y="30" text-anchor="middle" fill="white" font-size="11" font-family="monospace">SQL Injection</text>
+        <text x="125" y="60" font-size="9" class="dg-label-dim" fill="#e74c3c" font-family="monospace">→ Parametrized queries</text>
+
+        <path d="M70 200 L280 170" class="dg-line" stroke="#e67e22" stroke-width="2" fill="none" marker-end="url(#arrowOrange)"/>
+        <rect x="20" y="195" width="110" height="30" rx="6" fill="#e67e22" opacity="0.9"/>
+        <text x="75" y="215" text-anchor="middle" fill="white" font-size="11" font-family="monospace">XSS</text>
+        <text x="135" y="240" font-size="9" class="dg-label-dim" fill="#e67e22" font-family="monospace">→ Sanitize output</text>
+
+        <path d="M150 320 L300 220" class="dg-line" stroke="#9b59b6" stroke-width="2" fill="none" marker-end="url(#arrowPurple)"/>
+        <rect x="70" y="300" width="120" height="30" rx="6" fill="#9b59b6" opacity="0.9"/>
+        <text x="130" y="320" text-anchor="middle" fill="white" font-size="11" font-family="monospace">CSRF</text>
+        <text x="195" y="340" font-size="9" class="dg-label-dim" fill="#9b59b6" font-family="monospace">→ Anti-CSRF tokens</text>
+
+        <path d="M590 90 L450 130" class="dg-line" stroke="#e74c3c" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+        <rect x="560" y="50" width="130" height="30" rx="6" fill="#e74c3c" opacity="0.9"/>
+        <text x="625" y="70" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Brute Force</text>
+        <text x="625" y="95" font-size="9" class="dg-label-dim" fill="#e74c3c" font-family="monospace">→ Rate limiting</text>
+
+        <path d="M700 200 L450 180" class="dg-line" stroke="#e74c3c" stroke-width="2" fill="none" marker-end="url(#arrowRed)"/>
+        <rect x="660" y="195" width="120" height="30" rx="6" fill="#e74c3c" opacity="0.9"/>
+        <text x="720" y="215" text-anchor="middle" fill="white" font-size="11" font-family="monospace">No HTTPS</text>
+        <text x="710" y="240" font-size="9" class="dg-label-dim" fill="#e74c3c" font-family="monospace">→ HTTPS everywhere</text>
+
+        <defs>
+          <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c"/>
+          </marker>
+          <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#e67e22"/>
+          </marker>
+          <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#9b59b6"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>Five common attack vectors every backend developer must defend against. Each arrow represents a real threat with a proven defense strategy.</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>Why Security Matters</h2>
+<p>Every day, automated bots scan the internet looking for vulnerable servers. They try SQL injection on every input field. They probe for exposed endpoints. They attempt to log in with common passwords. If your backend has a single unprotected endpoint or a query that concatenates user input directly into SQL, you <em>will</em> get compromised.</p>
+<p>Security isn't a feature you add at the end — it's a mindset you build into every line of code. This chapter covers the most common attacks and the patterns that stop them.</p>
+
+<h2>SQL Injection</h2>
+<p>SQL injection is the most famous database attack. It works like this: instead of typing a normal username, an attacker types SQL commands into a form field. If your code naively plugs that input into a query string, the database executes the attacker's SQL.</p>
+<pre><code>-- Vulnerable code — never do this
+query = "SELECT * FROM users WHERE username = '" + userInput + "'"
+
+-- Attacker types: admin' OR '1'='1
+-- Query becomes: SELECT * FROM users WHERE username = 'admin' OR '1'='1'
+-- Returns every user in the database</code></pre>
+<p>The fix is simple and non-negotiable: <strong>parameterized queries</strong> (also called prepared statements). Instead of building SQL strings, you send the query template separately from the data:</p>
+<pre><code>-- Safe code
+query = "SELECT * FROM users WHERE username = ?"
+db.execute(query, [userInput])</code></pre>
+<p>The database treats the user input as data, not as executable SQL. Even if the attacker types <code>admin' OR '1'='1</code>, it becomes a literal string to match against — not part of the query logic. Every modern database driver supports parameterized queries. There is never a reason to concatenate SQL.</p>
+
+<h2>XSS (Cross-Site Scripting)</h2>
+<p>XSS happens when an attacker injects JavaScript into a page that other users view. For example, if Twitter allowed HTML in tweets, someone could post <code>&lt;script&gt;alert('hacked')&lt;/script&gt;</code> and every visitor would run that script. Real attacks steal cookies, redirect users to phishing sites, or perform actions as the logged-in user.</p>
+<p><strong>Defense:</strong> Sanitize all user-generated content before displaying it. Escape HTML characters (<code>&lt;</code> → <code>&amp;lt;</code>, <code>&gt;</code> → <code>&amp;gt;</code>). Use frameworks that auto-escape (React, Vue, modern template engines). Never use <code>innerHTML</code> with user data. Set the <code>Content-Security-Policy</code> HTTP header to restrict what scripts can run.</p>
+
+<h2>CSRF (Cross-Site Request Forgery)</h2>
+<p>CSRF tricks a logged-in user into performing an action they didn't intend. Imagine you're logged into Twitter and visit a malicious site. That site's page contains a hidden form that posts to <code>twitter.com/tweet</code> with your content. Because you're authenticated, the browser sends your session cookie and the tweet goes through.</p>
+<p><strong>Defense:</strong> Use anti-CSRF tokens — a random value embedded in each form that the server validates. The malicious site can't guess this token because it's different for every session. Modern frameworks like Rails, Django, and Spring Security include CSRF protection by default. Also, set <code>SameSite=Strict</code> or <code>SameSite=Lax</code> on your cookies to prevent them from being sent on cross-site requests.</p>
+
+<h2>Rate Limiting</h2>
+<p>Rate limiting restricts how many requests a client can make in a given time window. Without it, an attacker can brute-force passwords, scrape your entire database via API calls, or DDoS your server. Twitter limits the Twitter API to a certain number of requests per 15-minute window per user. If you exceed it, you get a <code>429 Too Many Requests</code> response.</p>
+<p>Common rate-limiting strategies include token bucket, sliding window, and fixed window counters (often stored in Redis). Even a simple limit of 100 requests per minute per IP address will stop most automated attacks.</p>
+
+<h2>HTTPS Everywhere</h2>
+<p>HTTPS encrypts traffic between the client and your server. Without it, anyone on the same Wi-Fi network (coffee shop, airport, hotel) can read everything you send and receive. Passwords, API keys, private messages — all in plain text. HTTPS uses TLS (formerly SSL) to encrypt the connection. Browsers now mark HTTP sites as "Not Secure." There's no excuse not to use HTTPS — services like Let's Encrypt provide free TLS certificates.</p>
+
+<h2>OWASP Top 10</h2>
+<p>The Open Web Application Security Project (OWASP) publishes a Top 10 list of the most critical web application security risks. Every backend developer should be familiar with it. As of the latest edition, the top risks include:</p>
+<ul>
+  <li>Broken Access Control — users accessing data they shouldn't</li>
+  <li>Cryptographic Failures — not using HTTPS, weak passwords</li>
+  <li>Injection — SQL, NoSQL, OS command injection</li>
+  <li>Insecure Design — missing security controls in the architecture</li>
+  <li>Security Misconfiguration — default passwords, verbose error messages</li>
+</ul>
+<p>Read through the full OWASP Top 10 at least once. Bookmark it. Refer to it when designing new features.</p>
+
+<h2>Twitter's Security Reality</h2>
+<p>Twitter gets attacked by bots and hackers constantly. Every day, automated scripts try logging in with leaked passwords from other breaches (credential stuffing). Attackers probe for XSS vulnerabilities in tweet text and profile bios. Scrapers attempt to pull user data through the API faster than allowed. Twitter's security team mitigates these with rate limiting, input sanitization, CSRF tokens on every form, mandatory HTTPS, and aggressive bot detection. The lesson: security is never "done." It's an ongoing process of monitoring, patching, and improving.</p>
+
+<h2>Key Takeaways</h2>
+<ul>
+  <li>Parameterized queries prevent SQL injection — never concatenate user input into SQL</li>
+  <li>Sanitize output to prevent XSS; auto-escaping frameworks help enormously</li>
+  <li>CSRF tokens and SameSite cookies protect against cross-site request forgery</li>
+  <li>Rate limiting prevents brute force and abuse; Redis is great for storing counters</li>
+  <li>HTTPS with TLS (Let's Encrypt is free) is mandatory for all production traffic</li>
+  <li>The OWASP Top 10 is your security checklist — review it regularly</li>
+  <li>Security is a process, not a one-time fix</li>
+</ul>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-09.html"><div class="dir">Previous</div><div class="title">Chapter 09 — Making Things Fast with Caching</div></a>
+      <a href="ch-11.html"><div class="dir">Next</div><div class="title">Chapter 11 — Architecture Patterns</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

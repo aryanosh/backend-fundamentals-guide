@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 12 — Networking Essentials</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 12</div>
+      <h1>Networking Essentials</h1>
+      <p class="subtitle">How data travels across the internet — and how to handle millions of connections</p>
+      <div class="meta"><span>~13 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 12.1 — Load balancer distributing traffic across servers</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="50" y="140" width="120" height="50" rx="25" class="dg-accent" fill="#ff6b35"/>
+        <text x="110" y="160" text-anchor="middle" fill="white" font-size="12" font-family="monospace" font-weight="bold">Traffic</text>
+        <text x="110" y="176" text-anchor="middle" fill="#ffe0cc" font-size="10" font-family="monospace">Incoming requests</text>
+
+        <rect x="340" y="130" width="140" height="60" rx="10" class="dg-node" fill="#4a90d9"/>
+        <text x="410" y="155" text-anchor="middle" fill="white" font-size="13" font-family="monospace" font-weight="bold">Load Balancer</text>
+        <text x="410" y="173" text-anchor="middle" fill="#cce0ff" font-size="10" font-family="monospace">Round-Robin | Least Conn</text>
+
+        <rect x="230" y="250" width="100" height="50" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="280" y="280" text-anchor="middle" fill="white" font-size="13" font-family="monospace">Server A</text>
+
+        <rect x="430" y="250" width="100" height="50" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="480" y="280" text-anchor="middle" fill="white" font-size="13" font-family="monospace">Server B</text>
+
+        <rect x="620" y="250" width="100" height="50" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="670" y="280" text-anchor="middle" fill="white" font-size="13" font-family="monospace">Server C</text>
+
+        <path d="M170 165 L330 165" class="dg-line" stroke="#4a90d9" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
+
+        <path d="M380 190 L295 245" class="dg-line" stroke="#50b87a" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+        <path d="M410 190 L480 245" class="dg-line" stroke="#50b87a" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+        <path d="M440 190 L665 245" class="dg-line" stroke="#50b87a" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+
+        <defs>
+          <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#4a90d9"/>
+          </marker>
+          <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#50b87a"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>A load balancer sits in front of three application servers and distributes incoming traffic. If Server B goes down, the load balancer stops sending it requests.</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>How the Internet Works (The 30-Second Version)</h2>
+<p>When you type twitter.com into your browser, your computer sends a request across the internet to Twitter's server. That request passes through your home router, your ISP's network, undersea cables, and multiple routers before reaching Twitter's data center. Twitter's server processes the request and sends a response back along the same path. This all happens in a few hundred milliseconds.</p>
+<p>But how does your browser know where to find Twitter's server? And how do millions of people use Twitter simultaneously? That's what networking protocols and infrastructure handle.</p>
+
+<h2>The OSI Model (Simplified)</h2>
+<p>The OSI model breaks networking into 7 layers. As a backend engineer, you mostly care about three of them:</p>
+
+<h3>Application Layer (Layer 7)</h3>
+<p>This is where your code lives. HTTP, WebSocket, gRPC — these are application-layer protocols. When your browser sends an HTTP request to <code>GET /api/tweets</code>, it's using the application layer. You don't worry about how the data gets there — you just use the protocol's request/response format.</p>
+
+<h3>Transport Layer (Layer 4)</h3>
+<p>This layer handles end-to-end communication between two computers. Two main protocols:</p>
+<ul>
+  <li><strong>TCP:</strong> Reliable, ordered delivery. Used by HTTP, WebSocket, SSH, email. If a packet is lost, TCP retransmits it. This guarantees that the data arrives intact, but adds latency.</li>
+  <li><strong>UDP:</strong> Fast, no guarantees. Used by video streaming, gaming, DNS lookups. If a packet is lost, it's not retransmitted — the video might glitch for a frame, but that's better than buffering.</li>
+</ul>
+
+<h3>Network Layer (Layer 3)</h3>
+<p>This layer handles routing packets across the internet. The key protocol is IP (Internet Protocol) — the addressing system that gives every device an IP address. Routers use IP addresses to figure out where to send packets. Think of it like the postal system: the network layer handles the address and routing, while the transport layer ensures the package arrives intact.</p>
+
+<h2>WebSockets vs HTTP</h2>
+<p>HTTP follows a request-response pattern: the client asks, the server answers, then the connection closes. That's fine for loading a web page or fetching data, but what about real-time features like Twitter's live feed? Polling (the client asking "anything new?" every second) wastes resources.</p>
+<p>WebSocket is a protocol that maintains an open, persistent connection between client and server. Both sides can send messages at any time — no polling needed. Twitter uses WebSockets (via a library called Twitter Streaming API) to push new tweets to your timeline in real time. When a new tweet appears without refreshing the page, that's WebSocket at work.</p>
+
+<h2>Load Balancing</h2>
+<p>No single server can handle all of Twitter's traffic. The solution: run many identical servers and distribute requests across them using a load balancer. The load balancer sits in front of your servers and acts as a traffic cop.</p>
+
+<h3>Round-Robin</h3>
+<p>The simplest strategy. The load balancer sends the first request to Server A, the second to Server B, the third to Server C, then loops back to Server A. It's fair and simple, but it doesn't account for server load — one server might be handling slow requests while another is idle.</p>
+
+<h3>Least Connections</h3>
+<p>Sends each new request to the server with the fewest active connections. This is smarter — if Server A is handling 50 long-running requests and Server B is handling 5 short ones, the next request goes to Server B. This works well when request processing times vary.</p>
+
+<h3>IP Hash</h3>
+<p>Computes a hash of the client's IP address to consistently route the same client to the same server. This is useful when you need session persistence (affinity) — for example, if the server stores temporary user data in memory. The downside: if a server goes down, those users' sessions are lost.</p>
+
+<h2>How Twitter Scales</h2>
+<p>Twitter doesn't run on one server. They have thousands. A load balancer sits in front, distributing your request to the least busy server. Twitter uses a mix of hardware load balancers (F5) and software (their own Twemproxy, plus HAProxy and Nginx). Behind the load balancer, services are further distributed by topic — a tweet request goes to the Tweets Service cluster, a timeline request goes to the Timeline Service cluster, and so on.</p>
+<p>Twitter also uses anycast routing, which lets multiple data centers around the world announce the same IP address. Your request is automatically routed to the nearest data center. That's why Twitter loads fast whether you're in New York, Tokyo, or London.</p>
+
+<h2>Key Takeaways</h2>
+<ul>
+  <li>The OSI model has 7 layers; as a backend engineer, focus on Application (HTTP/WebSocket), Transport (TCP/UDP), and Network (IP)</li>
+  <li>TCP guarantees delivery with retransmission; UDP is faster but lossy</li>
+  <li>WebSocket maintains a persistent connection for real-time communication, unlike HTTP's request-response cycle</li>
+  <li>Load balancers distribute traffic across multiple servers to scale horizontally and provide fault tolerance</li>
+  <li>Round-robin is simple; least connections is smarter for variable workloads; IP hash provides session persistence</li>
+  <li>Twitter uses multiple load balancing layers and anycast routing to serve hundreds of millions of users globally</li>
+</ul>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-11.html"><div class="dir">Previous</div><div class="title">Chapter 11 — Architecture Patterns</div></a>
+      <a href="ch-13.html"><div class="dir">Next</div><div class="title">Chapter 13</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

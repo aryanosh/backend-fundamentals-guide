@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 17 — The Learning Roadmap</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 17</div>
+      <h1>The Learning Roadmap</h1>
+      <p class="subtitle">A phase-by-phase plan to become a backend engineer</p>
+      <div class="meta"><span>~20 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 17 — The backend developer's learning roadmap</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="400" fill="#f8f9fa" rx="8"/>
+        <circle cx="400" cy="200" r="45" fill="#2563eb" opacity="0.15"/>
+        <circle cx="400" cy="200" r="30" fill="#2563eb" opacity="0.3"/>
+        <text x="400" y="195" text-anchor="middle" fill="#1e40af" font-family="sans-serif" font-size="12" font-weight="bold">Backend</text>
+        <text x="400" y="212" text-anchor="middle" fill="#1e40af" font-family="sans-serif" font-size="12" font-weight="bold">Developer</text>
+        <line x1="430" y1="200" x2="530" y2="115" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="530" y="90" width="160" height="50" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="610" y="111" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="11" font-weight="bold">Phase 1: Foundation</text>
+        <text x="610" y="128" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="10">Weeks 1–6</text>
+        <line x1="430" y1="200" x2="530" y2="255" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="530" y="240" width="160" height="50" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="610" y="261" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="11" font-weight="bold">Phase 2: DB &amp; APIs</text>
+        <text x="610" y="278" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="10">Weeks 7–12</text>
+        <line x1="370" y1="200" x2="270" y2="285" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="110" y="270" width="160" height="50" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="190" y="291" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="11" font-weight="bold">Phase 3: Real World</text>
+        <text x="190" y="308" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="10">Weeks 13–20</text>
+        <line x1="370" y1="200" x2="270" y2="115" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="110" y="95" width="160" height="50" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="190" y="116" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="11" font-weight="bold">Phase 4: Production</text>
+        <text x="190" y="133" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="10">Weeks 21–28</text>
+        <line x1="400" y1="245" x2="400" y2="350" stroke="#6366f1" stroke-width="1.5"/>
+        <rect x="310" y="340" width="180" height="50" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+        <text x="400" y="361" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="11" font-weight="bold">Phase 5: Level Up</text>
+        <text x="400" y="378" text-anchor="middle" fill="#4338ca" font-family="sans-serif" font-size="10">Ongoing</text>
+      </svg>
+      <figcaption>Five phases to go from beginner to job-ready backend engineer</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>This Is the Plan</h2>
+<p>The engineers who built Twitter did not start knowing microservices. They started with the same fundamentals you are learning now. They learned one concept at a time, built messy projects, broke things, fixed them, and got better. There is no shortcut. But there is a clear path. This roadmap lays it out in five phases, with week estimates so you can pace yourself.</p>
+
+<p>Stick to this sequence. Do not jump ahead. Each phase builds on the previous one. If you try to learn Docker before you know how to build a REST API, you will be confused. If you try to learn microservices before you understand databases, you will be building on sand.</p>
+
+<h2>Phase 1: Foundation (Weeks 1–6)</h2>
+<p><strong>What to study:</strong> Pick one language — Python is the best choice for beginners — and learn its syntax cold. Variables, data types, conditionals, loops, functions, arrays/lists, dictionaries/maps, classes, file I/O, error handling. Work through a structured course or book. Do not skip exercises. You need the muscle memory of typing code every day.</p>
+
+<p>Also learn the absolute basics of the terminal: how to navigate directories, run your scripts, and use a text editor (VS Code is fine). Learn Git fundamentals: init, add, commit, push, pull.</p>
+
+<p><strong>What to build:</strong> A command-line calculator. A to-do list manager that saves to a file. A temperature converter. A dice-rolling simulator. Simple projects that require you to use the syntax you learned.</p>
+
+<p><strong>What to avoid:</strong> Frameworks. Do not touch Django, Flask, Express, or any other web framework yet. Do not study algorithms and data structures obsessively — you just need to know arrays, objects, loops, and recursion at this point. Do not worry about performance. Do not try to build a startup. Type code. That is the only goal.</p>
+
+<p><strong>Twitter connection:</strong> This phase is where you build the foundation that every Twitter engineer started with. The Python you learn here is the same Python used in Twitter's data pipelines and analytics systems.</p>
+
+<h2>Phase 2: Databases &amp; APIs (Weeks 7–12)</h2>
+<p><strong>What to study:</strong> Learn SQL. Not ORMs, not query builders — raw SQL. SELECT, INSERT, UPDATE, DELETE, JOIN, GROUP BY, ORDER BY, WHERE clauses. Subqueries. Indexes (what they are and why they matter). Pick PostgreSQL as your database. It is the most powerful open-source relational database and the one you will encounter most in the industry.</p>
+
+<p>Learn what an API is. HTTP methods (GET, POST, PUT, DELETE). Status codes (200, 201, 400, 401, 404, 500). Request and response structure. JSON. Then build a REST API using a minimal framework — Flask in Python, or Express in Node.js, or Sinatra in Ruby. Keep it simple. The API should return JSON and talk to your PostgreSQL database.</p>
+
+<p><strong>What to build:</strong> A simple blog API. Endpoints: create a post, get all posts, get one post, update a post, delete a post. Store posts in PostgreSQL. Write the SQL queries yourself. Test your API with curl or Postman.</p>
+
+<p><strong>What to avoid:</strong> ORMs (SQLAlchemy, Prisma, ActiveRecord). Authentication. Caching. Microservices. Deployment. These are distractions right now. You need to understand the raw layers before you add the abstractions.</p>
+
+<p><strong>Twitter connection:</strong> Twitter's API serves billions of requests per day. Every tweet, like, retweet, and follow is an API call backed by databases. The fundamentals you learn here are what Twitter's API is built on — just at a much larger scale.</p>
+
+<h2>Phase 3: Real World (Weeks 13–20)</h2>
+<p><strong>What to study:</strong> Authentication and authorization. How passwords are hashed (bcrypt, argon2). How sessions work. JWTs (JSON Web Tokens) — what they are, how they are signed, how to verify them. Environment variables for configuration.</p>
+
+<p>Learn migrations — how to evolve your database schema over time. Learn about background jobs (why you should not send emails during an HTTP request). Learn about logging and basic error handling in production.</p>
+
+<p>Learn about MVC architecture. Separate your routes, your business logic, and your data access into different layers. Your codebase should be organized, not one giant file.</p>
+
+<p>Start using a test framework. Write unit tests for your utility functions. Write integration tests for your API endpoints. Aim for at least some test coverage.</p>
+
+<p><strong>What to build:</strong> A user authentication system. A URL shortener. A note-taking app with user accounts. A project that requires you to handle user registration, login, protected routes, and data that belongs to specific users.</p>
+
+<p><strong>What to avoid:</strong> Kubernetes. Microservices. Event-driven architectures. Serverless. CI/CD pipelines. You will get to those. Not yet.</p>
+
+<p><strong>Twitter connection:</strong> Every feature at Twitter — from tweeting to DMs to bookmarks — involves user authentication, data ownership, and background processing. This phase teaches you to build those features at a small scale.</p>
+
+<h2>Phase 4: Production (Weeks 21–28)</h2>
+<p><strong>What to study:</strong> Docker. Understand images, containers, Dockerfiles, docker-compose. Containerize your application so it runs the same everywhere.</p>
+
+<p>Learn about cloud deployment. Create an AWS account. Learn about EC2 (virtual machines) and RDS (managed databases). Deploy your application to a real server that is accessible from the internet.</p>
+
+<p>Set up a CI/CD pipeline. GitHub Actions is free and easy. Every push should run your tests. If they pass, deploy to your server.</p>
+
+<p>Learn about load balancing, horizontal scaling, and database connection pooling (at a conceptual level). Learn about monitoring — tools like Sentry for error tracking and basic logging.</p>
+
+<p><strong>What to build:</strong> Take your application from Phase 3, containerize it, deploy it to AWS, and set up CI/CD. Your app should be running on a real domain/IP with automated deployments.</p>
+
+<p><strong>What to avoid:</strong> Kubernetes. Multi-region deployments. Infrastructure-as-code tools like Terraform. Microservices architecture. These are real skills but they require the foundation you build in this phase.</p>
+
+<p><strong>Twitter connection:</strong> Production engineering is what Twitter does every day. Every service is containerized, every deploy is automated, every system is monitored. This phase turns your "works on my machine" project into something that could handle real users.</p>
+
+<h2>Phase 5: Level Up (Ongoing)</h2>
+<p><strong>What to study:</strong> This phase never ends. Here is what to explore next, in rough order:</p>
+
+<ul>
+<li><strong>Advanced databases:</strong> Indexing strategies, query optimization, read replicas, connection pooling. Learn about NoSQL databases like Redis (caching) and MongoDB (document storage).</li>
+<li><strong>Message queues:</strong> RabbitMQ, Kafka, or Redis streams. Understand pub/sub, event-driven architectures, and async processing.</li>
+<li><strong>Microservices:</strong> When and why to split a monolith. Service communication (HTTP, gRPC, message queues). Service discovery. The trade-offs.</li>
+<li><strong>Infrastructure-as-code:</strong> Terraform, Ansible, or Pulumi. Treat your infrastructure like code — versioned, reviewed, automated.</li>
+<li><strong>Observability:</strong> Logging, metrics, and tracing. The three pillars. Tools like Prometheus, Grafana, OpenTelemetry.</li>
+<li><strong>Security:</strong> OWASP Top 10, SQL injection prevention, XSS, CSRF, rate limiting, API security best practices.</li>
+<li><strong>Performance:</strong> Profiling, caching strategies, database optimization, CDN usage, connection pooling.</li>
+</ul>
+
+<p><strong>What to build:</strong> Start a larger project. A real application that you maintain for months. Contribute to open source. Write blog posts about what you learn. The act of teaching solidifies knowledge.</p>
+
+<p><strong>What to avoid:</strong> Getting paralyzed by choice. There are a thousand things you could learn. Pick one, learn it deeply, then move to the next. Do not obsess over the latest framework or tool.</p>
+
+<p><strong>Twitter connection:</strong> Even senior engineers at Twitter are in Phase 5. They constantly learn new tools, debug novel problems, and deepen their understanding of the systems they maintain. The learning never stops. That is what makes it a career, not just a job.</p>
+
+<h2>Final Advice</h2>
+<p>Learn the fundamentals deeply. No framework first — learn the language, the database, the protocol. Frameworks come and go. HTTP does not. SQL does not. The relational model does not. Linux does not. Git does not. Investing in these fundamentals pays dividends for your entire career.</p>
+
+<p>Build things. Not tutorials — actual projects that you design, build, debug, and ship. You learn more from one project that you built yourself than from ten courses you followed along with. The bugs you fix are the lessons you keep.</p>
+
+<p>Read code. Read the source code of the tools you use. Read PRs on open-source projects. Understanding how other people structure code is one of the fastest ways to improve.</p>
+
+<p>Be patient. Backend engineering is deep and wide. Nobody masters it in a year. The goal is not to know everything — the goal is to be better than you were last week. Keep shipping. Keep learning. The rest takes care of itself.</p>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-16.html"><div class="dir">Previous</div><div class="title">Chapter 16 — Deployment &amp; DevOps</div></a>
+      <a href="#"><div class="dir">Next</div><div class="title">You've reached the end — start building</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 02 — The Anatomy of a Request</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 02</div>
+      <h1>The Anatomy of a Request</h1>
+      <p class="subtitle">HTTP methods, URL paths, headers, bodies, and the status codes that make sense of it all</p>
+      <div class="meta"><span>~11 min read</span></div>
+    </header>
+
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 2.1 — The HTTP request-response cycle in full detail</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="130" height="40" rx="6" class="dg-node" fill="#4A90D9"/>
+        <text x="75" y="35" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui">Your Browser</text>
+
+        <rect x="550" y="10" width="130" height="40" rx="6" class="dg-node" fill="#E67E22"/>
+        <text x="615" y="35" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui">Twitter Server</text>
+
+        <rect x="180" y="70" width="340" height="100" rx="8" fill="#f0f4f8" stroke="#ccc" stroke-width="1.5"/>
+        <text x="350" y="90" text-anchor="middle" class="dg-label" font-weight="bold" fill="#2C3E50" font-size="12">REQUEST</text>
+        <text x="350" y="108" text-anchor="middle" class="dg-label" font-size="10" fill="#E74C3C">POST /api/v2/tweets HTTP/2</text>
+        <text x="350" y="122" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">Authorization: Bearer xxx</text>
+        <text x="350" y="136" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">Content-Type: application/json</text>
+        <text x="350" y="150" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">User-Agent: Twitter/iPhone</text>
+        <text x="350" y="164" text-anchor="middle" class="dg-label" font-size="10" fill="#27AE60">{"text": "Hello world!"}</text>
+
+        <line x1="140" y1="30" x2="180" y2="115" class="dg-line" stroke="#E74C3C"/>
+        <polygon points="176,111 180,121 184,111" fill="#E74C3C"/>
+        <text x="148" y="75" class="dg-label" fill="#E74C3C" font-size="10" font-weight="bold">Request</text>
+
+        <rect x="180" y="190" width="340" height="90" rx="8" fill="#f0f4f8" stroke="#ccc" stroke-width="1.5"/>
+        <text x="350" y="210" text-anchor="middle" class="dg-label" font-weight="bold" fill="#2C3E50" font-size="12">RESPONSE</text>
+        <text x="350" y="228" text-anchor="middle" class="dg-label" font-size="10" fill="#27AE60">HTTP/2 201 Created</text>
+        <text x="350" y="242" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">Content-Type: application/json</text>
+        <text x="350" y="256" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">X-Request-Id: abc-123</text>
+        <text x="350" y="270" text-anchor="middle" class="dg-label" font-size="10" fill="#27AE60">{"id": "12345", "text": "Hello world!", "created_at": "..."}</text>
+
+        <line x1="520" y1="115" x2="550" y2="115" class="dg-line" stroke="#3498DB"/>
+        <polygon points="546,111 556,115 546,119" fill="#3498DB"/>
+        <text x="538" y="108" class="dg-label" fill="#3498DB" font-size="10" font-weight="bold">Process</text>
+
+        <line x1="615" y1="50" x2="520" y2="235" class="dg-line" stroke="#27AE60"/>
+        <polygon points="524,231 520,241 528,233" fill="#27AE60"/>
+        <text x="580" y="150" class="dg-label" fill="#27AE60" font-size="10" font-weight="bold">Response</text>
+
+        <text x="350" y="295" text-anchor="middle" fill="#999" font-size="10">Each label color shows a different part of the message: method/path, headers, and body</text>
+      </svg>
+      <figcaption>The client sends a structured request with method, path, headers, and optional body. The server processes it and returns a status code with its own headers and body.</figcaption>
+    </figure>
+
+    <div class="chapter-content">
+      <h2>What Actually Gets Sent Over the Wire?</h2>
+      <p>In Chapter 1, we watched your phone and Twitter's server perform a TCP handshake and establish a connection. Now imagine that connection is an open phone line. <strong>The HTTP request is what you actually say into the phone.</strong> It's a carefully formatted message that tells the server exactly what you want, who you are, and often includes data you want to send. Every action you take on Twitter — viewing a profile, posting a tweet, liking a photo, sending a DM — is an HTTP request.</p>
+
+      <p>HTTP stands for <strong>HyperText Transfer Protocol</strong>, but don't let the name fool you — it's used for far more than just transferring hypertext. It's the language that every web browser, mobile app, API client, and server speaks. HTTP is a <strong>request-response protocol</strong>: the client (your browser or app) sends a request, and the server sends back a response. That's it. Every website, every API call, every time your phone syncs data — it's all just request-response cycles happening in rapid succession, often hundreds of them to load a single page.</p>
+
+      <p>Every HTTP request has three main parts: the <strong>request line</strong> (method + path + version), the <strong>headers</strong> (key-value metadata), and an optional <strong>body</strong> (the actual data). Let's break each one down.</p>
+
+      <h2>HTTP Methods: The Verbs of the Web</h2>
+      <p>The <strong>HTTP method</strong> (also called a verb) tells the server what <em>kind</em> of action you want to perform. Think of it as the intention behind your request. There are nine methods defined in the HTTP specification, but you'll encounter just five in everyday backend work:</p>
+
+      <p><strong>GET</strong> — "Give me this resource." When you load your Twitter timeline, refresh a profile page, or view a tweet's replies, your browser sends a GET request. GET requests should <em>never</em> change anything on the server; they're read-only. This is called being <strong>idempotent</strong> — making the same GET request a hundred times should return the same result (assuming the data hasn't changed on the server). GET requests have no body; all the information is in the URL and headers.</p>
+
+      <p><strong>POST</strong> — "Create something new." When you hit the "Post Tweet" button, your browser sends a POST request to Twitter's API with the tweet text in the body. Every time you POST, a new resource is created. POST is <em>not</em> idempotent — pressing "Post Tweet" twice creates two tweets (don't test this, your followers will know). POST requests carry their data in the body, typically as JSON or form data.</p>
+
+      <p><strong>PUT</strong> — "Replace this resource entirely." If you edit your profile bio, Twitter might send a PUT request with your entire new profile object. PUT says "replace whatever exists at this URL with this new data." Unlike POST, PUT is idempotent — sending the same PUT request twice results in the same state on the server. The second request just overwrites with the same data.</p>
+
+      <p><strong>PATCH</strong> — "Update part of this resource." Twitter might use PATCH instead of PUT when you only change your display name (not your entire profile). PATCH sends only the fields that changed, not the whole object. It's more efficient than PUT for partial updates.</p>
+
+      <p><strong>DELETE</strong> — "Remove this resource." When you delete a tweet, your browser sends a DELETE request to that tweet's URL. DELETE is also idempotent — deleting a tweet that's already deleted returns the same result (often a 404 or 204 status).</p>
+
+      <p>Here's a concrete Twitter example. When your app loads your timeline, it sends: <code>GET /api/v2/timeline HTTP/2</code>. When you post a tweet, it sends: <code>POST /api/v2/tweets HTTP/2</code> with a JSON body containing your tweet text. When you unlike a tweet, it sends: <code>DELETE /api/v2/tweets/12345/like HTTP/2</code>. Each method maps to a CRUD operation: Create (POST), Read (GET), Update (PUT/PATCH), Delete (DELETE).</p>
+
+      <h2>URL Paths: The Address of the Resource</h2>
+      <p>The <strong>path</strong> is the second part of the request line, and it tells the server <em>which</em> resource you're talking about. A full URL looks like <code>https://twitter.com/elonmusk/status/123456789</code>, but the path part is just <code>/elonmusk/status/123456789</code>. The path is like a file system path, but it doesn't necessarily map to actual files on the server — it maps to <strong>resources</strong> that the server's routing logic understands.</p>
+
+      <p>Twitter's API uses clean, hierarchical paths. For example: <code>/api/v2/users/elonmusk</code> gets Elon's profile. <code>/api/v2/users/elonmusk/followers</code> gets his followers list. <code>/api/v2/tweets/123456789</code> gets a specific tweet. Notice the pattern: the path gets more specific as you go right. This hierarchy helps servers route requests to the right handler code and makes APIs intuitive for developers.</p>
+
+      <p>Paths can also include <strong>query parameters</strong> (after a <code>?</code>) for filtering, sorting, or pagination. For example: <code>GET /api/v2/tweets?count=20&since_id=100</code> says "give me 20 tweets posted since tweet ID 100." Query parameters are key-value pairs separated by <code>&</code>.</p>
+
+      <h2>Headers: The Metadata That Makes It Work</h2>
+      <p>Between the request line and the body, there's a block of <strong>headers</strong>. Headers are key-value pairs that provide metadata about the request or response. Think of them as the envelope around your message — they tell the server things like: what format the body is in, who's sending the request, what languages the client accepts, and authentication credentials.</p>
+
+      <p>Some important request headers: <code>Authorization</code> carries your login token (Twitter uses Bearer tokens or OAuth); <code>Content-Type</code> tells the server what format the body is in (usually <code>application/json</code> for APIs); <code>User-Agent</code> identifies the client app (like "Twitter/iPhone" or "Mozilla/5.0"); <code>Accept</code> tells the server what response formats you understand; <code>Cookie</code> carries session data stored by your browser.</p>
+
+      <p>And some response headers: <code>Content-Type</code> tells the client what format the response body is in; <code>Set-Cookie</code> tells the browser to store a cookie; <code>Cache-Control</code> tells the client how long to cache the response; <code>X-Request-Id</code> is a unique identifier for debugging (every request to Twitter gets one, so if something breaks, engineers can trace exactly which request failed).</p>
+
+      <h2>The Body: Where the Data Lives</h2>
+      <p>The <strong>body</strong> (or payload) is the actual data being sent. GET and DELETE requests typically don't have a body — they don't need one because they're either fetching or deleting an existing resource. POST, PUT, and PATCH requests usually have a body containing the data to create or update. When you post a tweet, the body might look like: <code>{"text": "Hello world!", "media_ids": ["123"]}</code>. When you update your profile, the body might be: <code>{"name": "Elon", "bio": "Mars colonist"}</code>.</p>
+
+      <p>The body is usually JSON in modern APIs, but it can also be XML, form-encoded data, plain text, or binary data (like image uploads). The <code>Content-Type</code> header tells the server how to interpret those bytes.</p>
+
+      <h2>Status Codes: What the Server Says Back</h2>
+      <p>After the server processes your request, it sends back an HTTP response with a <strong>status code</strong>. Status codes are three-digit numbers grouped into five categories. Every developer should know these by heart:</p>
+
+      <p><strong>200 OK</strong> — Everything worked. The request succeeded and the response contains the requested data. When your timeline loads, you get a 200.</p>
+
+      <p><strong>201 Created</strong> — A new resource was created (usually from a POST request). When your tweet posts successfully, you get a 201 back with the new tweet object in the body.</p>
+
+      <p><strong>204 No Content</strong> — The request succeeded but there's nothing to return. DELETE requests often return 204.</p>
+
+      <p><strong>301/302 Redirect</strong> — The resource moved. Your browser automatically follows the new URL in the <code>Location</code> header. Twitter uses this for URL shorteners.</p>
+
+      <p><strong>400 Bad Request</strong> — You messed up. The server can't understand your request (maybe invalid JSON, missing required field). If you try to post a tweet without text, Twitter returns 400 with a message like "text is required."</p>
+
+      <p><strong>401 Unauthorized</strong> — You need to log in. You tried to access a protected resource without valid credentials. If your session expires and you try to post, Twitter returns 401. It's saying "I don't know who you are."</p>
+
+      <p><strong>403 Forbidden</strong> — You're logged in but you don't have permission. Maybe you tried to delete someone else's tweet. The server knows who you are but says "you're not allowed to do that."</p>
+
+      <p><strong>404 Not Found</strong> — The resource doesn't exist. You tried to visit a Twitter profile that doesn't exist, or a deleted tweet.</p>
+
+      <p><strong>429 Too Many Requests</strong> — You're rate-limited. Twitter's API allows a certain number of requests per minute. If you exceed it, you get 429 and need to wait.</p>
+
+      <p><strong>500 Internal Server Error</strong> — The server broke. Something went wrong on Twitter's side. It's not your fault, but you also can't fix it. The Twitter engineering team gets paged when 500s spike.</p>
+
+      <p><strong>502/503/504</strong> — Gateway errors. The server is down, overwhelmed, or the upstream service timed out. If Twitter is under heavy load or a deployment goes wrong, you might see these.</p>
+
+      <p>Status codes are your <strong>first debugging tool</strong>. When something breaks in your backend, the status code tells you whether the problem is on your side (4xx) or the server's side (5xx). This simple distinction saves hours of debugging.</p>
+
+      <p>Now that you understand the anatomy of a request, you're ready for Chapter 3 — because knowing what a request looks like is just the beginning. The really interesting question is: <strong>what does the server actually do</strong> when it receives that request?</p>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-01.html" class="prev"><div class="dir">Previous</div><div class="title">How Machines Find Each Other</div></a>
+      <a href="ch-03.html" class="next"><div class="dir">Next</div><div class="title">What a Server Actually Does</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 15 — Testing Your Code</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
+  </div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 15</div>
+      <h1>Testing Your Code</h1>
+      <p class="subtitle">Catch bugs before they catch your users</p>
+      <div class="meta"><span>~13 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 15 — The testing pyramid</span><span>twitter.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="350" fill="#f8f9fa" rx="8"/>
+        <polygon points="400,30 200,310 600,310" fill="#e0f2fe" stroke="#2563eb" stroke-width="2"/>
+        <text x="400" y="145" text-anchor="middle" fill="#1e40af" font-family="sans-serif" font-size="15" font-weight="bold">E2E Tests</text>
+        <text x="400" y="163" text-anchor="middle" fill="#1e40af" font-family="sans-serif" font-size="11">Few — test entire system</text>
+        <text x="400" y="178" text-anchor="middle" fill="#1e40af" font-family="sans-serif" font-size="11">Slow but thorough</text>
+        <polygon points="400,145 150,310 650,310" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+        <text x="400" y="240" text-anchor="middle" fill="#1e3a5f" font-family="sans-serif" font-size="15" font-weight="bold">Integration Tests</text>
+        <text x="400" y="258" text-anchor="middle" fill="#1e3a5f" font-family="sans-serif" font-size="11">Some — test combined pieces</text>
+        <text x="400" y="273" text-anchor="middle" fill="#1e3a5f" font-family="sans-serif" font-size="11">Verify services work together</text>
+        <polygon points="400,240 100,310 700,310" fill="#bbf7d0" stroke="#16a34a" stroke-width="2"/>
+        <text x="400" y="285" text-anchor="middle" fill="#166534" font-family="sans-serif" font-size="14" font-weight="bold">Unit Tests</text>
+        <text x="400" y="300" text-anchor="middle" fill="#166534" font-family="sans-serif" font-size="11">Many — test one function at a time</text>
+        <text x="400" y="315" text-anchor="middle" fill="#166534" font-family="sans-serif" font-size="11">Fast, reliable, easy to write</text>
+        <line x1="100" y1="330" x2="700" y2="330" stroke="#ccc" stroke-width="1"/>
+        <text x="400" y="345" text-anchor="middle" fill="#888" font-family="sans-serif" font-size="11">More tests (foundation) ———————————————————————— Fewer tests (peak)</text>
+      </svg>
+      <figcaption>The testing pyramid: invest most in unit tests, fewer in integration, fewest in E2E</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>Why Testing Matters</h2>
+<p>Code without tests is code that might break at any moment and you will not know until a user reports it. That is a terrible way to build software. Testing is how you sleep at night after a deploy. It is how you refactor code with confidence. It is how you stop being afraid of your own codebase.</p>
+
+<p>Test-driven development (TDD) is the practice of writing a test <em>before</em> writing the actual code. The test fails initially (red), you write the minimum code to make it pass (green), then you clean up (refactor). The mantra is: Red, Green, Refactor. TDD forces you to think about what your code should do before you write it. The result is cleaner, more testable code and near-zero regression bugs.</p>
+
+<h2>The Three Levels of Tests</h2>
+
+<h3>Unit Tests</h3>
+<p>A unit test tests a single function or method in isolation. You give it inputs, you assert the expected outputs. It does not talk to a database, call an API, or write to disk. It is pure logic. Unit tests are fast — thousands run in seconds. They form the foundation of the testing pyramid. You should have many of them.</p>
+
+<p>Example: if you have a function <code>formatTweet(text, maxLength)</code> that truncates a tweet to fit, you write unit tests for every edge case. Normal text. Text at exactly the limit. Text one character over. Empty text. Null input. Each test takes milliseconds. If someone later breaks the function, you know instantly.</p>
+
+<h3>Integration Tests</h3>
+<p>Integration tests verify that multiple pieces work together. Does the API handler call the database correctly? Does the auth middleware pass the right user object to the controller? Do messages flow properly between services? These tests are fewer than unit tests because they are slower and more complex to set up. But they catch the bugs that unit tests miss — the ones that happen at the boundaries between components.</p>
+
+<h3>End-to-End Tests</h3>
+<p>E2E tests simulate a real user. They open a browser, click buttons, fill forms, and verify that the whole system behaves correctly. They are the slowest and most fragile tests. A network hiccup can make them fail. But they provide the highest confidence that the system actually works from the user's perspective.</p>
+
+<p>At Twitter, an E2E test might log in as a test user, compose a tweet, post it, scroll the timeline, and verify the tweet appears. If that passes, the core loop works.</p>
+
+<h2>The Testing Pyramid</h2>
+<p>The pyramid shape tells you how many of each to write: lots of unit tests (the wide base), a moderate number of integration tests, and a few E2E tests (the narrow top). If you invert this — lots of E2E tests, few unit tests — your test suite will be slow, flaky, and a nightmare to maintain.</p>
+
+<p>A healthy test suite gives you confidence. You push code, the tests run, they pass, you move on. You push code, a test fails, you know exactly what broke. No guessing. No manual checking. No users discovering bugs for you.</p>
+
+<h2>TDD in Practice</h2>
+<p>Here is how TDD works for a real feature. Say you need to write a function that calculates how many characters remain in a tweet. You start by writing a test: <code>assert remainingChars("hello", 280) == 275</code>. It fails because the function does not exist yet. Good. Now you write the function: <code>def remainingChars(text, limit): return limit - len(text)</code>. The test passes. Now you refactor — maybe rename variables, extract logic — and the test still passes. You move to the next test case.</p>
+
+<p>TDD forces incremental progress. Each test is a small step. You never write more code than needed to pass the current test. The result is high test coverage and minimal complexity.</p>
+
+<h2>Testing at Twitter</h2>
+<p>Before Twitter ships a new feature, hundreds of automated tests run. If even one test fails, the deploy stops. Here is how that saves them from disasters. Imagine a developer changes how tweets are stored. The change seems harmless, but it accidentally breaks the search feature. The unit test for tweet storage passes. But the integration test that searches for a tweet and verifies the result catches the break. The deploy halts. The developer fixes the bug before any user is impacted.</p>
+
+<p>Without tests, that bug would reach production. Users would search for tweets and get nothing. They would report it. Someone would be paged at 2 AM to rollback the deploy. This is the difference between professional engineering and chaos. Tests are not optional. They are the safety net that lets you ship fast without fear.</p>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-14.html"><div class="dir">Previous</div><div class="title">Chapter 14 — Version Control with Git</div></a>
+      <a href="ch-16.html"><div class="dir">Next</div><div class="title">Chapter 16 — Deployment &amp; DevOps</div></a>
+    </nav>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
+</body>
+</html>
