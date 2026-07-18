@@ -15,9 +15,9 @@
 <title>Chapter 04 — How Data Flows Through a System</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
+<body class="notebook-body">
 <nav class="top-nav">
-  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <a href="../index.html" class="brand"><span class="mark">&#9674;</span> Backend Fundamentals</a>
   <div class="nav-links">
     <a href="../index.html">Home</a>
     <a href="ch-01.html">Start</a>
@@ -32,143 +32,168 @@
       <div class="meta"><span>~11 min read</span></div>
     </header>
 
-    <figure class="chapter-visual">
-      <div class="vis-label"><span>Fig. 4.1 — Layered architecture of a backend application</span><span>google.com</span></div>
-      <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
-        <rect x="50" y="10" width="700" height="40" rx="6" class="dg-node" fill="#4A90D9"/>
-        <text x="400" y="35" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="bold">CLIENT</text>
-        <text x="400" y="50" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Browser / Mobile App</text>
+    <div class="notebook-content">
 
-        <line x1="400" y1="50" x2="400" y2="65" class="dg-line" stroke="#888"/>
-        <polygon points="396,61 400,71 404,61" fill="#888"/>
-        <text x="415" y="62" class="dg-label" font-size="9" fill="#888">HTTP request</text>
+      <section class="topic-pair">
+        <div class="topic-text">
+          <h2>Why One Big File Isn't Enough</h2>
+          <p>When you're just starting out, it's tempting to put everything in one file. A single Python script that handles HTTP requests, runs database queries, formats JSON responses, and sends emails. It works. For a while. Then the codebase grows, and that single file becomes a nightmare. A small change in one place breaks something seemingly unrelated. You can't test individual pieces. You can't reason about the code without holding the entire thing in your head at once.</p>
+          <p>This is why production backend systems use <strong>layered architecture</strong>. Instead of one big blob of code, you split your application into distinct layers, each with a single responsibility. Each layer only talks to the layer directly below it. This creates a clean, one-way flow of data that's easy to understand, test, and modify.</p>
+          <p>The most common pattern you'll encounter — powering everything from Google's backend to a startup's Node.js API — is a four-layer architecture: <strong>Controller → Service → Repository → Database</strong>. Each layer is a walled garden that does one job and does it well.</p>
+        </div>
+        <figure class="topic-diagram">
+          <div class="dg-icon-box">
+            <span class="icon">&#127802;</span>
+            <div class="label">Layered Architecture</div>
+            <div class="sub">One-way data flow = predictable, testable, maintainable</div>
+          </div>
+          <div class="dg-layers" style="margin-top:16px;">
+            <div class="l l-1"><span class="dot"></span> Controller — Routes requests</div>
+            <div class="l-arrow">&#8595;</div>
+            <div class="l l-2"><span class="dot"></span> Service — Business logic</div>
+            <div class="l-arrow">&#8595;</div>
+            <div class="l l-3"><span class="dot"></span> Repository — Data access</div>
+            <div class="l-arrow">&#8595;</div>
+            <div class="l l-4"><span class="dot"></span> Database — Persistent storage</div>
+          </div>
+          <figcaption>Fig. 4.1 — The four-layer architecture pattern: each layer only talks to its neighbor</figcaption>
+        </figure>
+      </section>
 
-        <rect x="50" y="70" width="700" height="40" rx="6" class="dg-node" fill="#E67E22"/>
-        <text x="400" y="95" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="bold">CONTROLLER / ROUTE HANDLER</text>
-        <text x="400" y="108" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Receives request, parses input, calls service, sends response</text>
+      <section class="topic-pair">
+        <div class="topic-text">
+          <h2>The Controller Layer: The Traffic Cop</h2>
+          <p>The <strong>controller</strong> is the entry point for every request. It's the first layer that touches incoming data. Think of it as a traffic cop standing at the intersection: its job isn't to know where every car is going, but to point each car in the right direction.</p>
+          <p>When your browser sends <code>GET /api/search?q=backend</code> to Google, a controller catches that request. It parses the URL, extracts the query parameter <code>q</code>, and checks if the request is well-formed. Did you include the required headers? Is the authentication token valid? If something's wrong, the controller returns an error immediately — before any business logic runs. If everything looks good, it passes the sanitized data to the service layer.</p>
+          <p>The controller should be <strong>thin</strong>. It validates input, calls the appropriate service, and sends back a response. That's it. No database queries, no complex calculations, no email sending. If a controller is more than a few dozen lines, something is wrong.</p>
+        </div>
+        <figure class="topic-diagram">
+          <div class="dg-flow" style="flex-direction:column;gap:4px;">
+            <div class="dg-box ink-blue" style="margin-bottom:4px;">Client Request<br><span style="font-size:10px;font-weight:400;">GET /api/search?q=backend</span></div>
+            <div class="dg-connector"></div>
+            <div class="dg-box ink-red" style="border-radius:6px;">CONTROLLER<br><span style="font-size:10px;font-weight:400;">validates &amp; routes</span></div>
+            <div style="display:flex;gap:8px;margin-top:6px;font-family:var(--font-ui);font-size:10px;color:var(--text-soft);justify-content:center;flex-wrap:wrap;">
+              <span style="background:var(--accent-soft);padding:2px 6px;border-radius:3px;color:var(--accent-deep);">parses URL</span>
+              <span style="background:#E8EAF6;padding:2px 6px;border-radius:3px;color:#1A237E;">checks auth token</span>
+              <span style="background:var(--accent-2-soft);padding:2px 6px;border-radius:3px;color:var(--accent-2);">validates input</span>
+            </div>
+          </div>
+          <figcaption>Fig. 4.2 — The controller validates and sanitizes incoming requests before passing data downstream</figcaption>
+        </figure>
+      </section>
 
-        <line x1="400" y1="110" x2="400" y2="125" class="dg-line" stroke="#888"/>
-        <polygon points="396,121 400,131 404,121" fill="#888"/>
-        <text x="415" y="122" class="dg-label" font-size="9" fill="#888">delegates to</text>
+      <section class="topic-pair">
+        <div class="topic-text">
+          <h2>The Service Layer: The Brain of the Operation</h2>
+          <p>Below the controller sits the <strong>service layer</strong>. This is where your application's actual intelligence lives. If the controller is the traffic cop, the service is the strategist who decides where traffic should go and why.</p>
+          <p>The service contains <strong>business logic</strong> — the rules and decisions that define what your application does. A search service knows how to rank results by relevance. A payment service knows how to calculate tax and apply discounts. A notification service knows whether to send an email or a push notification based on user preferences.</p>
+          <p>Services orchestrate. They call multiple repositories, combine data from different sources, enforce business rules, and decide what the final result should look like. A well-written service is <strong>framework-agnostic</strong> — it doesn't know or care whether it's being called from an HTTP controller, a command-line tool, or a test suite. This makes services reusable and testable in isolation.</p>
+        </div>
+        <figure class="topic-diagram">
+          <div class="dg-flow" style="flex-direction:column;gap:4px;">
+            <div class="dg-box ink-red" style="font-size:11px;border-radius:6px 6px 0 0;">Controller passes sanitized data</div>
+            <div class="dg-connector"></div>
+            <div class="dg-box ink-blue" style="border-radius:0;">SERVICE LAYER<br><span style="font-size:10px;font-weight:400;">business logic &amp; orchestration</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;padding:10px;background:var(--bg-dim);border-radius:6px;border:2px solid var(--border);width:100%;">
+              <div style="font-family:var(--font-ui);font-size:10px;color:var(--text-soft);font-weight:600;margin-bottom:4px;">What the service does:</div>
+              <div style="font-family:var(--font-ui);font-size:11px;color:var(--text);display:flex;gap:6px;flex-wrap:wrap;">
+                <span style="background:#E8EAF6;padding:3px 8px;border-radius:3px;">&#10003; Applies business rules</span>
+                <span style="background:var(--accent-2-soft);padding:3px 8px;border-radius:3px;">&#10003; Orchestrates repositories</span>
+                <span style="background:var(--accent-soft);padding:3px 8px;border-radius:3px;">&#10003; Enforces permissions</span>
+              </div>
+            </div>
+          </div>
+          <figcaption>Fig. 4.3 — The service layer is where business decisions are made</figcaption>
+        </figure>
+      </section>
 
-        <rect x="50" y="130" width="700" height="40" rx="6" class="dg-node" fill="#9B59B6"/>
-        <text x="400" y="155" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="bold">SERVICE / BUSINESS LOGIC</text>
-        <text x="400" y="168" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Validates rules, orchestrates operations, enforces policies</text>
+      <section class="topic-pair">
+        <div class="topic-text">
+          <h2>The Repository Layer: The Data Gatekeeper</h2>
+          <p>Once the service has decided what data it needs, it calls the <strong>repository layer</strong>. The repository is a clean abstraction over the database. It speaks the language of your application — methods like <code>findUserById(id)</code>, <code>saveOrder(order)</code>, <code>deleteExpiredSessions()</code> — rather than raw SQL or query builder syntax.</p>
+          <p>Why not just put database queries directly in the service? Because that couples your business logic to a specific database technology. If you ever switch from PostgreSQL to MongoDB, or from MySQL to DynamoDB, you'd have to rewrite every service that touches the database. With a repository layer, you only change the repository implementation — the service code stays untouched.</p>
+          <p>Repositories also provide a natural place for cross-cutting data concerns like caching, retry logic, connection pooling, and query optimization. The service doesn't need to know that the repository maintains an in-memory cache of frequently accessed users — it just calls <code>findUserById</code> and gets the result.</p>
+        </div>
+        <figure class="topic-diagram">
+          <div class="dg-flow" style="flex-direction:column;gap:4px;">
+            <div class="dg-box ink-blue" style="font-size:11px;border-radius:6px 6px 0 0;">Service calls repository method</div>
+            <div class="dg-connector"></div>
+            <div class="dg-box ink-green" style="border-radius:0;">REPOSITORY<br><span style="font-size:10px;font-weight:400;">abstracts the database</span></div>
+            <div class="dg-connector"></div>
+            <div class="dg-box ink-gray" style="font-size:11px;border-radius:0 0 6px 6px;">Database<br><span style="font-size:10px;font-weight:400;">PostgreSQL / MySQL / MongoDB</span></div>
+          </div>
+          <div class="paper-note" style="margin-top:12px;">
+            <strong>Repository methods:</strong><br>
+            <code style="font-size:11px;">findUserById(id)</code><br>
+            <code style="font-size:11px;">saveOrder(order)</code><br>
+            <code style="font-size:11px;">deleteExpiredSessions()</code>
+          </div>
+          <figcaption>Fig. 4.4 — The repository translates application calls into database queries</figcaption>
+        </figure>
+      </section>
 
-        <line x1="400" y1="170" x2="400" y2="185" class="dg-line" stroke="#888"/>
-        <polygon points="396,181 400,191 404,181" fill="#888"/>
-        <text x="415" y="182" class="dg-label" font-size="9" fill="#888">queries</text>
+      <section class="topic-pair">
+        <div class="topic-text">
+          <h2>The Database Layer: Where Data Sleeps</h2>
+          <p>At the bottom of the stack is the <strong>database</strong>. This is where data actually lives — on disk, in memory, or spread across a cluster of machines. The database is the only layer that deals with raw persistence. Everything above it is just moving, shaping, and transforming data on its way in or out.</p>
+          <p>In modern systems, the "database" isn't always a single thing. You might have a primary relational database (PostgreSQL) for user accounts and orders, a document store (MongoDB) for flexible content, a key-value cache (Redis) for fast lookups, and a search index (Elasticsearch) for full-text queries. The repository layer hides this complexity — the service calls <code>searchProducts(query)</code> without knowing whether the repository hits a dedicated search index or falls back to a SQL <code>LIKE</code> query.</p>
+        </div>
+        <figure class="topic-diagram">
+          <div class="dg-stack">
+            <div class="dg-box ink-blue">Service requests data</div>
+            <div class="dg-connector"></div>
+            <div class="dg-box ink-green">Repository translates to query</div>
+            <div class="dg-connector"></div>
+            <div class="dg-box ink-red">Database executes and returns</div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+            <span class="dg-box ink-amber" style="padding:8px 12px;font-size:10px;flex:1;min-width:70px;">PostgreSQL<br><span style="font-weight:400;">users, orders</span></span>
+            <span class="dg-box ink-green" style="padding:8px 12px;font-size:10px;flex:1;min-width:70px;">Redis<br><span style="font-weight:400;">cache, sessions</span></span>
+            <span class="dg-box ink-blue" style="padding:8px 12px;font-size:10px;flex:1;min-width:70px;">Elasticsearch<br><span style="font-weight:400;">search index</span></span>
+          </div>
+          <figcaption>Fig. 4.5 — Modern backends often use multiple database technologies behind a single repository interface</figcaption>
+        </figure>
+      </section>
 
-        <rect x="50" y="190" width="700" height="40" rx="6" class="dg-node" fill="#27AE60"/>
-        <text x="400" y="215" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="bold">REPOSITORY / DATA ACCESS</text>
-        <text x="400" y="228" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Writes SQL/queries, maps rows to objects, abstracts storage</text>
+      <section class="topic-pair">
+        <div class="topic-text">
+          <h2>Why Layers Matter: The Google Example</h2>
+          <p>Think about what happens when you search on Google. The controller receives your <code>GET /search?q=latest+news</code> request. The search service orchestrates a complex pipeline: it calls the <code>QueryRepository</code> to check for cached results, the <code>RankingService</code> (another service!) to score results by relevance, the <code>PersonalizationService</code> to factor in your search history, and the <code>AdService</code> to pick relevant ads.</p>
+          <p>Each of these is a separate layer or service with a clear boundary. Google's engineers can optimize the ranking algorithm without touching the ad system. They can swap out the caching layer from Memcached to Redis without changing any business logic. They can add a new frontend (like voice search) by writing a new controller that calls the same services.</p>
+          <p>That's the power of layered architecture. It's not extra work — it's <strong>insurance</strong> against the chaos that every growing codebase inevitably faces.</p>
+        </div>
+        <figure class="topic-diagram">
+          <div class="dg-layers" style="max-width:100%;">
+            <div class="l l-1"><span class="dot"></span> Controller — <span style="font-weight:400;">receives search request</span></div>
+            <div class="l-arrow">&#8595;</div>
+            <div class="l l-2"><span class="dot"></span> SearchService — <span style="font-weight:400;">orchestrates ranking, personalization, ads</span></div>
+            <div class="l-arrow">&#8595;</div>
+            <div class="l l-3"><span class="dot"></span> QueryRepository — <span style="font-weight:400;">checks cache, queries index</span></div>
+            <div class="l-arrow">&#8595;</div>
+            <div class="l l-4"><span class="dot"></span> Multiple databases — <span style="font-weight:400;">search index, cache, user profiles</span></div>
+          </div>
+          <div style="margin-top:10px;padding:10px 14px;background:var(--bg-note);border:2px solid var(--border);border-radius:6px;font-family:var(--font-ui);font-size:11px;color:var(--text-soft);">
+            <strong style="color:var(--text);">Key insight:</strong> Each layer can change independently. That's how Google ships hundreds of changes per day without breaking search.
+          </div>
+          <figcaption>Fig. 4.6 — Google's search architecture follows the same layered pattern, scaled to billions of queries</figcaption>
+        </figure>
+      </section>
 
-        <line x1="400" y1="230" x2="400" y2="245" class="dg-line" stroke="#888"/>
-        <polygon points="396,241 400,251 404,241" fill="#888"/>
-        <text x="415" y="242" class="dg-label" font-size="9" fill="#888">reads/writes</text>
-
-        <rect x="50" y="250" width="700" height="40" rx="6" class="dg-node" fill="#E74C3C"/>
-        <text x="400" y="275" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="bold">DATABASE</text>
-        <text x="400" y="288" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="9">Stores and retrieves persistent data (PostgreSQL, Redis, etc.)</text>
-      </svg>
-      <figcaption>Data flows top to bottom through four distinct layers, each with a single responsibility. No layer skips the one below it — this keeps the system maintainable.</figcaption>
-    </figure>
-
-    <div class="chapter-content">
-      <h2>Why One Big File Isn't Enough</h2>
-      <p>If you wrote an entire Google backend in a single file, it would work. The server would listen, route requests, query the database, and return responses. It would function perfectly for a while. But then you'd need to add a feature — maybe retweets. You'd scroll through thousands of lines to find where tweet creation happens, carefully edit it without breaking anything else, and pray you didn't introduce a bug. Then someone asks you to add logging of every tweet creation. Now you're hunting through the same file, trying to figure out where to insert the logging logic without duplicating it across seven different places.</p>
-
-      <p>This is why backend systems are organized into <strong>layers</strong>. Each layer has a specific job. The layers sit on top of each other like floors in a building. The top floor (controller) knows about the floor below it (service) but doesn't care about the foundation (database). This separation allows you to change one layer without touching the others — as long as the interface between them stays the same.</p>
-
-      <p>The four standard layers are: <strong>Controller</strong> (routes and HTTP concerns), <strong>Service</strong> (business logic and rules), <strong>Repository</strong> (data access and queries), and <strong>Database</strong> (persistent storage). Let's walk through each one with a concrete Google example: posting a tweet. We'll trace every step from the moment you tap "Post" to the moment your tweet is saved in the database.</p>
-
-      <h2>The Controller Layer: The Traffic Cop</h2>
-      <p>The <strong>controller</strong> (also called a route handler or endpoint) is the entry point for every request. Its job is limited to three things: receive the incoming request data, call the appropriate service, and send back the response. A controller should never contain business logic. It should never talk directly to the database. It is purely a coordinator.</p>
-
-      <p>Here's what the controller for creating a tweet might look like conceptually:</p>
-
-      <p>1. It receives the request object from the framework. The body contains JSON like <code>{"text": "Hello world!"}</code>.<br>
-      2. It extracts the relevant data — the tweet text from the body, the authenticated user's ID from the request object (added by auth middleware).<br>
-      3. It calls the TweetService with a simple command like <code>tweetService.createTweet(userId, text)</code>.<br>
-      4. It waits for the service to finish. The service returns the created tweet object.<br>
-      5. It formats the response with status 201 Created and sends back the tweet as JSON.</p>
-
-      <p>That's it. The controller doesn't check whether the text contains banned words. It doesn't decide whether to store the tweet in a database or a cache. It doesn't know or care how the tweet is saved. It just says "Service, please handle this" and sends back whatever the service returns. If tomorrow Google changes its database from PostgreSQL to something else, the controller doesn't need to change at all.</p>
-
-      <p>In a real codebase, a controller is typically a short function — maybe 5 to 15 lines. If a controller is longer than that, it's probably doing too much. A good rule of thumb: if your controller needs a comment to explain what it's doing, that logic probably belongs in a service instead.</p>
-
-      <h2>The Service Layer: The Brain of the Operation</h2>
-      <p>The <strong>service layer</strong> (also called business logic layer) is where the actual rules of your application live. This is the most important layer to understand, because it's where your product's unique behavior is defined. The service layer is called by the controller, and it calls the repository layer. It sits in the middle and orchestrates everything.</p>
-
-      <p>When the TweetService receives the <code>createTweet</code> command from the controller, here's what it might do:</p>
-
-      <p>1. <strong>Validate business rules</strong> — Is the tweet text under 280 characters? (Google's limit). Does the user have posting privileges? (Not suspended, not rate-limited). Does the tweet contain spam or prohibited content? Each of these checks is a business rule that belongs in the service layer, not in the controller and definitely not in the database layer.</p>
-
-      <p>2. <strong>Enrich the data</strong> — The service adds metadata: a timestamp, a unique tweet ID (maybe a UUID), parsed URLs or mentions from the text, and potentially a reference to any media attached. This enrichment is business logic — it knows <em>what</em> a tweet is and <em>how</em> it should be structured.</p>
-
-      <p>3. <strong>Handle cross-cutting concerns</strong> — If posting a tweet should also update the user's tweet count, notify followers, and add to a search index, the service orchestrates all of this. It calls the user repository to increment the count, pushes a notification event, and sends the tweet data to the search index. The controller doesn't need to know about any of these side effects.</p>
-
-      <p>4. <strong>Call the repository</strong> — Once all business rules pass and the data is enriched, the service calls the TweetRepository: <code>tweetRepository.save(tweetData)</code>. The service doesn't know or care whether the repository writes to PostgreSQL, MongoDB, or a plain text file. It just says "save this."</p>
-
-      <p>5. <strong>Return the result</strong> — The service returns the created tweet object (now with an ID and timestamp) back to the controller, which sends it to the client.</p>
-
-      <p>The service layer is where unit tests shine. Because the service doesn't depend on HTTP or the database directly (it depends on abstractions like the repository interface), you can test every business rule in isolation. You can verify that tweets over 280 characters are rejected, that suspended users can't post, that the correct notifications are triggered — all without running a server or a database.</p>
-
-      <h2>The Repository Layer: The Data Gatekeeper</h2>
-      <p>The <strong>repository layer</strong> (also called data access layer) is the bridge between your application code and your data storage. Its job is to provide a clean interface for reading and writing data while hiding the details of <em>how</em> that data is stored. The repository speaks the language of your application (objects, structs, hashes), not the language of the database (SQL queries, table rows).</p>
-
-      <p>When the TweetService calls <code>tweetRepository.save(tweetData)</code>, the repository:</p>
-
-      <p>1. Takes the high-level tweet object and maps it to database columns: <code>id</code>, <code>user_id</code>, <code>text</code>, <code>created_at</code>, <code>like_count</code>.<br>
-      2. Constructs a SQL INSERT statement (or a NoSQL document insert, depending on the database).<br>
-      3. Executes the query using a database driver or ORM (Object-Relational Mapper).<br>
-      4. Handles any database errors (like a unique constraint violation) and converts them into application-level errors.<br>
-      5. Maps the database result back into an application object and returns it.</p>
-
-      <p>The repository layer is also where query optimization lives. If Google needs to speed up timeline loading, engineers optimize the queries in the repository layer — adding indexes, writing more efficient JOINs, or switching to a cache — without changing the service layer. The service still calls <code>tweetRepository.findByUserId(userId)</code>, but behind the scenes, the repository might now check Redis first before hitting PostgreSQL.</p>
-
-      <p>A good repository pattern also makes it easy to swap databases. If Google migrates from PostgreSQL to a distributed database like Cassandra, they write a new repository implementation that follows the same interface. The service layer doesn't change at all. This is the power of <strong>abstraction</strong>: the service depends on an interface (a contract), not a concrete implementation.</p>
-
-      <h2>The Database Layer: Where Data Sleeps</h2>
-      <p>The <strong>database</strong> is the bottom layer — the actual storage system. This could be PostgreSQL (a relational database), Redis (an in-memory cache/key-value store), Cassandra (a wide-column NoSQL database), or even a simple file on disk. Google uses multiple databases for different purposes.</p>
-
-      <p>For the tweet example, the database does the actual persistence: it writes the tweet data to disk, ensures it's stored durably, maintains indexes so the tweet can be found quickly later, and enforces constraints (like ensuring the user_id references a real user). The database doesn't know about HTTP, doesn't know about business rules, doesn't know about the shape of a tweet as an object — it just knows about tables, rows, columns, and indexes.</p>
-
-      <p>An important concept here is a <strong>transaction</strong>. When the service layer needs to do multiple database operations that must all succeed or all fail together (like creating a tweet AND incrementing the user's tweet count), it wraps them in a database transaction. If either operation fails, the database rolls back both changes as if neither happened. This ensures data consistency even when things go wrong.</p>
-
-      <h2>Why Layers Matter: The Google Example</h2>
-      <p>Let's trace the full path of a tweet from tap to storage, now that you understand each layer:</p>
-
-      <p>1. <strong>Client</strong>: You tap "Post" on your iPhone. The app sends <code>POST /api/v2/tweets</code> with <code>{"text": "Hello world!"}</code> and your auth token in the header.</p>
-
-      <p>2. <strong>Controller</strong>: The tweet creation controller receives this. It extracts <code>userId</code> from the auth middleware and <code>text</code> from the body. It calls <code>tweetService.createTweet(userId, text, mediaIds?)</code>.</p>
-
-      <p>3. <strong>Service</strong>: The service checks text length (max 280), checks user is not suspended, extracts @mentions and URLs, generates a unique ID. It calls <code>tweetRepository.save(tweetData)</code> and <code>userRepository.incrementTweetCount(userId)</code> inside a transaction. It also pushes a "new tweet" event to a notification queue so followers get notified.</p>
-
-      <p>4. <strong>Repository</strong>: The repository maps the tweet data to a SQL INSERT, executes it against PostgreSQL, catches any database errors, and returns the saved tweet object with its new ID and timestamp.</p>
-
-      <p>5. <strong>Database</strong>: PostgreSQL writes the row to disk, updates indexes so the tweet can be found in timeline queries, and returns the inserted row to the repository.</p>
-
-      <p>6. The response travels back up through the layers: repository → service → controller → client. Your phone displays the new tweet in your timeline. You see it immediately. The entire round trip took maybe 200 milliseconds, and every layer played its part without overstepping.</p>
-
-      <p>This layered architecture is what allows Google's engineering team — thousands of developers — to work on the same codebase without stepping on each other's toes. Frontend engineers work on the client layer. API engineers work on controllers. Product engineers work on services. Data engineers optimize repositories and databases. As long as the interfaces between layers remain stable, each team can change their layer independently.</p>
-
-      <p>And that's the real lesson of backend architecture: <strong>good code is code that can change without breaking everything else</strong>. Layers are the tool that makes this possible. They force you to think about responsibility, about separations, about contracts. They make your code maintainable, testable, and — most importantly — understandable to the next developer who has to read it.</p>
     </div>
 
     <nav class="chapter-nav">
       <a href="ch-03.html" class="prev"><div class="dir">Previous</div><div class="title">What a Server Actually Does</div></a>
-      <a href="ch-05.html" class="next"><div class="dir">Next</div><div class="title">Databases and the Data Lifecycle</div></a>
+      <a href="ch-05.html" class="next"><div class="dir">Next</div><div class="title">Memory, Threads &amp; Processes</div></a>
     </nav>
   </div>
 </main>
 <footer class="site-footer">
   <div class="container">
     <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
-    <div class="stamp">Backend Fundamentals · Free · Always</div>
+    <div class="stamp">Backend Fundamentals &#183; Free &#183; Always</div>
   </div>
 </footer>
-<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">&#9790;</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>
