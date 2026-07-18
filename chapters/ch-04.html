@@ -5,195 +5,289 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
 <meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
-<meta name="author" content="Backend Fundamentals Guide">
-<meta property="og:title" content="Chapter 04 — How Data Flows Through a System">
+<meta name="author" content="Backend Terminal">
+<meta property="og:title" content="Level 04 — How Data Flows Through a System">
 <meta property="og:description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Chapter 04 — How Data Flows Through a System">
-<meta name="twitter:description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
-<title>Chapter 04 — How Data Flows Through a System</title>
+<meta name="twitter:title" content="Level 04 — How Data Flows Through a System">
+<meta name="twitter:description" content="Controllers, services, repositories — learn the layered architecture.">
+<title>Level 04 — How Data Flows Through a System</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="notebook-body">
+<body>
+
 <nav class="top-nav">
-  <a href="../index.html" class="brand"><span class="mark">&#9674;</span> Backend Fundamentals</a>
+  <a href="../index.html" class="brand"><span class="mark">&#9889;</span> Backend Terminal</a>
   <div class="nav-links">
-    <a href="../index.html">Home</a>
-    <a href="ch-01.html">Start</a>
+    <a href="../index.html">Hub</a>
+    <a href="ch-01.html">Level 01</a>
   </div>
 </nav>
+
 <main>
   <div class="container">
+    <div class="chapter-progress">
+      <div class="cp-bar"><div class="cp-fill" style="width:6%;"></div></div>
+      <span class="cp-label">1/17 completed</span>
+    </div>
+
     <header class="page-header">
-      <div class="eyebrow">Chapter 04</div>
+      <div class="eyebrow">Level 04 / 17</div>
       <h1>How Data Flows Through a System</h1>
-      <p class="subtitle">Controller, service, repository, database — why we split code into layers and what each layer actually owns</p>
+      <p class="subtitle">Controller, service, repository, database — why we split code into layers and what each layer owns</p>
       <div class="meta"><span>~11 min read</span></div>
     </header>
 
-    <div class="notebook-content">
+    <div class="chapter-content">
 
-      <section class="topic-pair">
-        <div class="topic-text">
-          <h2>Why One Big File Isn't Enough</h2>
-          <p>When you're just starting out, it's tempting to put everything in one file. A single Python script that handles HTTP requests, runs database queries, formats JSON responses, and sends emails. It works. For a while. Then the codebase grows, and that single file becomes a nightmare. A small change in one place breaks something seemingly unrelated. You can't test individual pieces. You can't reason about the code without holding the entire thing in your head at once.</p>
-          <p>This is why production backend systems use <strong>layered architecture</strong>. Instead of one big blob of code, you split your application into distinct layers, each with a single responsibility. Each layer only talks to the layer directly below it. This creates a clean, one-way flow of data that's easy to understand, test, and modify.</p>
-          <p>The most common pattern you'll encounter — powering everything from Google's backend to a startup's Node.js API — is a four-layer architecture: <strong>Controller → Service → Repository → Database</strong>. Each layer is a walled garden that does one job and does it well.</p>
+      <section class="topic-section">
+        <h2>Why One Big File Isn't Enough</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Big file blob -->
+            <rect x="30" y="20" width="280" height="180" rx="10" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:2;stroke-dasharray:6 4"/>
+            <text x="170" y="70" text-anchor="middle" style="fill:var(--dg-pink);font-size:14;font-weight:700;font-family:Inter,sans-serif">One Big File</text>
+            <text x="170" y="92" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">HTTP handling</text>
+            <text x="170" y="108" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Business logic</text>
+            <text x="170" y="124" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Database queries</text>
+            <text x="170" y="140" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Email sending</text>
+            <text x="170" y="156" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Auth logic</text>
+            <text x="170" y="180" text-anchor="middle" style="fill:var(--dg-pink);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">&#10007; Hard to maintain</text>
+
+            <!-- Arrow -->
+            <line x1="310" y1="110" x2="370" y2="110" style="stroke:var(--dg-cyan);stroke-width:2" marker-end="url(#arr)"/>
+            <text x="340" y="100" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">refactor</text>
+
+            <!-- Layered -->
+            <rect x="380" y="20" width="300" height="36" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="530" y="43" text-anchor="middle" style="fill:var(--dg-cyan);font-size:12;font-weight:600;font-family:Inter,sans-serif">Controller</text>
+            <rect x="380" y="64" width="300" height="36" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="530" y="87" text-anchor="middle" style="fill:var(--dg-violet);font-size:12;font-weight:600;font-family:Inter,sans-serif">Service</text>
+            <rect x="380" y="108" width="300" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="530" y="131" text-anchor="middle" style="fill:var(--dg-green);font-size:12;font-weight:600;font-family:Inter,sans-serif">Repository</text>
+            <rect x="380" y="152" width="300" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="530" y="175" text-anchor="middle" style="fill:var(--dg-amber);font-size:12;font-weight:600;font-family:Inter,sans-serif">Database</text>
+            <text x="530" y="200" text-anchor="middle" style="fill:var(--dg-green);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">&#10003; Each layer has one job</text>
+          </svg>
+          <div class="cap">Layered architecture splits one messy file into four focused layers</div>
         </div>
-        <figure class="topic-diagram">
-          <div class="dg-icon-box">
-            <span class="icon">&#127802;</span>
-            <div class="label">Layered Architecture</div>
-            <div class="sub">One-way data flow = predictable, testable, maintainable</div>
-          </div>
-          <div class="dg-layers" style="margin-top:16px;">
-            <div class="l l-1"><span class="dot"></span> Controller — Routes requests</div>
-            <div class="l-arrow">&#8595;</div>
-            <div class="l l-2"><span class="dot"></span> Service — Business logic</div>
-            <div class="l-arrow">&#8595;</div>
-            <div class="l l-3"><span class="dot"></span> Repository — Data access</div>
-            <div class="l-arrow">&#8595;</div>
-            <div class="l l-4"><span class="dot"></span> Database — Persistent storage</div>
-          </div>
-          <figcaption>Fig. 4.1 — The four-layer architecture pattern: each layer only talks to its neighbor</figcaption>
-        </figure>
+        <p>When you're starting out, it's tempting to put everything in one file. A single script that handles HTTP requests, runs database queries, formats JSON responses, and sends emails. It works — for a while. Then the codebase grows, and that single file becomes a nightmare. A change in one place breaks something unrelated. You can't test individual pieces.</p>
+        <p>This is why production systems use <strong>layered architecture</strong>. Instead of one big blob, you split your application into distinct layers, each with a single responsibility. Each layer only talks to the layer directly below it. The most common pattern: <strong>Controller &rarr; Service &rarr; Repository &rarr; Database</strong>.</p>
       </section>
 
-      <section class="topic-pair">
-        <div class="topic-text">
-          <h2>The Controller Layer: The Traffic Cop</h2>
-          <p>The <strong>controller</strong> is the entry point for every request. It's the first layer that touches incoming data. Think of it as a traffic cop standing at the intersection: its job isn't to know where every car is going, but to point each car in the right direction.</p>
-          <p>When your browser sends <code>GET /api/search?q=backend</code> to Google, a controller catches that request. It parses the URL, extracts the query parameter <code>q</code>, and checks if the request is well-formed. Did you include the required headers? Is the authentication token valid? If something's wrong, the controller returns an error immediately — before any business logic runs. If everything looks good, it passes the sanitized data to the service layer.</p>
-          <p>The controller should be <strong>thin</strong>. It validates input, calls the appropriate service, and sends back a response. That's it. No database queries, no complex calculations, no email sending. If a controller is more than a few dozen lines, something is wrong.</p>
+      <section class="topic-section">
+        <h2>The Controller Layer: The Traffic Cop</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Client -->
+            <rect x="30" y="60" width="100" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="80" y="87" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600;font-family:Inter,sans-serif">Client</text>
+            <!-- Arrow -->
+            <line x1="130" y1="82" x2="190" y2="82" style="stroke:var(--dg-cyan);stroke-width:2" marker-end="url(#arr2)"/>
+            <text x="160" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">HTTP request</text>
+            <!-- Controller -->
+            <rect x="195" y="40" width="180" height="84" rx="10" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="285" y="65" text-anchor="middle" style="fill:var(--dg-cyan);font-size:13;font-weight:700;font-family:Inter,sans-serif">CONTROLLER</text>
+            <text x="285" y="82" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Parses URL, validates input</text>
+            <text x="285" y="96" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Checks auth token</text>
+            <text x="285" y="110" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Calls service, returns response</text>
+            <!-- Arrow -->
+            <line x1="375" y1="82" x2="435" y2="82" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#arr2)"/>
+            <text x="405" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">sanitized data</text>
+            <!-- Service -->
+            <rect x="440" y="40" width="130" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-violet);stroke-width:2"/>
+            <text x="505" y="67" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600;font-family:Inter,sans-serif">Service</text>
+            <!-- Rules -->
+            <rect x="440" y="92" width="130" height="32" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1"/>
+            <text x="505" y="112" text-anchor="middle" style="fill:var(--dg-violet);font-size:9;font-weight:600;font-family:JetBrains Mono,monospace">business logic</text>
+            <!-- X marks -->
+            <rect x="195" y="140" width="200" height="28" rx="6" style="fill:var(--pink-dim);stroke:var(--dg-pink);stroke-width:1"/>
+            <text x="295" y="158" text-anchor="middle" style="fill:var(--dg-pink);font-size:9;font-weight:600;font-family:JetBrains Mono,monospace">&#10007; No DB queries &#10007; No business logic</text>
+          </svg>
+          <div class="cap">The controller is thin — it validates, delegates, and responds. No business logic here.</div>
         </div>
-        <figure class="topic-diagram">
-          <div class="dg-flow" style="flex-direction:column;gap:4px;">
-            <div class="dg-box ink-blue" style="margin-bottom:4px;">Client Request<br><span style="font-size:10px;font-weight:400;">GET /api/search?q=backend</span></div>
-            <div class="dg-connector"></div>
-            <div class="dg-box ink-red" style="border-radius:6px;">CONTROLLER<br><span style="font-size:10px;font-weight:400;">validates &amp; routes</span></div>
-            <div style="display:flex;gap:8px;margin-top:6px;font-family:var(--font-ui);font-size:10px;color:var(--text-soft);justify-content:center;flex-wrap:wrap;">
-              <span style="background:var(--accent-soft);padding:2px 6px;border-radius:3px;color:var(--accent-deep);">parses URL</span>
-              <span style="background:#E8EAF6;padding:2px 6px;border-radius:3px;color:#1A237E;">checks auth token</span>
-              <span style="background:var(--accent-2-soft);padding:2px 6px;border-radius:3px;color:var(--accent-2);">validates input</span>
-            </div>
-          </div>
-          <figcaption>Fig. 4.2 — The controller validates and sanitizes incoming requests before passing data downstream</figcaption>
-        </figure>
+        <p>The <strong>controller</strong> is the entry point for every request. It's the first layer that touches incoming data. Think of it as a traffic cop: its job isn't to know where every car is going, but to point each car in the right direction.</p>
+        <p>When your browser sends <code>GET /api/search?q=backend</code>, a controller catches that request. It parses the URL, extracts the query parameter, and checks if everything is well-formed. If something's wrong, it returns an error immediately. If everything looks good, it passes the sanitized data to the service layer.</p>
+        <p>The controller should be <strong>thin</strong>. It validates input, calls the appropriate service, and sends back a response. That's it. No database queries, no complex calculations.</p>
       </section>
 
-      <section class="topic-pair">
-        <div class="topic-text">
-          <h2>The Service Layer: The Brain of the Operation</h2>
-          <p>Below the controller sits the <strong>service layer</strong>. This is where your application's actual intelligence lives. If the controller is the traffic cop, the service is the strategist who decides where traffic should go and why.</p>
-          <p>The service contains <strong>business logic</strong> — the rules and decisions that define what your application does. A search service knows how to rank results by relevance. A payment service knows how to calculate tax and apply discounts. A notification service knows whether to send an email or a push notification based on user preferences.</p>
-          <p>Services orchestrate. They call multiple repositories, combine data from different sources, enforce business rules, and decide what the final result should look like. A well-written service is <strong>framework-agnostic</strong> — it doesn't know or care whether it's being called from an HTTP controller, a command-line tool, or a test suite. This makes services reusable and testable in isolation.</p>
+      <section class="topic-section">
+        <h2>The Service Layer: The Brain of the Operation</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Controller -->
+            <rect x="30" y="20" width="120" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="90" y="45" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:Inter,sans-serif">Controller</text>
+            <line x1="150" y1="40" x2="200" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr3)"/>
+            <!-- Service -->
+            <rect x="205" y="10" width="280" height="60" rx="10" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:2"/>
+            <text x="345" y="33" text-anchor="middle" style="fill:var(--dg-violet);font-size:13;font-weight:700;font-family:Inter,sans-serif">SERVICE LAYER</text>
+            <text x="345" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Business rules &middot; Orchestration &middot; Decisions</text>
+            <line x1="485" y1="40" x2="535" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr3)"/>
+            <!-- Repository -->
+            <rect x="540" y="20" width="120" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="600" y="45" text-anchor="middle" style="fill:var(--dg-green);font-size:11;font-weight:600;font-family:Inter,sans-serif">Repository</text>
+            <!-- Service responsibilities -->
+            <rect x="205" y="85" width="280" height="95" rx="8" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="345" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:Inter,sans-serif">What the service does:</text>
+            <text x="220" y="122" style="fill:var(--dg-cyan);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Applies business rules</text>
+            <text x="220" y="138" style="fill:var(--dg-violet);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Orchestrates multiple repositories</text>
+            <text x="220" y="154" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Enforces permissions</text>
+            <text x="220" y="170" style="fill:var(--dg-green);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Can call external services</text>
+          </svg>
+          <div class="cap">The service layer is where your application's intelligence lives</div>
         </div>
-        <figure class="topic-diagram">
-          <div class="dg-flow" style="flex-direction:column;gap:4px;">
-            <div class="dg-box ink-red" style="font-size:11px;border-radius:6px 6px 0 0;">Controller passes sanitized data</div>
-            <div class="dg-connector"></div>
-            <div class="dg-box ink-blue" style="border-radius:0;">SERVICE LAYER<br><span style="font-size:10px;font-weight:400;">business logic &amp; orchestration</span></div>
-            <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;padding:10px;background:var(--bg-dim);border-radius:6px;border:2px solid var(--border);width:100%;">
-              <div style="font-family:var(--font-ui);font-size:10px;color:var(--text-soft);font-weight:600;margin-bottom:4px;">What the service does:</div>
-              <div style="font-family:var(--font-ui);font-size:11px;color:var(--text);display:flex;gap:6px;flex-wrap:wrap;">
-                <span style="background:#E8EAF6;padding:3px 8px;border-radius:3px;">&#10003; Applies business rules</span>
-                <span style="background:var(--accent-2-soft);padding:3px 8px;border-radius:3px;">&#10003; Orchestrates repositories</span>
-                <span style="background:var(--accent-soft);padding:3px 8px;border-radius:3px;">&#10003; Enforces permissions</span>
-              </div>
-            </div>
-          </div>
-          <figcaption>Fig. 4.3 — The service layer is where business decisions are made</figcaption>
-        </figure>
+        <p>Below the controller sits the <strong>service layer</strong>. This is where your application's actual intelligence lives. If the controller is the traffic cop, the service is the strategist who decides where traffic should go and why.</p>
+        <p>The service contains <strong>business logic</strong> — the rules and decisions that define what your application does. A search service knows how to rank results by relevance. A payment service knows how to calculate tax and apply discounts. A notification service decides whether to send an email or a push notification based on user preferences.</p>
+        <p>Services orchestrate. They call multiple repositories, combine data from different sources, enforce business rules, and decide what the final result looks like. A well-written service is <strong>framework-agnostic</strong> — it doesn't know whether it's being called from an HTTP controller, a CLI tool, or a test suite.</p>
       </section>
 
-      <section class="topic-pair">
-        <div class="topic-text">
-          <h2>The Repository Layer: The Data Gatekeeper</h2>
-          <p>Once the service has decided what data it needs, it calls the <strong>repository layer</strong>. The repository is a clean abstraction over the database. It speaks the language of your application — methods like <code>findUserById(id)</code>, <code>saveOrder(order)</code>, <code>deleteExpiredSessions()</code> — rather than raw SQL or query builder syntax.</p>
-          <p>Why not just put database queries directly in the service? Because that couples your business logic to a specific database technology. If you ever switch from PostgreSQL to MongoDB, or from MySQL to DynamoDB, you'd have to rewrite every service that touches the database. With a repository layer, you only change the repository implementation — the service code stays untouched.</p>
-          <p>Repositories also provide a natural place for cross-cutting data concerns like caching, retry logic, connection pooling, and query optimization. The service doesn't need to know that the repository maintains an in-memory cache of frequently accessed users — it just calls <code>findUserById</code> and gets the result.</p>
+      <section class="topic-section">
+        <h2>The Repository Layer: The Data Gatekeeper</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Service -->
+            <rect x="30" y="20" width="120" height="40" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="90" y="45" text-anchor="middle" style="fill:var(--dg-violet);font-size:11;font-weight:600;font-family:Inter,sans-serif">Service</text>
+            <line x1="150" y1="40" x2="210" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr4)"/>
+            <!-- Repository -->
+            <rect x="215" y="10" width="280" height="60" rx="10" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:2"/>
+            <text x="355" y="33" text-anchor="middle" style="fill:var(--dg-green);font-size:13;font-weight:700;font-family:Inter,sans-serif">REPOSITORY</text>
+            <text x="355" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Abstracts the database behind clean methods</text>
+            <line x1="495" y1="40" x2="555" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr4)"/>
+            <!-- Database -->
+            <rect x="560" y="20" width="120" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="620" y="45" text-anchor="middle" style="fill:var(--dg-amber);font-size:11;font-weight:600;font-family:Inter,sans-serif">Database</text>
+            <!-- Code examples -->
+            <rect x="215" y="85" width="280" height="95" rx="8" style="fill:var(--bg-code);stroke:var(--border);stroke-width:1"/>
+            <text x="355" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">// Clean method names</text>
+            <text x="230" y="125" style="fill:var(--dg-cyan);font-size:10;font-family:JetBrains Mono,monospace">findUserById(id)</text>
+            <text x="230" y="143" style="fill:var(--dg-green);font-size:10;font-family:JetBrains Mono,monospace">saveOrder(order)</text>
+            <text x="230" y="161" style="fill:var(--dg-pink);font-size:10;font-family:JetBrains Mono,monospace">deleteExpiredSessions()</text>
+            <text x="230" y="175" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Not raw SQL — clean abstractions</text>
+          </svg>
+          <div class="cap">The repository translates clean method calls into database queries. Swap databases without touching services.</div>
         </div>
-        <figure class="topic-diagram">
-          <div class="dg-flow" style="flex-direction:column;gap:4px;">
-            <div class="dg-box ink-blue" style="font-size:11px;border-radius:6px 6px 0 0;">Service calls repository method</div>
-            <div class="dg-connector"></div>
-            <div class="dg-box ink-green" style="border-radius:0;">REPOSITORY<br><span style="font-size:10px;font-weight:400;">abstracts the database</span></div>
-            <div class="dg-connector"></div>
-            <div class="dg-box ink-gray" style="font-size:11px;border-radius:0 0 6px 6px;">Database<br><span style="font-size:10px;font-weight:400;">PostgreSQL / MySQL / MongoDB</span></div>
-          </div>
-          <div class="paper-note" style="margin-top:12px;">
-            <strong>Repository methods:</strong><br>
-            <code style="font-size:11px;">findUserById(id)</code><br>
-            <code style="font-size:11px;">saveOrder(order)</code><br>
-            <code style="font-size:11px;">deleteExpiredSessions()</code>
-          </div>
-          <figcaption>Fig. 4.4 — The repository translates application calls into database queries</figcaption>
-        </figure>
+        <p>Once the service has decided what data it needs, it calls the <strong>repository layer</strong>. The repository is a clean abstraction over the database. It speaks the language of your application — methods like <code>findUserById(id)</code>, <code>saveOrder(order)</code> — rather than raw SQL.</p>
+        <p>Why not just put database queries directly in the service? Because that couples your business logic to a specific database technology. If you switch from PostgreSQL to MongoDB, you'd only change the repository implementation — the service code stays untouched.</p>
+        <p>Repositories also provide a natural place for cross-cutting concerns like caching, retry logic, connection pooling, and query optimization. The service doesn't need to know the repository maintains an in-memory cache — it just calls <code>findUserById</code> and gets the result.</p>
       </section>
 
-      <section class="topic-pair">
-        <div class="topic-text">
-          <h2>The Database Layer: Where Data Sleeps</h2>
-          <p>At the bottom of the stack is the <strong>database</strong>. This is where data actually lives — on disk, in memory, or spread across a cluster of machines. The database is the only layer that deals with raw persistence. Everything above it is just moving, shaping, and transforming data on its way in or out.</p>
-          <p>In modern systems, the "database" isn't always a single thing. You might have a primary relational database (PostgreSQL) for user accounts and orders, a document store (MongoDB) for flexible content, a key-value cache (Redis) for fast lookups, and a search index (Elasticsearch) for full-text queries. The repository layer hides this complexity — the service calls <code>searchProducts(query)</code> without knowing whether the repository hits a dedicated search index or falls back to a SQL <code>LIKE</code> query.</p>
+      <section class="topic-section">
+        <h2>The Database Layer: Where Data Sleeps</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Repository -->
+            <rect x="260" y="10" width="180" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="350" y="35" text-anchor="middle" style="fill:var(--dg-green);font-size:12;font-weight:600;font-family:Inter,sans-serif">Repository</text>
+            <line x1="350" y1="50" x2="350" y2="70" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr5)"/>
+            <!-- Database cluster -->
+            <rect x="30" y="75" width="300" height="120" rx="10" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:2"/>
+            <text x="180" y="100" text-anchor="middle" style="fill:var(--dg-amber);font-size:13;font-weight:700;font-family:Inter,sans-serif">DATABASE CLUSTER</text>
+            <rect x="50" y="110" width="120" height="38" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="110" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-family:Inter,sans-serif">Primary (write)</text>
+            <rect x="185" y="110" width="120" height="38" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="245" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-family:Inter,sans-serif">Replica (read)</text>
+            <line x1="110" y1="148" x2="245" y2="148" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:3 3"/>
+            <text x="180" y="162" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">replication</text>
+            <text x="180" y="182" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">PostgreSQL / MySQL / Mongo / Redis</text>
+            <!-- Side: multiple DB types -->
+            <rect x="380" y="75" width="300" height="120" rx="10" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="530" y="100" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:Inter,sans-serif">Different databases for</text>
+            <text x="530" y="116" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:Inter,sans-serif">different jobs</text>
+            <rect x="395" y="125" width="120" height="30" rx="5" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1"/>
+            <text x="455" y="144" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-family:JetBrains Mono,monospace">PostgreSQL</text>
+            <rect x="525" y="125" width="70" height="30" rx="5" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1"/>
+            <text x="560" y="144" text-anchor="middle" style="fill:var(--dg-violet);font-size:10;font-family:JetBrains Mono,monospace">Redis</text>
+            <rect x="395" y="162" width="120" height="30" rx="5" style="fill:var(--pink-dim);stroke:var(--dg-pink);stroke-width:1"/>
+            <text x="455" y="181" text-anchor="middle" style="fill:var(--dg-pink);font-size:10;font-family:JetBrains Mono,monospace">MongoDB</text>
+            <rect x="525" y="162" width="70" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1"/>
+            <text x="560" y="181" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">Elastic</text>
+          </svg>
+          <div class="cap">Modern backends use multiple data stores behind a single repository interface</div>
         </div>
-        <figure class="topic-diagram">
-          <div class="dg-stack">
-            <div class="dg-box ink-blue">Service requests data</div>
-            <div class="dg-connector"></div>
-            <div class="dg-box ink-green">Repository translates to query</div>
-            <div class="dg-connector"></div>
-            <div class="dg-box ink-red">Database executes and returns</div>
-          </div>
-          <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
-            <span class="dg-box ink-amber" style="padding:8px 12px;font-size:10px;flex:1;min-width:70px;">PostgreSQL<br><span style="font-weight:400;">users, orders</span></span>
-            <span class="dg-box ink-green" style="padding:8px 12px;font-size:10px;flex:1;min-width:70px;">Redis<br><span style="font-weight:400;">cache, sessions</span></span>
-            <span class="dg-box ink-blue" style="padding:8px 12px;font-size:10px;flex:1;min-width:70px;">Elasticsearch<br><span style="font-weight:400;">search index</span></span>
-          </div>
-          <figcaption>Fig. 4.5 — Modern backends often use multiple database technologies behind a single repository interface</figcaption>
-        </figure>
+        <p>At the bottom of the stack is the <strong>database</strong>. This is where data actually lives — on disk, in memory, or spread across a cluster of machines. The database is the only layer that deals with raw persistence. Everything above it is just moving, shaping, and transforming data on its way in or out.</p>
+        <p>In modern systems, the "database" isn't always a single thing. You might have PostgreSQL for user accounts and orders, MongoDB for flexible content, Redis for fast caching, and Elasticsearch for full-text search. The repository layer hides this complexity — the service calls <code>searchProducts(query)</code> without knowing whether the repository hits a dedicated search index or falls back to a SQL query.</p>
       </section>
 
-      <section class="topic-pair">
-        <div class="topic-text">
-          <h2>Why Layers Matter: The Google Example</h2>
-          <p>Think about what happens when you search on Google. The controller receives your <code>GET /search?q=latest+news</code> request. The search service orchestrates a complex pipeline: it calls the <code>QueryRepository</code> to check for cached results, the <code>RankingService</code> (another service!) to score results by relevance, the <code>PersonalizationService</code> to factor in your search history, and the <code>AdService</code> to pick relevant ads.</p>
-          <p>Each of these is a separate layer or service with a clear boundary. Google's engineers can optimize the ranking algorithm without touching the ad system. They can swap out the caching layer from Memcached to Redis without changing any business logic. They can add a new frontend (like voice search) by writing a new controller that calls the same services.</p>
-          <p>That's the power of layered architecture. It's not extra work — it's <strong>insurance</strong> against the chaos that every growing codebase inevitably faces.</p>
+      <section class="topic-section">
+        <h2>Why Layers Matter: The Google Example</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Full flow -->
+            <rect x="30" y="10" width="660" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="360" y="30" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:Inter,sans-serif">Controller: receives GET /search?q=latest+news</text>
+            <line x1="360" y1="40" x2="360" y2="55" style="stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:4 3"/>
+            <rect x="30" y="58" width="660" height="30" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="360" y="78" text-anchor="middle" style="fill:var(--dg-violet);font-size:11;font-weight:600;font-family:Inter,sans-serif">SearchService: orchestrates ranking, personalization, ads</text>
+            <!-- Split into 3 sub-services -->
+            <line x1="150" y1="88" x2="150" y2="103" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="360" y1="88" x2="360" y2="103" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="570" y1="88" x2="570" y2="103" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <rect x="40" y="106" width="210" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="145" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">QueryRepository</text>
+            <rect x="260" y="106" width="190" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="355" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">RankingService</text>
+            <rect x="465" y="106" width="220" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:1.5"/>
+            <text x="575" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">PersonalizationService</text>
+            <!-- Databases -->
+            <line x1="145" y1="142" x2="145" y2="162" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="355" y1="142" x2="355" y2="162" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="575" y1="142" x2="575" y2="162" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <rect x="40" y="165" width="210" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="145" y="184" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">Cache / Search Index</text>
+            <rect x="260" y="165" width="190" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="355" y="184" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">User Profiles DB</text>
+            <rect x="465" y="165" width="220" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="575" y="184" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">Ad Targeting DB</text>
+            <!-- Insight -->
+            <rect x="120" y="210" width="480" height="24" rx="12" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1"/>
+            <text x="360" y="226" text-anchor="middle" style="fill:var(--dg-green);font-size:10;font-weight:600;font-family:Inter,sans-serif">Each layer can change independently. That's how Google ships hundreds of changes per day.</text>
+          </svg>
+          <div class="cap">Google's search architecture follows the same layered pattern at massive scale</div>
         </div>
-        <figure class="topic-diagram">
-          <div class="dg-layers" style="max-width:100%;">
-            <div class="l l-1"><span class="dot"></span> Controller — <span style="font-weight:400;">receives search request</span></div>
-            <div class="l-arrow">&#8595;</div>
-            <div class="l l-2"><span class="dot"></span> SearchService — <span style="font-weight:400;">orchestrates ranking, personalization, ads</span></div>
-            <div class="l-arrow">&#8595;</div>
-            <div class="l l-3"><span class="dot"></span> QueryRepository — <span style="font-weight:400;">checks cache, queries index</span></div>
-            <div class="l-arrow">&#8595;</div>
-            <div class="l l-4"><span class="dot"></span> Multiple databases — <span style="font-weight:400;">search index, cache, user profiles</span></div>
-          </div>
-          <div style="margin-top:10px;padding:10px 14px;background:var(--bg-note);border:2px solid var(--border);border-radius:6px;font-family:var(--font-ui);font-size:11px;color:var(--text-soft);">
-            <strong style="color:var(--text);">Key insight:</strong> Each layer can change independently. That's how Google ships hundreds of changes per day without breaking search.
-          </div>
-          <figcaption>Fig. 4.6 — Google's search architecture follows the same layered pattern, scaled to billions of queries</figcaption>
-        </figure>
+        <p>Think about what happens when you search on Google. The controller receives your <code>GET /search?q=latest+news</code> request. The search service orchestrates a complex pipeline: it calls the QueryRepository to check cached results, the RankingService to score results, the PersonalizationService to factor in your history, and the AdService to pick relevant ads.</p>
+        <p>Each of these is a separate layer or service with a clear boundary. Google's engineers can optimize the ranking algorithm without touching the ad system. They can swap out the caching layer from Memcached to Redis without changing any business logic. They can add a new frontend (like voice search) by writing a new controller that calls the same services.</p>
+        <p>That's the power of layered architecture. It's not extra work — it's <strong>insurance</strong> against the chaos that every growing codebase inevitably faces.</p>
       </section>
 
     </div>
 
+    <div class="mark-complete-wrap">
+      <button class="btn-mark" data-ch="4">&#9876; Mark Level Complete</button>
+    </div>
+
     <nav class="chapter-nav">
-      <a href="ch-03.html" class="prev"><div class="dir">Previous</div><div class="title">What a Server Actually Does</div></a>
-      <a href="ch-05.html" class="next"><div class="dir">Next</div><div class="title">Memory, Threads &amp; Processes</div></a>
+      <a href="ch-03.html" class="prev"><div class="dir">Previous Level</div><div class="title">What a Server Actually Does</div></a>
+      <a href="ch-05.html" class="next"><div class="dir">Next Level</div><div class="title">Memory, Threads &amp; Processes</div></a>
     </nav>
   </div>
 </main>
+
 <footer class="site-footer">
   <div class="container">
-    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
-    <div class="stamp">Backend Fundamentals &#183; Free &#183; Always</div>
+    <p>No frameworks. No magic. Just the machinery every server runs on.</p>
+    <div class="stamp">Backend Terminal &#183; Free &#183; Always</div>
   </div>
 </footer>
-<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">&#9790;</span></button>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">&#9788;</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>
