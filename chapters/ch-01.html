@@ -4,294 +4,249 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="DNS, IP addresses, ports, and the TCP handshake explained simply. What happens when you type google.com into your browser.">
-<meta property="og:title" content="Ch 01 — How Machines Find Each Other">
-<meta property="og:description" content="DNS, IP addresses, ports, and the TCP handshake explained simply.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Terminal">
+<meta property="og:title" content="Level 01 â€” How Machines Find Each Other">
+<meta property="og:description" content="DNS, IP addresses, ports, and the TCP handshake explained simply. What happens when you type google.com into your browser.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 01 — How Machines Find Each Other">
+<meta name="twitter:title" content="Level 01 â€” How Machines Find Each Other">
 <meta name="twitter:description" content="DNS, IP addresses, ports, and the TCP handshake explained simply.">
-<title>Ch 01 — How Machines Find Each Other</title>
+<title>Level 01 â€” How Machines Find Each Other</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">&#9889;</span> Backend Terminal</a>
+  <div class="nav-links">
+    <a href="../index.html">Hub</a>
+    <a href="ch-01.html">Level 01</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link active" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status">&#9654;</span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
-  </div>
-</div>
+</nav>
 
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<main>
+  <div class="container">
+    <div class="chapter-progress">
+      <div class="cp-bar"><div class="cp-fill" style="width:6%;"></div></div>
+      <span class="cp-label">1/17 completed</span>
+    </div>
 
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
-  </div>
+    <header class="page-header">
+      <div class="eyebrow">Level 01 / 17</div>
+      <h1>How Machines Find Each Other</h1>
+      <p class="subtitle">DNS, IP addresses, ports, and the handshake that starts everything</p>
+      <div class="meta"><span>~10 min read</span></div>
+    </header>
 
-  <header class="page-header">
-    <div class="eyebrow">Ch 01 / 17</div>
-    <h1>How Machines Find Each Other</h1>
-    <p class="subtitle">DNS, IP addresses, ports, and the handshake that starts everything</p>
-    <div class="meta"><span>~10 min read</span></div>
-  </header>
+    <div class="chapter-content">
 
-  <div class="chapter-content">
-
-    <section class="topic-section">
-      <h2>How Do Computers Even Find Each Other?</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Every device on the internet needs a unique address — an <strong>IP address</strong> — just like a street address for mail. But humans can't remember strings of numbers like <code>104.244.42.65</code>. That's where <strong>DNS</strong> (Domain Name System) acts as the internet's phonebook, translating names like <code>google.com</code> into IP addresses in milliseconds.</p>
-          <ul>
-            <li>Every device has a unique IP address</li>
-            <li>DNS translates domain names to IPs</li>
-            <li>The lookup takes milliseconds</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
+      <section class="topic-section">
+        <h2>How Do Computers Even Find Each Other?</h2>
+        <div class="diagram-wrap">
           <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr-cyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-cyan)"/></marker>
             </defs>
-            <rect x="30" y="80" width="130" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="95" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Your Browser</text>
-            <rect x="250" y="40" width="130" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-2);stroke-width:2"/>
-            <text x="315" y="70" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">DNS Server</text>
-            <rect x="520" y="80" width="140" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="590" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Google Server</text>
-            <line x1="160" y1="105" x2="250" y2="85" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar1)"/>
-            <text x="205" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">google.com?</text>
-            <line x1="380" y1="85" x2="520" y2="105" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar1)"/>
-            <text x="450" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">IP: 104.244.42.65</text>
-            <rect x="30" y="170" width="130" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="95" y="193" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Check local cache</text>
-            <line x1="160" y1="180" x2="250" y2="180" style="stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#ar1)"/>
-            <text x="205" y="173" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">not cached</text>
-            <rect x="220" y="215" width="280" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="234" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">DNS translates google.com to an IP address</text>
+            <!-- Browser -->
+            <rect x="30" y="80" width="130" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="95" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600;font-family:Inter,sans-serif">Your Browser</text>
+            <!-- DNS Server -->
+            <rect x="250" y="40" width="130" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-violet);stroke-width:2"/>
+            <text x="315" y="70" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600;font-family:Inter,sans-serif">DNS Server</text>
+            <!-- Google Server -->
+            <rect x="520" y="80" width="140" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:2"/>
+            <text x="590" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600;font-family:Inter,sans-serif">Google Server</text>
+            <!-- Lines -->
+            <line x1="160" y1="105" x2="250" y2="85" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr)"/>
+            <text x="205" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:Inter,sans-serif">google.com?</text>
+            <line x1="380" y1="85" x2="520" y2="105" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr)"/>
+            <text x="450" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:Inter,sans-serif">IP: 104.244.42.65</text>
+            <!-- Cache check -->
+            <rect x="30" y="170" width="130" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--border-strong);stroke-width:1.5"/>
+            <text x="95" y="193" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:Inter,sans-serif">Check local cache</text>
+            <line x1="160" y1="180" x2="250" y2="180" style="stroke:var(--border-strong);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#arr)"/>
+            <text x="205" y="173" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">not cached</text>
+            <!-- Bottom label -->
+            <rect x="220" y="215" width="280" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1"/>
+            <text x="360" y="234" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:Inter,sans-serif">DNS translates google.com to an IP address</text>
           </svg>
           <div class="cap">The DNS lookup: browser queries a resolver, which returns Google's IP address</div>
         </div>
-      </div>
-    </section>
+        <p>Imagine you want to mail a letter to Google headquarters. You can't just write "Google" on an envelope â€” the postal service needs a street address. <strong>The internet works the exact same way.</strong> Every computer connected to the internet has a numeric address called an <strong>IP address</strong>.</p>
+        <p>An IP address looks like this: <code>104.244.42.65</code> (that's one of Google's real IP addresses). It's four numbers separated by dots, each ranging from 0 to 255. If you think of the internet as a giant city, IP addresses are like street addresses â€” they tell packets of data exactly where to go.</p>
+        <p>But humans are terrible at remembering numbers. You know <code>google.com</code> without thinking, but not <code>104.244.42.65</code>. That's where <strong>DNS</strong> â€” the Domain Name System â€” comes in. DNS is the internet's phonebook. When you type <code>google.com</code>, your computer asks a DNS server "What's the IP?" and gets back the address it needs.</p>
+        <p>This all happens in <strong>milliseconds</strong>. Behind the scenes, there's a hierarchy: your computer checks its local cache, then asks a recursive resolver, which may ask a root server, then a TLD server (.com), then the authoritative name server for google.com.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>Ports: The Apartment Number</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>If an IP address is a building's street address, a <strong>port</strong> is the apartment number. The standard port for web traffic is port 80 (HTTP) and port 443 (HTTPS). Together, an IP and port form a <strong>socket</strong> — the complete destination for your data.</p>
-          <ul>
-            <li>Port 80 = HTTP, Port 443 = HTTPS</li>
-            <li>Ports 0-1023 are well-known</li>
-            <li>IP + Port = Socket</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
+      <section class="topic-section">
+        <h2>Ports: The Apartment Number</h2>
+        <div class="diagram-wrap">
           <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="40" y="40" width="280" height="180" rx="8" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:2"/>
-            <text x="180" y="65" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">IP: 104.244.42.65</text>
-            <text x="180" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">(The building address)</text>
-            <text x="180" y="108" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Ports = Apartment numbers</text>
-            <rect x="60" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="85" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">22 SSH</text>
-            <rect x="118" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="143" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">25 SMTP</text>
-            <rect x="176" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="201" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">53 DNS</text>
-            <rect x="234" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="259" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">...</text>
-            <rect x="60" y="155" width="64" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="92" y="177" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">80 HTTP</text>
-            <rect x="132" y="155" width="64" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="164" y="177" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">443 HTTPS</text>
-            <rect x="204" y="155" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="229" y="175" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">3306</text>
-            <rect x="262" y="155" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1.5"/>
-            <text x="287" y="175" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">8080</text>
-            <rect x="420" y="110" width="120" height="40" rx="8" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="480" y="135" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Your Browser</text>
-            <line x1="420" y1="130" x2="300" y2="173" style="stroke:var(--dg-5);stroke-width:1.5;stroke-dasharray:5 3" marker-end="url(#ar2)"/>
-            <text x="380" y="160" text-anchor="end" style="fill:var(--dg-5);font-size:11">connects to port 443</text>
-            <rect x="400" y="200" width="220" height="36" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="510" y="223" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Socket: 192.168.1.5:54321 &rarr; 104.244.42.65:443</text>
+            <!-- Building -->
+            <rect x="40" y="40" width="280" height="180" rx="8" style="fill:var(--dg-node);stroke:var(--border-strong);stroke-width:2"/>
+            <text x="180" y="65" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600;font-family:Inter,sans-serif">IP: 104.244.42.65</text>
+            <text x="180" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">(The building address)</text>
+            <line x1="60" y1="90" x2="300" y2="90" style="stroke:var(--border);stroke-width:1"/>
+            <!-- Apartments -->
+            <text x="180" y="108" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Ports = Apartment numbers</text>
+            <!-- Row 1 -->
+            <rect x="60" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="85" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:JetBrains Mono,monospace">22 SSH</text>
+            <rect x="118" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="143" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:JetBrains Mono,monospace">25 SMTP</text>
+            <rect x="176" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="201" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:JetBrains Mono,monospace">53 DNS</text>
+            <rect x="234" y="115" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="259" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:JetBrains Mono,monospace">...</text>
+            <!-- Row 2 highlighted -->
+            <rect x="60" y="155" width="64" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="92" y="177" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">80 HTTP</text>
+            <rect x="132" y="155" width="64" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="164" y="177" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">443 HTTPS</text>
+            <rect x="204" y="155" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="229" y="175" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:JetBrains Mono,monospace">3306</text>
+            <rect x="262" y="155" width="50" height="32" rx="4" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
+            <text x="287" y="175" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10;font-family:JetBrains Mono,monospace">8080</text>
+            <!-- Arrow from browser to port -->
+            <rect x="420" y="110" width="120" height="40" rx="8" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:2"/>
+            <text x="480" y="135" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600;font-family:Inter,sans-serif">Your Browser</text>
+            <line x1="420" y1="130" x2="300" y2="173" style="stroke:var(--dg-pink);stroke-width:1.5;stroke-dasharray:5 3" marker-end="url(#arr)"/>
+            <text x="380" y="160" text-anchor="end" style="fill:var(--dg-pink);font-size:10;font-family:Inter,sans-serif">connects to port 443</text>
+            <rect x="400" y="200" width="200" height="36" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1"/>
+            <text x="500" y="223" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:Inter,sans-serif">Socket: 192.168.1.5:54321 &rarr; 104.244.42.65:443</text>
           </svg>
           <div class="cap">IP address = building address, port = apartment number. Together they form a socket.</div>
         </div>
-      </div>
-    </section>
+        <p>So now your browser has Google's IP address. But Google's server runs many things at once â€” a web server, an API server, a database, maybe an email server. How does your request reach the web server and not the database? This is where <strong>ports</strong> come in.</p>
+        <p>If the IP address is the building's street address, a <strong>port</strong> is the apartment number. The standard port for web traffic is <strong>port 80</strong> (HTTP) and <strong>port 443</strong> (HTTPS). When you visit <code>https://google.com</code>, your browser connects to port 443 on <code>104.244.42.65</code>. The operating system sees that connection on port 443 and routes it to the web server listening there.</p>
+        <p>There are 65,535 possible ports. Ports 0-1023 are "well-known ports": 22 for SSH, 25 for SMTP, 53 for DNS, 80 for HTTP, 443 for HTTPS. Higher ports are used for temporary connections â€” your browser might use a random port like 54321 on its end, connecting to port 443 on Google's end. This combo is called a <strong>socket</strong>.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>The DNS Resolution Chain</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>DNS resolution follows a hierarchy. Your query travels through multiple servers before returning the IP address.</p>
-          <ul>
-            <li>Recursive resolver &rarr; Root &rarr; TLD &rarr; Authoritative</li>
-            <li>Each level knows where to ask next</li>
-            <li>Results are cached at every level for speed</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="280" y="10" width="160" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="360" y="33" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Root DNS Server</text>
-            <line x1="360" y1="46" x2="360" y2="60" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="280" y="60" width="160" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-2);stroke-width:2"/>
-            <text x="360" y="83" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">.com TLD Server</text>
-            <line x1="360" y1="96" x2="360" y2="110" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="280" y="110" width="160" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-3);stroke-width:2"/>
-            <text x="360" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">google.com Authoritative NS</text>
-            <line x1="360" y1="146" x2="360" y2="160" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="280" y="160" width="160" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-4);stroke-width:2"/>
-            <text x="360" y="183" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600>Recursive Resolver</text>
-            <line x1="360" y1="196" x2="200" y2="230" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="140" y="230" width="120" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="200" y="253" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600>Client</text>
-            <line x1="360" y1="196" x2="480" y2="230" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="420" y="230" width="120" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:2"/>
-            <text x="480" y="253" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600>Cache</text>
-            <text x="360" y="280" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">DNS hierarchy: each level knows the next one's address</text>
-          </svg>
-          <div class="cap">DNS resolution follows a multi-level hierarchy, with caching at each step</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>The TCP Three-Way Handshake</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>TCP is like a phone call — before you start talking, you make sure the other person is ready. The <strong>three-way handshake</strong> establishes a reliable connection with three messages exchanged in under 100ms.</p>
-          <ul>
-            <li>SYN — "Can we talk?"</li>
-            <li>SYN-ACK — "Yes, I'm ready"</li>
-            <li>ACK — "Connection established!"</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
+      <section class="topic-section">
+        <h2>The TCP Three-Way Handshake</h2>
+        <div class="diagram-wrap">
           <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-5)"/></marker>
-              <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-1)"/></marker>
-              <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-3)"/></marker>
+              <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-pink)"/></marker>
+              <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-cyan)"/></marker>
+              <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-green)"/></marker>
             </defs>
-            <rect x="30" y="50" width="120" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="90" y="77" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Your Browser</text>
-            <rect x="540" y="50" width="120" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="600" y="77" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Google Server</text>
-            <line x1="150" y1="70" x2="540" y2="70" style="stroke:var(--dg-5);stroke-width:2" marker-end="url(#ar3)"/>
-            <text x="345" y="63" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">SYN (seq=1000)</text>
-            <text x="345" y="93" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">"Hey, can we talk? Here's my sequence number."</text>
-            <line x1="540" y1="120" x2="150" y2="120" style="stroke:var(--dg-1);stroke-width:2" marker-end="url(#ar4)"/>
-            <text x="345" y="113" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">SYN-ACK (seq=5000, ack=1001)</text>
-            <text x="345" y="143" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">"Got your request. I'm ready. Here's my number."</text>
-            <line x1="150" y1="170" x2="540" y2="170" style="stroke:var(--dg-3);stroke-width:2" marker-end="url(#ar5)"/>
-            <text x="345" y="163" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">ACK (ack=5001)</text>
-            <text x="345" y="193" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">"Connection established. Sending data now!"</text>
-            <rect x="200" y="215" width="290" height="36" rx="18" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="345" y="238" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">CONNECTION ESTABLISHED</text>
-            <text x="345" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Three messages. Under 100ms. Happens every time you visit a site.</text>
+            <!-- Client -->
+            <rect x="30" y="50" width="120" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="90" y="77" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600;font-family:Inter,sans-serif">Your Browser</text>
+            <!-- Server -->
+            <rect x="540" y="50" width="120" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:2"/>
+            <text x="600" y="77" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600;font-family:Inter,sans-serif">Google Server</text>
+            <!-- SYN -->
+            <line x1="150" y1="70" x2="540" y2="70" style="stroke:var(--dg-pink);stroke-width:2" marker-end="url(#arr-r)"/>
+            <text x="345" y="63" text-anchor="middle" style="fill:var(--dg-pink);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">SYN (seq=1000)</text>
+            <text x="345" y="93" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">"Hey, can we talk? Here's my sequence number."</text>
+            <!-- SYN-ACK -->
+            <line x1="540" y1="120" x2="150" y2="120" style="stroke:var(--dg-cyan);stroke-width:2" marker-end="url(#arr-b)"/>
+            <text x="345" y="113" text-anchor="middle" style="fill:var(--dg-cyan);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">SYN-ACK (seq=5000, ack=1001)</text>
+            <text x="345" y="143" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">"Got your request. I'm ready. Here's my number."</text>
+            <!-- ACK -->
+            <line x1="150" y1="170" x2="540" y2="170" style="stroke:var(--dg-green);stroke-width:2" marker-end="url(#arr-g)"/>
+            <text x="345" y="163" text-anchor="middle" style="fill:var(--dg-green);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">ACK (ack=5001)</text>
+            <text x="345" y="193" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">"Connection established. Sending data now!"</text>
+            <!-- Label -->
+            <rect x="200" y="215" width="290" height="36" rx="18" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1"/>
+            <text x="345" y="238" text-anchor="middle" style="fill:var(--dg-green);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">CONNECTION ESTABLISHED</text>
+            <!-- Timeline -->
+            <text x="345" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Three messages. Under 100ms. Happens every time you visit a site.</text>
           </svg>
-          <div class="cap">The TCP three-way handshake: SYN, SYN-ACK, ACK — three messages establish a reliable connection</div>
+          <div class="cap">The TCP three-way handshake: SYN, SYN-ACK, ACK â€” three messages establish a reliable connection</div>
         </div>
-      </div>
-    </section>
+        <p>Your browser knows the IP address and the port. Now it needs to actually open a connection. The internet is built on <strong>TCP</strong> â€” Transmission Control Protocol. TCP is like a phone call: before you start talking, you make sure the other person is there and ready to listen. This setup is called the <strong>three-way handshake</strong>.</p>
+        <p><strong>Step 1: SYN</strong> â€” Your browser sends a packet with a SYN flag to Google's server. "Hey, I'd like to start a connection. Here's my starting sequence number."</p>
+        <p><strong>Step 2: SYN-ACK</strong> â€” Google's server receives the SYN. If it's willing to accept the connection, it sends back SYN-ACK. "I received your request. Yes, I'm ready to talk. Here's my sequence number."</p>
+        <p><strong>Step 3: ACK</strong> â€” Your browser sends back ACK: "Great, I got your acknowledgment. Connection is open. Let's send data." At this point, both sides agree the connection is established.</p>
+        <p>This entire handshake happens in the blink of an eye â€” typically under 100 milliseconds. But it happens <strong>every single time</strong> you visit a website.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>The Google Example: What Happens When You Open the App</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Here's what happens below the surface when you tap Google Search:</p>
-          <ul>
-            <li>Check DNS cache &rarr; Query resolver &rarr; Get IP</li>
-            <li>TCP handshake (SYN, SYN-ACK, ACK)</li>
-            <li>TLS encryption &rarr; Send HTTP request &rarr; Get response</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
+      <section class="topic-section">
+        <h2>The Google Example: What Happens When You Open the App</h2>
+        <div class="diagram-wrap">
           <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
             </defs>
-            <rect x="30" y="10" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="130" y="30" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">STEP 1</text>
-            <text x="130" y="42" text-anchor="middle" style="fill:var(--dg-text);font-size:11">Check local DNS cache</text>
-            <line x1="230" y1="31" x2="280" y2="31" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar6)"/>
-            <rect x="285" y="10" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="385" y="30" text-anchor="middle" style="fill:var(--dg-2);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">STEP 2</text>
-            <text x="385" y="42" text-anchor="middle" style="fill:var(--dg-text);font-size:11">Query DNS resolver</text>
-            <line x1="485" y1="31" x2="535" y2="31" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar6)"/>
-            <rect x="540" y="10" width="140" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="610" y="30" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">STEP 3</text>
-            <text x="610" y="42" text-anchor="middle" style="fill:var(--dg-text);font-size:11">Get IP address</text>
-            <line x1="350" y1="52" x2="350" y2="75" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar6)"/>
-            <rect x="250" y="78" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="350" y="98" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">STEP 4</text>
-            <text x="350" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:11">SYN &rarr; SYN-ACK &rarr; ACK</text>
-            <line x1="350" y1="120" x2="350" y2="143" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar6)"/>
-            <rect x="250" y="146" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="350" y="166" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">STEP 5</text>
-            <text x="350" y="178" text-anchor="middle" style="fill:var(--dg-text);font-size:11">TLS handshake (HTTPS)</text>
-            <line x1="350" y1="188" x2="350" y2="211" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar6)"/>
-            <rect x="250" y="214" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="350" y="234" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">STEP 6</text>
-            <text x="350" y="246" text-anchor="middle" style="fill:var(--dg-text);font-size:11">Send HTTP request &amp; get results</text>
-            <rect x="500" y="120" width="180" height="80" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="590" y="142" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">~200ms total</text>
-            <text x="590" y="158" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">DNS lookup</text>
-            <text x="590" y="170" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">TCP handshake</text>
-            <text x="590" y="182" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">TLS + HTTP request</text>
-            <text x="590" y="194" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Results rendered</text>
+            <!-- Step boxes -->
+            <rect x="30" y="10" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="130" y="30" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">STEP 1</text>
+            <text x="130" y="42" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">Check local DNS cache</text>
+            <line x1="230" y1="31" x2="280" y2="31" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr-d)"/>
+
+            <rect x="285" y="10" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="385" y="30" text-anchor="middle" style="fill:var(--dg-violet);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">STEP 2</text>
+            <text x="385" y="42" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">Query DNS resolver</text>
+            <line x1="485" y1="31" x2="535" y2="31" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr-d)"/>
+
+            <rect x="540" y="10" width="140" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:1.5"/>
+            <text x="610" y="30" text-anchor="middle" style="fill:var(--dg-pink);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">STEP 3</text>
+            <text x="610" y="42" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">Get IP address</text>
+
+            <line x1="350" y1="52" x2="350" y2="75" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr-d)"/>
+
+            <rect x="250" y="78" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="350" y="98" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">STEP 4</text>
+            <text x="350" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">SYN &rarr; SYN-ACK &rarr; ACK</text>
+
+            <line x1="350" y1="120" x2="350" y2="143" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr-d)"/>
+
+            <rect x="250" y="146" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="350" y="166" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">STEP 5</text>
+            <text x="350" y="178" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">TLS handshake (HTTPS)</text>
+
+            <line x1="350" y1="188" x2="350" y2="211" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr-d)"/>
+
+            <rect x="250" y="214" width="200" height="42" rx="6" style="fill:var(--dg-node);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="350" y="234" text-anchor="middle" style="fill:var(--dg-green);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">STEP 6</text>
+            <text x="350" y="246" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">Send HTTP request &amp; get results</text>
+
+            <!-- Side label -->
+            <rect x="500" y="120" width="180" height="80" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1"/>
+            <text x="590" y="142" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">~200ms total</text>
+            <text x="590" y="158" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">DNS lookup</text>
+            <text x="590" y="170" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">TCP handshake</text>
+            <text x="590" y="182" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">TLS + HTTP request</text>
+            <text x="590" y="194" text-anchor="middle" style="fill:var(--dg-green);font-size:10;font-weight:600;font-family:Inter,sans-serif">Results rendered</text>
           </svg>
-          <div class="cap">The full chain from tapping "Search" to seeing results — six steps, under 200ms</div>
+          <div class="cap">The full chain from tapping "Search" to seeing results â€” six steps, under 200ms</div>
         </div>
-      </div>
-    </section>
+        <p>Let's trace the complete flow. You tap Google Search. Here's the conversation below the surface:</p>
+        <p>1. Your phone checks if it has Google's IP cached. If not, it queries DNS: "What's the IP for <code>google.com</code>?"<br>
+        2. The resolver responds: "104.244.42.65."<br>
+        3. Your phone picks a random source port (say <code>43210</code>) and sends SYN to <code>104.244.42.65:443</code>.<br>
+        4. Google's load balancer receives the SYN and responds with SYN-ACK. Your phone sends ACK. Connection open.<br>
+        5. A TLS handshake establishes encryption (HTTPS).<br>
+        6. Your phone sends <code>GET / HTTP/2</code> with headers. Google processes it and returns search results.</p>
+        <p>You never see any of this. Behind a single tap, there's an orchestrated conversation involving DNS servers, load balancers, and multiple protocol layers â€” all designed so data arrives reliably, in order, and securely.</p>
+      </section>
 
+    </div>
+
+    <div class="mark-complete-wrap">
+      <button class="btn-mark" data-ch="1">&#9876; Mark Level Complete</button>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="#" class="prev"><div class="dir">Previous</div><div class="title">Introduction</div></a>
+      <a href="ch-02.html" class="next"><div class="dir">Next Level</div><div class="title">The Anatomy of a Request</div></a>
+    </nav>
   </div>
+</main>
 
-  <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="1">Mark Complete</button>
+<footer class="site-footer">
+  <div class="container">
+    <p>No frameworks. No magic. Just the machinery every server runs on.</p>
+    <div class="stamp">Backend Terminal &#183; Free &#183; Always</div>
   </div>
+</footer>
 
-  <nav class="chapter-nav">
-    <a href="#" class="prev"><div class="dir">Previous</div><div class="title">Introduction</div></a>
-    <a href="ch-02.html" class="next"><div class="dir">Next</div><div class="title">The Anatomy of a Request</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">&#9788;</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>

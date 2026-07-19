@@ -4,337 +4,210 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
-<meta property="og:title" content="Ch 07 — How Systems Talk to Each Other">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 07 — How Systems Talk to Each Other">
 <meta property="og:description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 07 — How Systems Talk to Each Other">
-<meta name="twitter:description" content="REST API design, JSON, URL conventions, pagination.">
-<title>Ch 07 — How Systems Talk to Each Other</title>
-<link rel="stylesheet" href="..\css\style.css">
+<meta name="twitter:title" content="Chapter 07 — How Systems Talk to Each Other">
+<meta name="twitter:description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
+<title>Chapter 07 — How Systems Talk to Each Other</title>
+<link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="..\index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link active" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status">&#9654;</span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 07</div>
+      <h1>How Systems Talk to Each Other</h1>
+      <p class="subtitle">REST APIs, JSON, URL conventions, GraphQL, and the art of fetching just what you need</p>
+      <div class="meta"><span>~12 min read</span></div>
+    </header>
+
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 7.1 — REST API endpoints as labeled doors</span><span>google.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background - hallway -->
+        <rect x="20" y="10" width="760" height="330" rx="10" class="dg-node" fill="var(--bg-dim)"/>
+
+        <!-- Door 1 -->
+        <rect x="45" y="30" width="160" height="140" rx="6" class="dg-accent2"/>
+        <rect x="50" y="35" width="150" height="30" rx="4" class="dg-accent2"/>
+        <text x="125" y="55" text-anchor="middle" class="dg-label" font-size="11" font-weight="bold">GET /tweets</text>
+        <text x="125" y="90" text-anchor="middle" class="dg-label-dim" font-size="9">Fetch latest tweets</text>
+        <text x="125" y="108" text-anchor="middle" class="dg-label-dim" font-size="9">Returns: [{tweet}, ...]</text>
+        <text x="125" y="126" text-anchor="middle" class="dg-label-dim" font-size="9">Query: ?limit=20</text>
+        <line x1="80" y1="140" x2="170" y2="140" class="dg-line"/>
+        <text x="125" y="155" text-anchor="middle" class="dg-label" font-size="10" fill="var(--accent-2)">Read-only</text>
+
+        <!-- Door 2 -->
+        <rect x="230" y="30" width="160" height="140" rx="6" class="dg-accent"/>
+        <rect x="235" y="35" width="150" height="30" rx="4" class="dg-accent"/>
+        <text x="310" y="55" text-anchor="middle" class="dg-label" font-size="11" font-weight="bold">POST /tweets</text>
+        <text x="310" y="90" text-anchor="middle" class="dg-label-dim" font-size="9">Create a tweet</text>
+        <text x="310" y="108" text-anchor="middle" class="dg-label-dim" font-size="9">Body: {text: "..."}</text>
+        <text x="310" y="126" text-anchor="middle" class="dg-label-dim" font-size="9">Returns: 201 Created</text>
+        <line x1="265" y1="140" x2="355" y2="140" class="dg-line"/>
+        <text x="310" y="155" text-anchor="middle" class="dg-label" font-size="10" fill="var(--accent-deep)">Creates data</text>
+
+        <!-- Door 3 -->
+        <rect x="45" y="190" width="160" height="140" rx="6" class="dg-accent2"/>
+        <rect x="50" y="195" width="150" height="30" rx="4" class="dg-accent2"/>
+        <text x="125" y="215" text-anchor="middle" class="dg-label" font-size="11" font-weight="bold">GET /users/:id</text>
+        <text x="125" y="250" text-anchor="middle" class="dg-label-dim" font-size="9">Get user profile</text>
+        <text x="125" y="268" text-anchor="middle" class="dg-label-dim" font-size="9">Params: id = 42</text>
+        <text x="125" y="286" text-anchor="middle" class="dg-label-dim" font-size="9">Returns: {user}</text>
+        <line x1="80" y1="300" x2="170" y2="300" class="dg-line"/>
+        <text x="125" y="315" text-anchor="middle" class="dg-label" font-size="10" fill="var(--accent-2)">Read-only</text>
+
+        <!-- Door 4 -->
+        <rect x="230" y="190" width="160" height="140" rx="6" class="dg-accent"/>
+        <rect x="235" y="195" width="150" height="30" rx="4" class="dg-accent"/>
+        <text x="310" y="215" text-anchor="middle" class="dg-label" font-size="11" font-weight="bold">DELETE /tweets/:id</text>
+        <text x="310" y="250" text-anchor="middle" class="dg-label-dim" font-size="9">Delete a tweet</text>
+        <text x="310" y="268" text-anchor="middle" class="dg-label-dim" font-size="9">Headers: Auth token</text>
+        <text x="310" y="286" text-anchor="middle" class="dg-label-dim" font-size="9">Returns: 204 No Content</text>
+        <line x1="265" y1="300" x2="355" y2="300" class="dg-line"/>
+        <text x="310" y="315" text-anchor="middle" class="dg-label" font-size="10" fill="var(--accent-deep)">Destructive</text>
+
+        <!-- Floor plan legend on right -->
+        <rect x="440" y="30" width="330" height="300" rx="6" class="dg-node"/>
+        <text x="605" y="55" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">How REST URLs Work</text>
+
+        <text x="460" y="85" class="dg-label" font-size="11" font-weight="bold">Nouns, not verbs</text>
+        <text x="460" y="105" class="dg-label-dim" font-size="10">URLs are resources (/tweets,</text>
+        <text x="460" y="120" class="dg-label-dim" font-size="10">/users). HTTP methods are</text>
+        <text x="460" y="135" class="dg-label-dim" font-size="10">the verbs (GET, POST, etc.).</text>
+
+        <line x1="460" y1="148" x2="750" y2="148" class="dg-line"/>
+
+        <text x="460" y="170" class="dg-label" font-size="11" font-weight="bold">Standard HTTP Methods</text>
+        <text x="460" y="195" class="dg-label" font-size="10"><tspan font-weight="bold">GET</tspan> — Read data (safe)</text>
+        <text x="460" y="215" class="dg-label" font-size="10"><tspan font-weight="bold">POST</tspan> — Create (unsafe)</text>
+        <text x="460" y="235" class="dg-label" font-size="10"><tspan font-weight="bold">PUT</tspan> — Update/replace</text>
+        <text x="460" y="255" class="dg-label" font-size="10"><tspan font-weight="bold">DELETE</tspan> — Remove</text>
+
+        <line x1="460" y1="268" x2="750" y2="268" class="dg-line"/>
+
+        <text x="460" y="290" class="dg-label" font-size="11" font-weight="bold">Nested Resources</text>
+        <text x="460" y="310" class="dg-label-dim" font-size="10">GET /users/42/tweets</text>
+        <text x="460" y="325" class="dg-label-dim" font-size="10">GET /tweets/999/likes</text>
+
+        <!-- Arrow between floors -->
+        <line x1="420" y1="100" x2="438" y2="100" class="dg-line" stroke-dasharray="3 3"/>
+        <polygon points="434,96 442,100 434,104" fill="var(--border-strong)"/>
+      </svg>
+      <figcaption>REST API endpoints are like labeled doors in a hallway. The HTTP method (GET, POST, DELETE) tells you what action to take, and the URL tells you which resource to act on. This consistent pattern makes APIs predictable and easy to learn.</figcaption>
+    </figure>
+
+    <div class="chapter-content">
+      <h2>Your Phone Doesn't Talk to the Database</h2>
+      <p>Here's a common misunderstanding among beginners: when you open the Google app on your phone, your phone doesn't connect directly to Google's PostgreSQL database. That would be a security nightmare and a performance disaster. Your phone would need the database credentials (which could be stolen), it could run arbitrary SQL queries (like <code>DROP TABLE users</code>), and it would need to maintain a persistent connection (battery drain). No, there's a layer in between: the <strong>API</strong>.</p>
+
+      <p>An API (Application Programming Interface) is a middleman. It's a server that sits between the client (your phone or browser) and the database. The client sends a request to the API. The API validates the request, checks permissions, applies business logic (like "is this tweet under 280 characters?"), queries the database if needed, and returns a response. The client never touches the database directly.</p>
+
+      <p>Google's API is a <strong>REST API</strong> (Representational State Transfer). REST isn't a protocol or a library — it's a set of design principles. It's a way of organizing your API so that it feels consistent, predictable, and intuitive. When you learn what <code>GET /tweets</code> does, you can guess what <code>GET /users</code> does, even if you've never seen it before. That consistency is the superpower of REST.</p>
+
+      <p>Let's look at the actual REST APIs that Google uses, because they're the perfect example of how real-world APIs are designed.</p>
+
+      <h2>The Anatomy of a REST Request</h2>
+      <p>Every API request has a few fundamental parts. Think of it like sending a letter: you need an address (URL), a method (what you want to do), headers (metadata), and sometimes a body (the content).</p>
+
+      <p>The <strong>URL</strong> (Uniform Resource Locator) identifies the resource you want to interact with. Google's API URL might look like <code>https://api.google.com/2/tweets</code>. The <code>/2/</code> is the API version — when Google makes breaking changes, they increment this number so old apps don't break. The <code>/tweets</code> part identifies the resource (the collection of tweets).</p>
+
+      <p>The <strong>HTTP method</strong> (also called verb) tells the server what action you want to take. There are four main methods you'll use every day:</p>
+
+      <p><strong>GET</strong> — Retrieve data. This is the most common method. When your timeline loads, the app sends <code>GET https://api.google.com/2/tweets?ids=123,456</code>. GET requests should never change anything on the server. They're "safe" — you can send the same GET request a million times and nothing changes (except maybe the server load).</p>
+
+      <p><strong>POST</strong> — Create something new. When you post a tweet, the app sends <code>POST https://api.google.com/2/tweets</code> with a JSON body containing <code>{"text": "Hello world!"}</code>. The server creates a new tweet and returns it with a 201 Created status.</p>
+
+      <p><strong>PUT</strong> — Update or replace something. If you edit your bio, the app might send <code>PUT https://api.google.com/2/users/42</code> with your new profile data in the body. PUT typically replaces the entire resource — you send the full new version.</p>
+
+      <p><strong>DELETE</strong> — Remove something. When you delete a tweet, the app sends <code>DELETE https://api.google.com/2/tweets/123</code>. Google returns 204 No Content to confirm it's gone.</p>
+
+      <p>The <strong>headers</strong> contain metadata about the request. The most important header is <code>Authorization</code>, which carries your authentication token (we'll dive deep into that in the next chapter). Other headers include <code>Content-Type</code> (what format the body is in, usually <code>application/json</code>), <code>Accept</code> (what format you want the response in), and <code>User-Agent</code> (what app is making the request).</p>
+
+      <p>The <strong>body</strong> is the payload — the actual data being sent. For POST and PUT requests, the body contains the data you're creating or updating. For GET and DELETE requests, the body is usually empty. Responses also have a body — the data you requested — almost always formatted as <strong>JSON</strong>.</p>
+
+      <h2>JSON — The Lingua Franca of APIs</h2>
+      <p>JSON (JavaScript Object Notation) is the most common format for API data. It's lightweight, human-readable, and supported by every programming language. A JSON response from Google's API might look like this:</p>
+
+      <p><code>{ "data": { "id": "123456", "text": "Hello world!", "author_id": "42", "created_at": "2024-01-15T10:30:00Z" } }</code></p>
+
+      <p>JSON has a few simple rules: objects are wrapped in curly braces <code>{}</code> and contain key-value pairs. Arrays are wrapped in square brackets <code>[]</code> and contain ordered lists. Strings are in double quotes. Numbers don't have quotes. Booleans are <code>true</code> or <code>false</code>. Null is <code>null</code>. That's it — you can represent any data structure with just these rules.</p>
+
+      <p>Google's API responses are wrapped in a <code>data</code> key. Why? This allows Google to include metadata alongside the response without mixing it with the data. For example, a response might include a <code>meta</code> object with pagination info: <code>{"data": [...], "meta": {"next_token": "abc123", "result_count": 10}}</code>. The client reads the <code>data</code> to render tweets and the <code>meta</code> to know if there are more tweets to load.</p>
+
+      <h2>URL Naming Conventions — The Art of the Path</h2>
+      <p>Good API design follows conventions that make the API self-documenting. Here are the key rules that Google and most major APIs follow:</p>
+
+      <p><strong>Use nouns, not verbs.</strong> The URL should name the resource, not the action. <code>/tweets</code> is good. <code>/getTweets</code> or <code>/createTweet</code> is bad — the HTTP method already communicates the action. If you find yourself putting verbs in URLs, you're probably doing something wrong.</p>
+
+      <p><strong>Use plural nouns for collections.</strong> <code>/tweets</code> (collection), <code>/tweets/123</code> (specific member). <code>/users</code>, <code>/users/42</code>. This is consistent and predictable.</p>
+
+      <p><strong>Nest related resources.</strong> <code>/users/42/tweets</code> means "tweets by user 42." <code>/tweets/123/likes</code> means "likes on tweet 123." Nesting shows ownership — the relationship between resources. But don't nest too deep. Two levels is usually the max; deeper nesting suggests a design problem.</p>
+
+      <p><strong>Use query parameters for filtering, sorting, and pagination.</strong> <code>/tweets?limit=20&offset=40</code> means "give me tweets 41-60." <code>/tweets?author_id=42</code> means "filter to tweets by this author." Query parameters modify the request without changing the resource identity.</p>
+
+      <p><strong>Version your API.</strong> Google uses <code>/2/</code> in the path. This allows them to introduce breaking changes without breaking existing apps. Old apps continue to use v1.1, new apps use v2. Without versioning, every change to the API would break every client immediately.</p>
+
+      <h2>Pagination — When One Response Isn't Enough</h2>
+      <p>Google can't return every tweet in a single response. That would be gigabytes of data. Instead, APIs split results into pages. The client requests one page at a time, and the response includes a token or cursor for getting the next page.</p>
+
+      <p>There are two main pagination approaches. <strong>Offset pagination</strong> uses <code>?offset=40&limit=20</code> — skip 40 items, return 20. This is simple but slow on large datasets (the database has to count through 40 items before it can return the 20 you want). <strong>Cursor-based pagination</strong> uses opaque tokens: <code>?cursor=abc123</code>. The token encodes where you left off, and the database can jump directly there using an index. Google uses cursor-based pagination for its API. The response includes a <code>next_token</code> in the <code>meta</code> object. When the client scrolls to the bottom, it requests the next page with that token. No token means no more pages.</p>
+
+      <p>Cursor-based pagination is more robust because it handles data changes gracefully. If a new tweet is inserted while you're paginating, offset pagination might show you the same tweet twice (offset shifts), but cursor pagination always gives you the next batch after the last item you saw.</p>
+
+      <h2>GraphQL — A Different Philosophy</h2>
+      <p>REST is not the only way to design APIs. <strong>GraphQL</strong>, developed by Facebook (now Meta), offers a different approach. Instead of multiple endpoints returning fixed data shapes, GraphQL exposes a single endpoint and lets the client specify exactly what data it needs.</p>
+
+      <p>With a REST API, loading a user's profile with their recent tweets might require two requests: <code>GET /users/42</code> and <code>GET /users/42/tweets</code>. With GraphQL, you send one query: <code>{ user(id: 42) { name, bio, tweets(limit: 5) { text, created_at } } }</code>. The server returns exactly the fields you asked for — no more, no less.</p>
+
+      <p>This solves a common REST problem called <strong>over-fetching</strong> (getting more data than you need) and <strong>under-fetching</strong> (not getting enough data, requiring multiple requests). Google's mobile app uses GraphQL for some parts of its API. When you load a tweet detail page, the app sends a GraphQL query that asks for the tweet text, the author's name and avatar, the like and retweet counts, and the first 20 replies — all in one request.</p>
+
+      <p>But GraphQL has trade-offs. It shifts complexity from the client to the server. The server must parse the query, resolve each field, and handle authorization for every field individually. A malicious client could request a deeply nested query that crashes the server (this is called a <strong>DoS attack via GraphQL</strong>). REST is simpler to cache, simpler to monitor, and simpler to reason about. For most APIs, starting with REST is the right call. GraphQL is a powerful tool for specific problems — when you have multiple clients that each need different data shapes from the same server.</p>
+
+      <h2>The Real Google API in Action</h2>
+      <p>When the Google mobile app loads your timeline, here's exactly what happens at the API level:</p>
+
+      <p>1. The app calls <code>GET https://api.google.com/2/timelines/home.json</code> with your auth token in the header. Google's API v2 uses a different endpoint structure for timelines, but the principles are the same.</p>
+
+      <p>2. The server receives the request. It extracts your user ID from the auth token. It queries a service called <strong>Earlybird</strong> (Google's in-memory timeline service) which has pre-computed your timeline — a list of tweet IDs from people you follow, ranked by relevance.</p>
+
+      <p>3. The server then fetches the full tweet data (text, author, media, engagement counts) for those IDs, often from a cache called <strong>TwiterCache</strong> (yes, that's the real name). If a tweet isn't cached, it falls back to PostgreSQL.</p>
+
+      <p>4. The server assembles the JSON response: <code>{"data": [{tweet}, {tweet}, ...], "meta": {"next_token": "xyz"}}</code>. It includes only the fields the app requested (via GraphQL or REST query parameters).</p>
+
+      <p>5. The response is sent back over HTTPS, compressed with gzip, and your phone renders the timeline. The entire API call takes 150-400 milliseconds.</p>
+
+      <p>6. When you scroll to the bottom, the app sends the same request with <code>?cursor=xyz</code> to get the next page of results. This continues until there are no more tweets to load.</p>
+
+      <p>The beauty of this API design is that it decouples the client from the server. Google can change the backend entirely — replace Earlybird with a new service, migrate from PostgreSQL to something else — and as long as the API contract (the endpoints and their response shapes) stays the same, the mobile app keeps working without updates. This is the architectural principle of <strong>separation of concerns</strong> applied at the system level.</p>
+
+      <p>In the next chapter, we'll look at how the API knows who you are — the world of authentication and authorization that makes secure communication possible.</p>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-06.html"><div class="dir">Previous</div><div class="title">Where Data Actually Lives</div></a>
+      <a href="ch-08.html"><div class="dir">Next</div><div class="title">Authentication &amp; Authorization</div></a>
+    </nav>
   </div>
-</div>
-
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
   </div>
-
-  <header class="page-header">
-    <div class="eyebrow">Ch 07 / 17</div>
-    <h1>How Systems Talk to Each Other</h1>
-    <p class="subtitle">REST APIs, JSON, URL conventions, GraphQL, and the art of fetching just what you need</p>
-    <div class="meta"><span>~12 min read</span></div>
-  </header>
-
-  <div class="chapter-content">
-    <section class="topic-section">
-      <h2>REST: Resources + Methods</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>REST (Representational State Transfer) organizes APIs around resources (nouns) and HTTP methods (verbs). Each resource has a unique URL, and the HTTP method tells the server what action to take on that resource.</p>
-          <p>The three core principles that make REST predictable and scalable:</p>
-          <ul>
-            <li><strong>Resources are nouns</strong> — <code>/users</code>, <code>/tweets</code>, <code>/comments</code>. Never verbs like <code>/getUsers</code>. The URL identifies what the resource is.</li>
-            <li><strong>Methods are verbs</strong> — <code>GET</code> (read), <code>POST</code> (create), <code>PUT</code> (replace), <code>DELETE</code> (remove). The method says what to do with it.</li>
-            <li><strong>Stateless</strong> — each request is independent. The server does not remember past requests. Every request carries all the information needed to process it.</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-              <marker id="arr-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-4)"/></marker>
-            </defs>
-            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">REST: Resources + HTTP Methods = Predictable APIs</text>
-            <rect x="100" y="40" width="520" height="44" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="360" y="68" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-family:JetBrains Mono,monospace">
-              <tspan fill="var(--dg-3)" font-weight:700>GET</tspan>
-              <tspan fill="var(--dg-text-dim)"> /</tspan>
-              <tspan fill="var(--dg-1)">users</tspan>
-              <tspan fill="var(--dg-text-dim)">/</tspan>
-              <tspan fill="var(--dg-4)">123</tspan>
-            </text>
-            <text x="180" y="100" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Method (verb)</text>
-            <text x="360" y="100" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Resource (noun, plural)</text>
-            <text x="540" y="100" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Identifier</text>
-            <line x1="180" y1="84" x2="180" y2="93" style="stroke:var(--dg-3);stroke-width:1"/>
-            <line x1="360" y1="84" x2="360" y2="93" style="stroke:var(--dg-1);stroke-width:1"/>
-            <line x1="540" y1="84" x2="540" y2="93" style="stroke:var(--dg-4);stroke-width:1"/>
-            <rect x="60" y="115" width="600" height="36" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="160" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Method</text>
-            <text x="310" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Endpoint</text>
-            <text x="480" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Action</text>
-            <rect x="60" y="153" width="600" height="30" rx="4" style="fill:var(--green-dim)"/>
-            <text x="160" y="173" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">GET</text>
-            <text x="310" y="173" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users</text>
-            <text x="480" y="173" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">List users (read)</text>
-            <rect x="60" y="185" width="600" height="30" rx="4" style="fill:var(--cyan-dim)"/>
-            <text x="160" y="205" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">POST</text>
-            <text x="310" y="205" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users</text>
-            <text x="480" y="205" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Create user</text>
-            <rect x="60" y="217" width="600" height="30" rx="4" style="fill:var(--amber-dim)"/>
-            <text x="160" y="237" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">GET</text>
-            <text x="310" y="237" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users/123</text>
-            <text x="480" y="237" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Get specific user</text>
-            <rect x="60" y="249" width="600" height="30" rx="4" style="fill:var(--indigo-dim)"/>
-            <text x="160" y="269" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">PUT</text>
-            <text x="310" y="269" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users/123</text>
-            <text x="480" y="269" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Replace user</text>
-            <rect x="60" y="281" width="600" height="30" rx="4" style="fill:var(--red-dim)"/>
-            <text x="160" y="301" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">DELETE</text>
-            <text x="310" y="301" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users/123</text>
-            <text x="480" y="301" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Delete user</text>
-            <rect x="160" y="330" width="400" height="50" rx="10" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="360" y="350" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Stateless Request Cycle</text>
-            <text x="360" y="368" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Each request is independent — server doesn't remember past requests</text>
-          </svg>
-          <div class="cap">REST organizes APIs around resources (nouns) and HTTP methods (verbs) with a stateless request cycle</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>The Request-Response Cycle</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Every API interaction follows the same pattern: the client sends a request, the server processes it, and the server returns a response. This fundamental cycle powers every web and mobile application.</p>
-          <p>The request carries a URL, method, headers, and optionally a body. The server validates, applies business logic, queries data, and sends back a status code with a response body — all in milliseconds.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="arr-rc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">The Request-Response Cycle</text>
-            <rect x="40" y="45" width="160" height="55" rx="8" fill="var(--dg-node)" stroke="var(--dg-1)" stroke-width="1.5"/>
-            <text x="120" y="70" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600">Client</text>
-            <text x="120" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Browser / Mobile App</text>
-            <line x1="200" y1="65" x2="245" y2="65" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-rc)"/>
-            <text x="222" y="58" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Request</text>
-            <rect x="250" y="45" width="190" height="55" rx="8" fill="var(--dg-node)" stroke="var(--dg-3)" stroke-width="1.5"/>
-            <text x="345" y="70" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600">Server</text>
-            <text x="345" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Process + Validate</text>
-            <line x1="345" y1="100" x2="345" y2="120" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-rc)"/>
-            <rect x="250" y="125" width="190" height="55" rx="8" fill="var(--dg-node)" stroke="var(--dg-2)" stroke-width="1.5"/>
-            <text x="345" y="150" text-anchor="middle" style="fill:var(--dg-2);font-size:13;font-weight:600">Database</text>
-            <text x="345" y="168" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Query + Return Data</text>
-            <line x1="345" y1="180" x2="345" y2="195" stroke="var(--dg-line)" stroke-width="1.5"/>
-            <line x1="345" y1="195" x2="120" y2="195" stroke="var(--dg-line)" stroke-width="1.5"/>
-            <line x1="120" y1="195" x2="120" y2="107" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-rc)"/>
-            <text x="235" y="190" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Response</text>
-            <rect x="470" y="45" width="210" height="175" rx="8" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="575" y="68" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">What's in each part?</text>
-            <rect x="485" y="80" width="180" height="22" rx="4" fill="var(--red-dim)"/>
-            <text x="575" y="96" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">URL — what resource</text>
-            <rect x="485" y="107" width="180" height="22" rx="4" fill="var(--cyan-dim)"/>
-            <text x="575" y="123" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Method — what action</text>
-            <rect x="485" y="134" width="180" height="22" rx="4" fill="var(--amber-dim)"/>
-            <text x="575" y="150" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Headers — metadata</text>
-            <rect x="485" y="161" width="180" height="22" rx="4" fill="var(--green-dim)"/>
-            <text x="575" y="177" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Body — the payload</text>
-            <rect x="485" y="193" width="180" height="22" rx="4" fill="var(--indigo-dim)"/>
-            <text x="575" y="209" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Status Code — result</text>
-          </svg>
-          <div class="cap">Every API call is a three-step dance: Client → Server → Database → Response</div>
-        </div>
-      </div>
-    </section>
-    <section class="topic-section">
-      <h2>URL Structure Breakdown</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>A URL is more than just an address — it is a structured message that tells the server exactly what the client wants. Every part has a specific purpose in the HTTP protocol.</p>
-          <p>Understanding the anatomy of a URL helps you design consistent APIs and debug routing issues faster.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="arr-url" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="20" y="10" width="680" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--border)"/>
-            <rect x="35" y="25" width="80" height="30" rx="4" fill="var(--red-dim)"/>
-            <text x="75" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">https://</text>
-            <text x="75" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Scheme</text>
-            <rect x="120" y="25" width="160" height="30" rx="4" fill="var(--cyan-dim)"/>
-            <text x="200" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">api.example.com</text>
-            <text x="200" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Host</text>
-            <rect x="285" y="25" width="50" height="30" rx="4" fill="var(--amber-dim)"/>
-            <text x="310" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">:443</text>
-            <text x="310" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Port</text>
-            <rect x="340" y="25" width="100" height="30" rx="4" fill="var(--green-dim)"/>
-            <text x="390" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">/v2/users</text>
-            <text x="390" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Path</text>
-            <rect x="445" y="25" width="140" height="30" rx="4" fill="var(--indigo-dim)"/>
-            <text x="515" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">?page=2&amp;limit=10</text>
-            <text x="515" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Query</text>
-            <rect x="590" y="25" width="80" height="30" rx="4" fill="var(--dg-text-dim)"/>
-            <text x="630" y="45" text-anchor="middle" style="fill:var(--bg-surface);font-size:12">#preview</text>
-            <text x="630" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Fragment</text>
-            <rect x="100" y="120" width="520" height="40" rx="6" fill="var(--cyan-dim)"/>
-            <text x="360" y="145" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:13">The URL tells the server where, what, and how to respond</text>
-          </svg>
-          <div class="cap">Every part of a URL has a specific purpose in the HTTP protocol</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>HTTP Headers</h2>
-      <div class="topic-grid">
-        <div class="topic-text" style="grid-column: 1 / -1;">
-          <p>Headers carry metadata about the request or response. They tell the server the format of the body, what format the client wants back, who the client is, and how to handle caching. Headers are key-value pairs sent before the body.</p>
-          <p>Key headers include <code>Authorization</code> (bearer token for authentication), <code>Content-Type</code> (format of the request body), <code>Accept</code> (desired response format), and <code>User-Agent</code> (client identity). Response headers include <code>Set-Cookie</code>, <code>Cache-Control</code>, and <code>Content-Encoding</code>.</p>
-        </div>
-      </div>
-    </section>
-    <section class="topic-section">
-      <h2>JSON Data</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>JSON (JavaScript Object Notation) is the universal format for API data. It is lightweight, human-readable, and supported by every programming language. A JSON response wraps data in a structured tree of key-value pairs.</p>
-          <p>JSON has six data types: objects (<code>{}</code>), arrays (<code>[]</code>), strings (<code>"hello"</code>), numbers (<code>42</code>), booleans (<code>true</code>/<code>false</code>), and null. Every API response is a combination of these building blocks.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
-            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">JSON Data Types — A Tree Breakdown</text>
-            <rect x="220" y="40" width="280" height="36" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="360" y="64" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600">Root Object { }</text>
-            <line x1="265" y1="76" x2="265" y2="105" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="360" y1="76" x2="360" y2="105" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="455" y1="76" x2="455" y2="105" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="165" y="105" width="200" height="55" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="265" y="126" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace">"name": "Alice"</text>
-            <text x="265" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">String — wrapped in double quotes</text>
-            <rect x="390" y="105" width="200" height="55" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="490" y="126" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-family:JetBrains Mono,monospace">"age": 30</text>
-            <text x="490" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Number — no quotes needed</text>
-            <line x1="265" y1="160" x2="265" y2="185" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="490" y1="160" x2="490" y2="185" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="360" y1="76" x2="360" y2="185" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="165" y="185" width="200" height="55" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="265" y="206" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-family:JetBrains Mono,monospace">"active": true</text>
-            <text x="265" y="226" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Boolean — true or false only</text>
-            <rect x="390" y="185" width="200" height="55" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="490" y="206" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-family:JetBrains Mono,monospace">"tags": ["a","b"]</text>
-            <text x="490" y="226" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Array — ordered list in [ ]</text>
-            <line x1="265" y1="240" x2="265" y2="265" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="490" y1="240" x2="490" y2="265" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="360" y1="76" x2="360" y2="265" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="165" y="265" width="200" height="55" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="265" y="286" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-family:JetBrains Mono,monospace">"address": { ... }</text>
-            <text x="265" y="306" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Nested Object — values can be objects</text>
-            <rect x="390" y="265" width="200" height="55" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-text-dim);stroke-width:1.5;stroke-dasharray:4 2"/>
-            <text x="490" y="286" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">"nickname": null</text>
-            <text x="490" y="306" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Null — intentional absence</text>
-            <rect x="220" y="345" width="280" height="55" rx="10" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="365" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Every API response is just these 6 types</text>
-            <text x="360" y="385" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Objects → Arrays → Strings → Numbers → Booleans → Null</text>
-          </svg>
-          <div class="cap">JSON's six data types form a tree structure — every API response is a combination of these building blocks</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Pagination: Offset vs Cursor</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>APIs split large result sets into pages to avoid sending gigabytes of data at once. Two main strategies exist for pagination, each with different trade-offs.</p>
-          <p>Offset pagination skips N items using <code>OFFSET</code> — simple but fragile when data changes. Cursor pagination uses an opaque token — stable for real-time data but slightly more complex to implement.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="arr-pag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="20" y="30" width="320" height="220" rx="8" fill="var(--bg-surface)" stroke="var(--dg-5)"/>
-            <text x="180" y="55" text-anchor="middle" style="fill:var(--dg-5);font-size:13;font-weight:600">OFFSET</text>
-            <rect x="35" y="70" width="290" height="24" rx="4" fill="var(--red-dim)"/>
-            <text x="180" y="86" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Page 1: LIMIT 10 OFFSET 0</text>
-            <rect x="35" y="100" width="290" height="24" rx="4" fill="var(--amber-dim)"/>
-            <text x="180" y="116" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Page 2: LIMIT 10 OFFSET 10</text>
-            <rect x="35" y="130" width="290" height="24" rx="4" fill="var(--bg-surface)"/>
-            <text x="180" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Page 3: LIMIT 10 OFFSET 20</text>
-            <line x1="180" y1="160" x2="180" y2="168" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-pag)"/>
-            <rect x="80" y="170" width="200" height="40" rx="6" fill="var(--red-dim)"/>
-            <text x="180" y="188" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Problem: New insertions</text>
-            <text x="180" y="202" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">shift all offsets → duplicates</text>
-            <rect x="380" y="30" width="320" height="220" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)"/>
-            <text x="540" y="55" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600">CURSOR</text>
-            <rect x="395" y="70" width="290" height="24" rx="4" fill="var(--green-dim)"/>
-            <text x="540" y="86" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">WHERE id &gt; last_seen</text>
-            <rect x="395" y="100" width="290" height="24" rx="4" fill="var(--cyan-dim)"/>
-            <text x="540" y="116" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">LIMIT 10 — use cursor from</text>
-            <rect x="395" y="130" width="290" height="24" rx="4" fill="var(--bg-surface)"/>
-            <text x="540" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">last item of previous page</text>
-            <line x1="540" y1="160" x2="540" y2="168" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-pag)"/>
-            <rect x="440" y="170" width="200" height="40" rx="6" fill="var(--green-dim)"/>
-            <text x="540" y="188" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Solution: Stable pages</text>
-            <text x="540" y="202" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">New items don't shift pages</text>
-            <rect x="100" y="260" width="520" height="24" rx="4" fill="var(--cyan-dim)"/>
-            <text x="360" y="276" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Use cursor pagination for real-time data. Offset is fine for static datasets.</text>
-          </svg>
-          <div class="cap">Use cursor pagination for real-time data. Offset is fine for static datasets.</div>
-        </div>
-      </div>
-    </section>
-    <section class="topic-section">
-      <h2>The Full Request Lifecycle</h2>
-      <div class="topic-grid">
-        <div class="topic-text" style="grid-column: 1 / -1;">
-          <p>From the moment a client sends a request to the moment it receives a response, a full lifecycle unfolds: DNS resolution, TCP connection, TLS handshake, request routing, authentication, business logic, database queries, response serialization, and transmission back to the client.</p>
-          <p>Each step adds measurable latency. Modern systems optimize every stage — connection pooling, caching, compression, and indexing — to deliver responses in under 200 milliseconds. The API contract decouples the client from the server, allowing each side to evolve independently.</p>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="7">Mark Complete</button>
-  </div>
-
-  <nav class="chapter-nav">
-    <a href="ch-06.html" class="prev"><div class="dir">Previous</div><div class="title">Where Data Actually Lives</div></a>
-    <a href="ch-08.html" class="next"><div class="dir">Next</div><div class="title">Authentication &amp; Authorization</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
-<script src="..\js\script.js"></script>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
+<script src="../js/script.js"></script>
 </body>
 </html>

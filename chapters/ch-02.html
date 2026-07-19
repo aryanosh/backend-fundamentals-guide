@@ -3,349 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="HTTP methods, URL paths, headers, status codes, and request bodies â€” the four-part structure behind every API call.">
-<meta property="og:title" content="Ch 02 â€” The Anatomy of a Request">
-<meta property="og:description" content="HTTP methods, URL paths, headers, status codes, and request bodies â€” the four-part structure behind every API call.">
+<meta name="description" content="HTTP methods, URL paths, headers, status codes, and request bodies — the four-part structure behind every API call. Beginner-friendly backend guide.">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 02 — The Anatomy of a Request">
+<meta property="og:description" content="HTTP methods, URL paths, headers, status codes, and request bodies — the four-part structure behind every API call. Beginner-friendly backend guide.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 02 â€” The Anatomy of a Request">
-<meta name="twitter:description" content="HTTP methods, URL paths, headers, status codes, and request bodies.">
-<title>Ch 02 â€” The Anatomy of a Request</title>
+<meta name="twitter:title" content="Chapter 02 — The Anatomy of a Request">
+<meta name="twitter:description" content="HTTP methods, URL paths, headers, status codes, and request bodies — the four-part structure behind every API call. Beginner-friendly backend guide.">
+<title>Chapter 02 — The Anatomy of a Request</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link active" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status">&#9654;</span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
-  </div>
-</div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 02</div>
+      <h1>The Anatomy of a Request</h1>
+      <p class="subtitle">HTTP methods, URL paths, headers, bodies, and the status codes that make sense of it all</p>
+      <div class="meta"><span>~11 min read</span></div>
+    </header>
 
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 2.1 — The HTTP request-response cycle in full detail</span><span>google.com</span></div>
+      <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="130" height="40" rx="6" class="dg-node" fill="#4A90D9"/>
+        <text x="75" y="35" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui">Your Browser</text>
 
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
-  </div>
+        <rect x="550" y="10" width="130" height="40" rx="6" class="dg-node" fill="#E67E22"/>
+        <text x="615" y="35" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui">Google Server</text>
 
-  <header class="page-header">
-    <div class="eyebrow">Ch 02 / 17</div>
-    <h1>The Anatomy of a Request</h1>
-    <p class="subtitle">HTTP methods, URL paths, headers, bodies, and the status codes that make sense of it all</p>
-    <div class="meta"><span>~11 min read</span></div>
-  </header>
+        <rect x="180" y="70" width="340" height="100" rx="8" fill="#f0f4f8" stroke="#ccc" stroke-width="1.5"/>
+        <text x="350" y="90" text-anchor="middle" class="dg-label" font-weight="bold" fill="#2C3E50" font-size="12">REQUEST</text>
+        <text x="350" y="108" text-anchor="middle" class="dg-label" font-size="10" fill="#E74C3C">GET /api/v2/search HTTP/2</text>
+        <text x="350" y="122" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">Authorization: Bearer xxx</text>
+        <text x="350" y="136" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">Content-Type: application/json</text>
+        <text x="350" y="150" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">User-Agent: Google/iPhone</text>
+        <text x="350" y="164" text-anchor="middle" class="dg-label" font-size="10" fill="#27AE60">{"text": "Hello world!"}</text>
 
-  <div class="chapter-content">
+        <line x1="140" y1="30" x2="180" y2="115" class="dg-line" stroke="#E74C3C"/>
+        <polygon points="176,111 180,121 184,111" fill="#E74C3C"/>
+        <text x="148" y="75" class="dg-label" fill="#E74C3C" font-size="10" font-weight="bold">Request</text>
 
-    <section class="topic-section">
+        <rect x="180" y="190" width="340" height="90" rx="8" fill="#f0f4f8" stroke="#ccc" stroke-width="1.5"/>
+        <text x="350" y="210" text-anchor="middle" class="dg-label" font-weight="bold" fill="#2C3E50" font-size="12">RESPONSE</text>
+        <text x="350" y="228" text-anchor="middle" class="dg-label" font-size="10" fill="#27AE60">HTTP/2 201 Created</text>
+        <text x="350" y="242" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">Content-Type: application/json</text>
+        <text x="350" y="256" text-anchor="middle" class="dg-label" font-size="10" fill="#8E44AD">X-Request-Id: abc-123</text>
+        <text x="350" y="270" text-anchor="middle" class="dg-label" font-size="10" fill="#27AE60">{"id": "12345", "text": "Hello world!", "created_at": "..."}</text>
+
+        <line x1="520" y1="115" x2="550" y2="115" class="dg-line" stroke="#3498DB"/>
+        <polygon points="546,111 556,115 546,119" fill="#3498DB"/>
+        <text x="538" y="108" class="dg-label" fill="#3498DB" font-size="10" font-weight="bold">Process</text>
+
+        <line x1="615" y1="50" x2="520" y2="235" class="dg-line" stroke="#27AE60"/>
+        <polygon points="524,231 520,241 528,233" fill="#27AE60"/>
+        <text x="580" y="150" class="dg-label" fill="#27AE60" font-size="10" font-weight="bold">Response</text>
+
+        <text x="350" y="295" text-anchor="middle" fill="#999" font-size="10">Each label color shows a different part of the message: method/path, headers, and body</text>
+      </svg>
+      <figcaption>The client sends a structured request with method, path, headers, and optional body. The server processes it and returns a status code with its own headers and body.</figcaption>
+    </figure>
+
+    <div class="chapter-content">
+      <h2>What Actually Gets Sent Over the Wire?</h2>
+      <p>In Chapter 1, we watched your phone and Google's server perform a TCP handshake and establish a connection. Now imagine that connection is an open phone line. <strong>The HTTP request is what you actually say into the phone.</strong> It's a carefully formatted message that tells the server exactly what you want, who you are, and often includes data you want to send. Every action you take on Google — viewing a profile, performing a search, liking a photo, sending a DM — is an HTTP request.</p>
+
+      <p>HTTP stands for <strong>HyperText Transfer Protocol</strong>, but don't let the name fool you — it's used for far more than just transferring hypertext. It's the language that every web browser, mobile app, API client, and server speaks. HTTP is a <strong>request-response protocol</strong>: the client (your browser or app) sends a request, and the server sends back a response. That's it. Every website, every API call, every time your phone syncs data — it's all just request-response cycles happening in rapid succession, often hundreds of them to load a single page.</p>
+
+      <p>Every HTTP request has three main parts: the <strong>request line</strong> (method + path + version), the <strong>headers</strong> (key-value metadata), and an optional <strong>body</strong> (the actual data). Let's break each one down.</p>
+
       <h2>HTTP Methods: The Verbs of the Web</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The <strong>HTTP method</strong> tells the server what <em>kind</em> of action to perform. Five methods cover most real-world APIs:</p>
-          <ul>
-            <li><strong>GET</strong> &mdash; Read data. Idempotent, no body.</li>
-            <li><strong>POST</strong> &mdash; Create. Carries JSON body. Not idempotent.</li>
-            <li><strong>PUT</strong> &mdash; Replace entire resource. Idempotent.</li>
-            <li><strong>PATCH</strong> &mdash; Partial update. Body has only changed fields.</li>
-            <li><strong>DELETE</strong> &mdash; Remove resource. Idempotent.</li>
-          </ul>
-          <p>Methods map directly to CRUD: Create, Read, Update, Delete.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
-            <rect x="30" y="10" width="660" height="36" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="100" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Method</text>
-            <text x="230" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Action</text>
-            <text x="380" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Has Body?</text>
-            <text x="500" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Idempotent?</text>
-            <text x="640" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Example</text>
-            <line x1="30" y1="46" x2="690" y2="46" style="stroke:var(--border);stroke-width:1"/>
-            <rect x="30" y="52" width="660" height="44" rx="4" style="fill:var(--green-dim)"/>
-            <text x="100" y="78" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">GET</text>
-            <text x="230" y="78" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Read data</text>
-            <text x="380" y="78" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">No</text>
-            <text x="500" y="78" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="640" y="78" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">GET /search</text>
-            <rect x="30" y="100" width="660" height="44" rx="4" style="fill:var(--bg-surface)"/>
-            <text x="100" y="126" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">POST</text>
-            <text x="230" y="126" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Create</text>
-            <text x="380" y="126" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="500" y="126" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">No</text>
-            <text x="640" y="126" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">POST /tweets</text>
-            <rect x="30" y="148" width="660" height="44" rx="4" style="fill:var(--amber-dim)"/>
-            <text x="100" y="174" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">PUT</text>
-            <text x="230" y="174" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Replace</text>
-            <text x="380" y="174" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="500" y="174" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="640" y="174" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">PUT /profile</text>
-            <rect x="30" y="196" width="660" height="44" rx="4" style="fill:var(--bg-surface)"/>
-            <text x="100" y="222" text-anchor="middle" style="fill:var(--dg-2);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">PATCH</text>
-            <text x="230" y="222" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Update partial</text>
-            <text x="380" y="222" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="500" y="222" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="640" y="222" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">PATCH /bio</text>
-            <rect x="30" y="244" width="660" height="44" rx="4" style="fill:var(--red-dim)"/>
-            <text x="100" y="270" text-anchor="middle" style="fill:var(--dg-5);font-size:13;font-weight:700;font-family:JetBrains Mono,monospace">DELETE</text>
-            <text x="230" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Remove</text>
-            <text x="380" y="270" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">No</text>
-            <text x="500" y="270" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Yes</text>
-            <text x="640" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">DELETE /item/1</text>
-            <rect x="210" y="300" width="300" height="24" rx="12" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="316" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Methods map to CRUD: Create, Read, Update, Delete</text>
-          </svg>
-          <div class="cap">The five essential HTTP methods &mdash; each has distinct semantics for idempotency and body usage</div>
-        </div>
-      </div>
-    </section>
+      <p>The <strong>HTTP method</strong> (also called a verb) tells the server what <em>kind</em> of action you want to perform. Think of it as the intention behind your request. There are nine methods defined in the HTTP specification, but you'll encounter just five in everyday backend work:</p>
 
-    <section class="topic-section">
-      <h2>Request &amp; Response Structure</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Every HTTP exchange has two parts: a <strong>request</strong> that says what you want and a <strong>response</strong> that delivers the result. The request carries a method, path, headers, and optional body. The response carries a status code, headers, and an optional body.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <text x="185" y="30" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">HTTP Request</text>
-            <rect x="20" y="45" width="330" height="180" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
-            <rect x="35" y="60" width="300" height="28" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="185" y="78" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-family:JetBrains Mono,monospace;font-weight:600">GET /api/users HTTP/2</text>
-            <text x="35" y="55" style="fill:var(--dg-text-dim);font-size:9">Method + Path</text>
-            <rect x="35" y="95" width="300" height="24" rx="3" style="fill:var(--dg-node)"/>
-            <text x="45" y="110" style="fill:var(--dg-text);font-size:10;font-family:JetBrains Mono,monospace">Host: api.example.com</text>
-            <rect x="35" y="124" width="300" height="24" rx="3" style="fill:var(--dg-node)"/>
-            <text x="45" y="139" style="fill:var(--dg-text);font-size:10;font-family:JetBrains Mono,monospace">Authorization: Bearer eyJ...</text>
-            <rect x="35" y="148" width="300" height="24" rx="3" style="fill:var(--dg-node)"/>
-            <text x="45" y="163" style="fill:var(--dg-text);font-size:10;font-family:JetBrains Mono,monospace">Content-Type: application/json</text>
-            <line x1="35" y1="175" x2="335" y2="175" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:4 3"/>
-            <rect x="35" y="180" width="300" height="24" rx="3" style="fill:var(--amber-dim)"/>
-            <text x="185" y="196" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">{"name":"Alice"}</text>
-            <text x="545" y="30" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">HTTP Response</text>
-            <rect x="370" y="45" width="330" height="180" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-3);stroke-width:1.5"/>
-            <rect x="385" y="60" width="300" height="28" rx="4" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="535" y="78" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace;font-weight:600">HTTP/2 200 OK</text>
-            <text x="385" y="55" style="fill:var(--dg-text-dim);font-size:9">Status</text>
-            <rect x="385" y="95" width="300" height="24" rx="3" style="fill:var(--dg-node)"/>
-            <text x="395" y="110" style="fill:var(--dg-text);font-size:10;font-family:JetBrains Mono,monospace">Content-Type: application/json</text>
-            <rect x="385" y="119" width="300" height="24" rx="3" style="fill:var(--dg-node)"/>
-            <text x="395" y="134" style="fill:var(--dg-text);font-size:10;font-family:JetBrains Mono,monospace">Cache-Control: max-age=3600</text>
-            <rect x="385" y="143" width="300" height="24" rx="3" style="fill:var(--dg-node)"/>
-            <text x="395" y="158" style="fill:var(--dg-text);font-size:10;font-family:JetBrains Mono,monospace">Set-Cookie: session=abc</text>
-            <line x1="385" y1="170" x2="685" y2="170" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:4 3"/>
-            <rect x="385" y="175" width="300" height="24" rx="3" style="fill:var(--green-dim)"/>
-            <text x="535" y="191" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">{"id":1,"name":"Alice"}</text>
-            <rect x="200" y="240" width="320" height="28" rx="6" style="fill:var(--indigo-dim)"/>
-            <text x="360" y="258" text-anchor="middle" style="fill:#fff;font-size:11;font-weight:600">Request defines intent. Response delivers the result.</text>
-          </svg>
-          <div class="cap">Every request has a method, path, headers, and body; every response has a status, headers, and body</div>
-        </div>
-      </div>
-    </section>
+      <p><strong>GET</strong> — "Give me this resource." When you load your search results, refresh a profile page, or view search results, your browser sends a GET request. GET requests should <em>never</em> change anything on the server; they're read-only. This is called being <strong>idempotent</strong> — making the same GET request a hundred times should return the same result (assuming the data hasn't changed on the server). GET requests have no body; all the information is in the URL and headers.</p>
 
-    <section class="topic-section">
-      <h2>The Anatomy of a URL</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The <strong>URL path</strong> tells the server <em>which</em> resource you are targeting. Paths map to resources, not files. Query parameters filter, sort, or paginate &mdash; <code>?q=hello&amp;count=20</code> means give me 20 results matching hello.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
-            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Anatomy of a URL</text>
-            <rect x="30" y="35" width="660" height="40" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="60" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">
-              <tspan fill="var(--dg-text-dim)">https://</tspan>
-              <tspan fill="var(--dg-5)">google.com</tspan>
-              <tspan fill="var(--dg-text-dim)">:</tspan>
-              <tspan fill="var(--dg-4)">443</tspan>
-              <tspan fill="var(--dg-text-dim)">/</tspan>
-              <tspan fill="var(--dg-1)">search</tspan>
-              <tspan fill="var(--dg-text-dim)">?q=</tspan>
-              <tspan fill="var(--dg-3)">hello</tspan>
-            </text>
-            <rect x="90" y="80" width="60" height="20" rx="4" style="fill:var(--red-dim)"/>
-            <text x="120" y="93" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-family:JetBrains Mono,monospace">scheme</text>
-            <rect x="170" y="80" width="80" height="20" rx="4" style="fill:var(--red-dim)"/>
-            <text x="210" y="93" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-family:JetBrains Mono,monospace">host</text>
-            <rect x="260" y="80" width="30" height="20" rx="4" style="fill:var(--amber-dim)"/>
-            <text x="275" y="93" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-family:JetBrains Mono,monospace">port</text>
-            <rect x="320" y="80" width="50" height="20" rx="4" style="fill:var(--cyan-dim)"/>
-            <text x="345" y="93" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-family:JetBrains Mono,monospace">path</text>
-            <rect x="390" y="80" width="60" height="20" rx="4" style="fill:var(--green-dim)"/>
-            <text x="420" y="93" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace">query</text>
-            <text x="360" y="125" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Headers (Key-Value Metadata)</text>
-            <rect x="30" y="135" width="660" height="70" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="45" y="155" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</text>
-            <text x="45" y="170" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">Content-Type: application/json</text>
-            <text x="45" y="185" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 16_0)</text>
-            <text x="45" y="198" style="fill:var(--dg-2);font-size:11;font-family:JetBrains Mono,monospace">Accept: application/json, text/plain</text>
-            <text x="360" y="230" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Body (Payload)</text>
-            <rect x="180" y="240" width="360" height="44" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="360" y="258" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace">{</text>
-            <text x="360" y="272" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">"name": "Elon", "bio": "Mars colonist"</text>
-            <text x="360" y="282" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace">}</text>
-            <rect x="30" y="300" width="660" height="24" rx="12" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="316" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Content-Type header tells the server how to parse the body</text>
-          </svg>
-          <div class="cap">URL anatomy, header examples, and the JSON body &mdash; the three structural parts of every request</div>
-        </div>
-      </div>
-    </section>
+      <p><strong>POST</strong> — "Create something new." When you hit the "Google Search" button, your browser sends a GET request to Google's API with the search query in the URL. Every time you search, a new result set is returned. GET is <em>idempotent</em> — pressing "Google Search" twice returns the same results. POST requests carry their data in the body, typically as JSON or form data.</p>
 
-    <section class="topic-section">
-      <h2>HTTP Headers</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p><strong>Headers</strong> are key-value metadata between the request line and the body.</p>
-          <ul>
-            <li><strong>Request headers</strong> &mdash; <code>Authorization</code> (login token), <code>Content-Type</code> (body format), <code>User-Agent</code> (client identity), <code>Accept</code> (response format), <code>Cookie</code> (session data).</li>
-            <li><strong>Response headers</strong> &mdash; <code>Content-Type</code>, <code>Set-Cookie</code>, <code>Cache-Control</code>, <code>X-Request-Id</code> (trace ID).</li>
-            <li>The <code>Content-Type</code> header tells the server how to parse the body bytes.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
+      <p><strong>PUT</strong> — "Replace this resource entirely." If you edit your profile bio, Google might send a PUT request with your entire new profile object. PUT says "replace whatever exists at this URL with this new data." Unlike POST, PUT is idempotent — sending the same PUT request twice results in the same state on the server. The second request just overwrites with the same data.</p>
 
-    <section class="topic-section">
-      <h2>HTTP Request Body</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The <strong>request body</strong> carries the actual data. GET and DELETE typically have no body. POST, PUT, and PATCH carry JSON, form data, or binary.</p>
-          <ul>
-            <li><strong>GET/DELETE</strong> &mdash; No body. The request is complete with just the method, path, and headers.</li>
-            <li><strong>POST/PUT/PATCH</strong> &mdash; Body contains JSON, form data, or binary content.</li>
-            <li>The <code>Content-Type</code> header tells the server how to interpret the bytes.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
+      <p><strong>PATCH</strong> — "Update part of this resource." Google might use PATCH instead of PUT when you only change your display name (not your entire profile). PATCH sends only the fields that changed, not the whole object. It's more efficient than PUT for partial updates.</p>
 
-    <section class="topic-section">
-      <h2>What Status Codes Mean</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>After processing your request, the server sends back a <strong>status code</strong> &mdash; a three-digit number grouped into five categories. Status codes are your first debugging tool: 4xx means the client made a mistake, 5xx means the server broke.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
-            <rect x="20" y="15" width="130" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="85" y="40" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">1xx Informational</text>
-            <rect x="165" y="15" width="130" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="230" y="40" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">2xx Success</text>
-            <rect x="310" y="15" width="130" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="375" y="40" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">3xx Redirect</text>
-            <rect x="455" y="15" width="130" height="40" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="520" y="40" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">4xx Client Error</text>
-            <rect x="600" y="15" width="100" height="40" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="650" y="40" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">5xx Server Error</text>
-            <text x="85" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">101 Switching Protocols</text>
-            <text x="230" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">200 OK</text>
-            <text x="230" y="100" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">201 Created</text>
-            <text x="375" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">301 Moved Permanently</text>
-            <text x="375" y="100" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">304 Not Modified</text>
-            <text x="520" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">400 Bad Request</text>
-            <text x="520" y="100" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">401 Unauthorized</text>
-            <text x="520" y="120" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">404 Not Found</text>
-            <text x="520" y="140" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">429 Too Many</text>
-            <text x="650" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">500 Internal Server</text>
-            <text x="650" y="100" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">502 Bad Gateway</text>
-            <text x="650" y="120" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">503 Unavailable</text>
-            <rect x="200" y="200" width="320" height="40" rx="8" style="fill:var(--cyan-dim)"/>
-            <text x="360" y="225" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Status codes are the server&apos;s way of saying what happened</text>
-          </svg>
-          <div class="cap">Status codes are the server&apos;s way of saying what happened</div>
-        </div>
-      </div>
-    </section>
+      <p><strong>DELETE</strong> — "Remove this resource." When you clear a search history entry, your browser sends a DELETE request to that entry's URL. DELETE is also idempotent — clearing an entry that's already deleted returns the same result (often a 404 or 204 status).</p>
 
-    <section class="topic-section">
-      <h2>The Full Request Lifecycle</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>After the TCP handshake establishes a connection, the client sends an HTTP request. The server processes it and sends back a response. Every request has three structural parts:</p>
-          <ul>
-            <li><strong>Request line</strong> &mdash; Method + path + HTTP version.</li>
-            <li><strong>Headers</strong> &mdash; Key-value metadata (auth, content type, cookies).</li>
-            <li><strong>Body</strong> &mdash; Optional payload with the actual data.</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="30" y="10" width="130" height="40" rx="6" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="95" y="35" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Client</text>
-            <rect x="540" y="10" width="140" height="40" rx="6" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="610" y="35" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Server</text>
-            <line x1="160" y1="30" x2="200" y2="90" style="stroke:var(--dg-5);stroke-width:1.5" marker-end="url(#a1)"/>
-            <text x="170" y="70" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Request</text>
-            <rect x="200" y="70" width="310" height="130" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1.5"/>
-            <text x="355" y="92" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">REQUEST</text>
-            <rect x="210" y="100" width="290" height="24" rx="4" style="fill:var(--dg-5)"/>
-            <text x="355" y="116" text-anchor="middle" style="fill:#fff;font-size:12;font-family:JetBrains Mono,monospace">GET /api/v2/search HTTP/2</text>
-            <text x="215" y="140" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">Authorization: Bearer token</text>
-            <text x="215" y="152" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">Content-Type: application/json</text>
-            <text x="215" y="164" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">User-Agent: Google/iPhone</text>
-            <rect x="210" y="170" width="290" height="24" rx="4" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="355" y="186" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">{"query": "backend fundamentals"}</text>
-            <line x1="510" y1="90" x2="540" y2="90" style="stroke:var(--dg-1);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#a1)"/>
-            <text x="530" y="82" text-anchor="end" style="fill:var(--dg-1);font-size:11;font-weight:600">Process</text>
-            <line x1="610" y1="50" x2="510" y2="210" style="stroke:var(--dg-3);stroke-width:1.5" marker-end="url(#a1)"/>
-            <text x="575" y="140" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Response</text>
-            <rect x="200" y="210" width="310" height="70" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1.5"/>
-            <text x="355" y="230" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">RESPONSE</text>
-            <text x="215" y="246" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">HTTP/2 200 OK</text>
-            <text x="215" y="258" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">Content-Type: application/json</text>
-            <rect x="210" y="260" width="290" height="18" rx="3" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="355" y="273" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-family:JetBrains Mono,monospace">{"results": [...], "total": 42}</text>
-          </svg>
-          <div class="cap">The request-response cycle: method, path, headers, and body flow from client to server and back</div>
-        </div>
-      </div>
-    </section>
+      <p>Here's a concrete Google example. When your app loads search results, it sends: <code>GET /api/v2/search HTTP/2</code>. When you perform a search, it sends: <code>GET /api/v2/search?q=hello HTTP/2</code> with your search query. When you clear a search history entry, it sends: <code>DELETE /api/v2/history/12345 HTTP/2</code>. Each method maps to a CRUD operation: Create (POST), Read (GET), Update (PUT/PATCH), Delete (DELETE).</p>
 
+      <h2>URL Paths: The Address of the Resource</h2>
+      <p>The <strong>path</strong> is the second part of the request line, and it tells the server <em>which</em> resource you're talking about. A full URL looks like <code>https://google.com/elonmusk/status/123456789</code>, but the path part is just <code>/elonmusk/status/123456789</code>. The path is like a file system path, but it doesn't necessarily map to actual files on the server — it maps to <strong>resources</strong> that the server's routing logic understands.</p>
 
+      <p>Google's API uses clean, hierarchical paths. For example: <code>/api/v2/users/elonmusk</code> gets Elon's profile. <code>/api/v2/search?q=elonmusk</code> searches for Elon. <code>/api/v2/search?q=hello</code> performs a search. Notice the pattern: the path gets more specific as you go right. This hierarchy helps servers route requests to the right handler code and makes APIs intuitive for developers.</p>
+
+      <p>Paths can also include <strong>query parameters</strong> (after a <code>?</code>) for filtering, sorting, or pagination. For example: <code>GET /api/v2/search?q=hello&count=20</code> says "give me 20 results matching 'hello'." Query parameters are key-value pairs separated by <code>&</code>.</p>
+
+      <h2>Headers: The Metadata That Makes It Work</h2>
+      <p>Between the request line and the body, there's a block of <strong>headers</strong>. Headers are key-value pairs that provide metadata about the request or response. Think of them as the envelope around your message — they tell the server things like: what format the body is in, who's sending the request, what languages the client accepts, and authentication credentials.</p>
+
+      <p>Some important request headers: <code>Authorization</code> carries your login token (Google uses Bearer tokens or OAuth); <code>Content-Type</code> tells the server what format the body is in (usually <code>application/json</code> for APIs); <code>User-Agent</code> identifies the client app (like "Google/iPhone" or "Mozilla/5.0"); <code>Accept</code> tells the server what response formats you understand; <code>Cookie</code> carries session data stored by your browser.</p>
+
+      <p>And some response headers: <code>Content-Type</code> tells the client what format the response body is in; <code>Set-Cookie</code> tells the browser to store a cookie; <code>Cache-Control</code> tells the client how long to cache the response; <code>X-Request-Id</code> is a unique identifier for debugging (every request to Google gets one, so if something breaks, engineers can trace exactly which request failed).</p>
+
+      <h2>The Body: Where the Data Lives</h2>
+      <p>The <strong>body</strong> (or payload) is the actual data being sent. GET and DELETE requests typically don't have a body — they don't need one because they're either fetching or deleting an existing resource. POST, PUT, and PATCH requests usually have a body containing the data to create or update. When you submit a form, the body might be: <code>{"name": "Elon", "bio": "Mars colonist"}</code>.</p>
+
+      <p>The body is usually JSON in modern APIs, but it can also be XML, form-encoded data, plain text, or binary data (like image uploads). The <code>Content-Type</code> header tells the server how to interpret those bytes.</p>
+
+      <h2>Status Codes: What the Server Says Back</h2>
+      <p>After the server processes your request, it sends back an HTTP response with a <strong>status code</strong>. Status codes are three-digit numbers grouped into five categories. Every developer should know these by heart:</p>
+
+      <p><strong>200 OK</strong> — Everything worked. The request succeeded and the response contains the requested data. When your search results load, you get a 200.</p>
+
+      <p><strong>201 Created</strong> — A new resource was created (usually from a POST request). When your resource is created successfully, you get a 201 back with the new object in the body.</p>
+
+      <p><strong>204 No Content</strong> — The request succeeded but there's nothing to return. DELETE requests often return 204.</p>
+
+      <p><strong>301/302 Redirect</strong> — The resource moved. Your browser automatically follows the new URL in the <code>Location</code> header. Google uses this for URL shorteners.</p>
+
+      <p><strong>400 Bad Request</strong> — You messed up. The server can't understand your request (maybe invalid JSON, missing required field). If you try to submit a form without a required field, Google returns 400 with a message like "field is required."</p>
+
+      <p><strong>401 Unauthorized</strong> — You need to log in. You tried to access a protected resource without valid credentials. If your session expires and you try to search, Google returns 401. It's saying "I don't know who you are."</p>
+
+      <p><strong>403 Forbidden</strong> — You're logged in but you don't have permission. Maybe you tried to delete someone else's content. The server knows who you are but says "you're not allowed to do that."</p>
+
+      <p><strong>404 Not Found</strong> — The resource doesn't exist. You tried to visit a Google profile that doesn't exist, or a deleted resource.</p>
+
+      <p><strong>429 Too Many Requests</strong> — You're rate-limited. Google's API allows a certain number of requests per minute. If you exceed it, you get 429 and need to wait.</p>
+
+      <p><strong>500 Internal Server Error</strong> — The server broke. Something went wrong on Google's side. It's not your fault, but you also can't fix it. The Google engineering team gets paged when 500s spike.</p>
+
+      <p><strong>502/503/504</strong> — Gateway errors. The server is down, overwhelmed, or the upstream service timed out. If Google is under heavy load or a deployment goes wrong, you might see these.</p>
+
+      <p>Status codes are your <strong>first debugging tool</strong>. When something breaks in your backend, the status code tells you whether the problem is on your side (4xx) or the server's side (5xx). This simple distinction saves hours of debugging.</p>
+
+      <p>Now that you understand the anatomy of a request, you're ready for Chapter 3 — because knowing what a request looks like is just the beginning. The really interesting question is: <strong>what does the server actually do</strong> when it receives that request?</p>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-01.html" class="prev"><div class="dir">Previous</div><div class="title">How Machines Find Each Other</div></a>
+      <a href="ch-03.html" class="next"><div class="dir">Next</div><div class="title">What a Server Actually Does</div></a>
+    </nav>
   </div>
-
-  <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="2">Mark Complete</button>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
   </div>
-
-  <nav class="chapter-nav">
-    <a href="ch-01.html" class="prev"><div class="dir">Previous</div><div class="title">How Machines Find Each Other</div></a>
-    <a href="ch-03.html" class="next"><div class="dir">Next</div><div class="title">What a Server Actually Does</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>

@@ -3,54 +3,194 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Learn how the backend actually works — from DNS and HTTP to databases, caching, and deployment. A free 17-chapter interactive guide.">
+<meta name="description" content="Learn how the backend actually works — from DNS and HTTP to databases, caching, and deployment. A free 17-chapter guide for beginner backend developers.">
 <meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
 <meta name="author" content="Backend Terminal">
-<meta property="og:title" content="Backend Terminal — Backend Fundamentals Guide">
-<meta property="og:description" content="A free 17-chapter interactive guide to how the backend actually works.">
+<meta property="og:title" content="Backend Terminal — Master Backend Fundamentals">
+<meta property="og:description" content="A free 17-chapter interactive guide to how the backend actually works. DNS, HTTP, databases, caching, deployment and more.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Backend Terminal — Backend Fundamentals Guide">
+<meta name="twitter:title" content="Backend Terminal — Master Backend Fundamentals">
 <meta name="twitter:description" content="A free 17-chapter interactive guide to how the backend actually works.">
-<title>Backend Terminal — Backend Fundamentals Guide</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Backend Terminal — Master Backend Fundamentals</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<nav id="topNav">
-  <div class="nav-left">
-    <span class="nav-logo">&#9889;</span>
-    <span class="nav-brand">Backend Terminal</span>
-  </div>
-  <div class="nav-center">
-    <a href="#/" class="nav-link active" data-view="home">Courses</a>
-    <a href="#/chapters" class="nav-link" data-view="all">All Chapters</a>
-  </div>
-  <div class="nav-right" id="navProfile">
-    <div class="xp-display">
-      <span class="xp-icon">&#9733;</span>
-      <span class="xp-count" id="xpCount">0</span>
-      <span class="xp-label">XP</span>
-    </div>
-    <div class="level-badge" id="levelBadge">Lv. <span id="levelNum">1</span></div>
-    <div class="profile-avatar" id="profileAvatar">&#128126;</div>
+<nav class="top-nav">
+  <a href="index.html" class="brand"><span class="mark">&#9889;</span> Backend Terminal</a>
+  <div class="nav-links">
+    <a href="index.html">Hub</a>
+    <a href="chapters/ch-01.html">Start</a>
   </div>
 </nav>
 
-<main id="app"></main>
+<main class="container">
+  <section class="hero-section">
+    <h1>Backend Terminal</h1>
+    <p class="lede">A 17-level campaign to master how servers, APIs, databases, and deployments actually work.</p>
+
+    <div class="xp-bar-wrap">
+      <div class="labels">
+        <span class="xp">0 XP</span>
+        <span class="rank">Rank: Recruit</span>
+      </div>
+      <div class="xp-bar-outer">
+        <div class="xp-bar-inner" style="width:0%;"></div>
+      </div>
+      <div class="sub">Complete chapters to earn XP and rank up</div>
+    </div>
+
+    <div class="level-grid">
+
+      <a href="chapters/ch-01.html" class="level-card" data-ch="1">
+        <span class="lv-num">LEVEL 01</span>
+        <span class="lv-title">How Machines Find Each Other</span>
+        <span class="lv-desc">DNS, IP addresses, ports, and the TCP handshake</span>
+        <span class="lv-status active">Play</span>
+        <span class="lv-badge play">&#9654;</span>
+      </a>
+
+      <a href="chapters/ch-02.html" class="level-card" data-ch="2">
+        <span class="lv-num">LEVEL 02</span>
+        <span class="lv-title">The Anatomy of a Request</span>
+        <span class="lv-desc">HTTP methods, headers, bodies, and status codes</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-03.html" class="level-card" data-ch="3">
+        <span class="lv-num">LEVEL 03</span>
+        <span class="lv-title">What a Server Actually Does</span>
+        <span class="lv-desc">The listen-receive-route-process-respond loop</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-04.html" class="level-card" data-ch="4">
+        <span class="lv-num">LEVEL 04</span>
+        <span class="lv-title">How Data Flows Through a System</span>
+        <span class="lv-desc">Controller, service, repository, database layers</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-05.html" class="level-card" data-ch="5">
+        <span class="lv-num">LEVEL 05</span>
+        <span class="lv-title">Memory, Threads &amp; Processes</span>
+        <span class="lv-desc">Stack vs heap, blocking vs non-blocking, concurrency</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-06.html" class="level-card" data-ch="6">
+        <span class="lv-num">LEVEL 06</span>
+        <span class="lv-title">Where Data Actually Lives</span>
+        <span class="lv-desc">SQL, NoSQL, indexes, transactions</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-07.html" class="level-card" data-ch="7">
+        <span class="lv-num">LEVEL 07</span>
+        <span class="lv-title">How Systems Talk to Each Other</span>
+        <span class="lv-desc">REST, JSON, URL design, pagination</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-08.html" class="level-card" data-ch="8">
+        <span class="lv-num">LEVEL 08</span>
+        <span class="lv-title">Authentication &amp; Authorization</span>
+        <span class="lv-desc">Login flows, JWT, OAuth, password hashing</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-09.html" class="level-card" data-ch="9">
+        <span class="lv-num">LEVEL 09</span>
+        <span class="lv-title">Making Things Fast with Caching</span>
+        <span class="lv-desc">Redis, CDNs, cache invalidation strategies</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-10.html" class="level-card" data-ch="10">
+        <span class="lv-num">LEVEL 10</span>
+        <span class="lv-title">Security Essentials</span>
+        <span class="lv-desc">SQL injection, XSS, CSRF, rate limiting</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-11.html" class="level-card" data-ch="11">
+        <span class="lv-num">LEVEL 11</span>
+        <span class="lv-title">Architecture Patterns</span>
+        <span class="lv-desc">Monoliths, microservices, event-driven</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-12.html" class="level-card" data-ch="12">
+        <span class="lv-num">LEVEL 12</span>
+        <span class="lv-title">Networking Essentials</span>
+        <span class="lv-desc">OSI model, WebSockets, load balancers</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-13.html" class="level-card" data-ch="13">
+        <span class="lv-num">LEVEL 13</span>
+        <span class="lv-title">Working with Linux</span>
+        <span class="lv-desc">Terminal, filesystem, SSH, permissions</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-14.html" class="level-card" data-ch="14">
+        <span class="lv-num">LEVEL 14</span>
+        <span class="lv-title">Version Control with Git</span>
+        <span class="lv-desc">Commits, branches, merges, pull requests</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-15.html" class="level-card" data-ch="15">
+        <span class="lv-num">LEVEL 15</span>
+        <span class="lv-title">Testing Your Code</span>
+        <span class="lv-desc">Unit tests, integration tests, testing pyramid</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-16.html" class="level-card" data-ch="16">
+        <span class="lv-num">LEVEL 16</span>
+        <span class="lv-title">Deployment &amp; DevOps</span>
+        <span class="lv-desc">Docker, CI/CD, cloud deployment</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+      <a href="chapters/ch-17.html" class="level-card" data-ch="17">
+        <span class="lv-num">LEVEL 17</span>
+        <span class="lv-title">The Learning Roadmap</span>
+        <span class="lv-desc">Week-by-week plan from beginner to job-ready</span>
+        <span class="lv-status locked">Locked</span>
+        <span class="lv-badge locked">&#128274;</span>
+      </a>
+
+    </div>
+  </section>
+</main>
 
 <footer class="site-footer">
-  <div class="footer-inner">
-    <p>All bytes considered, you made it through. Now go build something.</p>
+  <div class="container">
+    <p>No frameworks. No magic. Just the machinery every server runs on.</p>
+    <div class="stamp">Backend Terminal &#183; Free &#183; Always</div>
   </div>
 </footer>
 
-<script src="js/content.js"></script>
-<script src="js/diagrams.js"></script>
-<script src="js/diagram-interact.js"></script>
-<script src="js/app.js"></script>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">&#9788;</span></button>
+<script src="js/script.js"></script>
 </body>
 </html>

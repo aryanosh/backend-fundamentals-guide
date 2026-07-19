@@ -4,317 +4,290 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
-<meta property="og:title" content="Ch 04 — How Data Flows Through a System">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Terminal">
+<meta property="og:title" content="Level 04 — How Data Flows Through a System">
 <meta property="og:description" content="Controllers, services, repositories — learn the layered architecture that keeps production codebases clean and maintainable.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 04 — How Data Flows Through a System">
+<meta name="twitter:title" content="Level 04 — How Data Flows Through a System">
 <meta name="twitter:description" content="Controllers, services, repositories — learn the layered architecture.">
-<title>Ch 04 — How Data Flows Through a System</title>
+<title>Level 04 — How Data Flows Through a System</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">&#9889;</span> Backend Terminal</a>
+  <div class="nav-links">
+    <a href="../index.html">Hub</a>
+    <a href="ch-01.html">Level 01</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link active" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status">&#9654;</span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
-  </div>
-</div>
+</nav>
 
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<main>
+  <div class="container">
+    <div class="chapter-progress">
+      <div class="cp-bar"><div class="cp-fill" style="width:6%;"></div></div>
+      <span class="cp-label">1/17 completed</span>
+    </div>
 
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
-  </div>
-
-  <header class="page-header">
-    <div class="eyebrow">Ch 04 / 17</div>
-    <h1>How Data Flows Through a System</h1>
-    <p class="subtitle">Controller, service, repository, database — why we split code into layers and what each layer owns</p>
-    <div class="meta"><span>~11 min read</span></div>
-  </header>
+    <header class="page-header">
+      <div class="eyebrow">Level 04 / 17</div>
+      <h1>How Data Flows Through a System</h1>
+      <p class="subtitle">Controller, service, repository, database — why we split code into layers and what each layer owns</p>
+      <div class="meta"><span>~11 min read</span></div>
+    </header>
 
     <div class="chapter-content">
 
-    <section class="topic-section">
-      <h2>Why One Big File Isn't Enough</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Production systems use layered architecture to keep codebases maintainable. Instead of one file handling everything, each layer has a single responsibility.</p>
-          <ul>
-            <li><strong>One big file</strong> — Mixes HTTP handling, business logic, DB queries, auth, emails in one place</li>
-            <li><strong>Layered architecture</strong> — Splits into Controller, Service, Repository, Database</li>
-            <li><strong>Each layer</strong> — Only talks to the layer directly below it</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+      <section class="topic-section">
+        <h2>Why One Big File Isn't Enough</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
             </defs>
-            <rect x="30" y="20" width="280" height="180" rx="10" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2;stroke-dasharray:6 4"/>
-            <text x="170" y="70" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:700">One Big File</text>
-            <text x="170" y="92" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">HTTP handling</text>
-            <text x="170" y="108" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Business logic</text>
-            <text x="170" y="124" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Database queries</text>
-            <text x="170" y="140" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Email sending</text>
-            <text x="170" y="156" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Auth logic</text>
-            <text x="170" y="180" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">&#10007; Hard to maintain</text>
-            <line x1="310" y1="110" x2="370" y2="110" style="stroke:var(--dg-1);stroke-width:2" marker-end="url(#m1)"/>
-            <text x="340" y="100" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">refactor</text>
-            <rect x="380" y="20" width="300" height="36" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="530" y="43" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Controller</text>
-            <rect x="380" y="64" width="300" height="36" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="530" y="87" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">Service</text>
-            <rect x="380" y="108" width="300" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="530" y="131" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Repository</text>
-            <rect x="380" y="152" width="300" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="530" y="175" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Database</text>
-            <text x="530" y="200" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">&#10003; Each layer has one job</text>
+            <!-- Big file blob -->
+            <rect x="30" y="20" width="280" height="180" rx="10" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:2;stroke-dasharray:6 4"/>
+            <text x="170" y="70" text-anchor="middle" style="fill:var(--dg-pink);font-size:14;font-weight:700;font-family:Inter,sans-serif">One Big File</text>
+            <text x="170" y="92" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">HTTP handling</text>
+            <text x="170" y="108" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Business logic</text>
+            <text x="170" y="124" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Database queries</text>
+            <text x="170" y="140" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Email sending</text>
+            <text x="170" y="156" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:Inter,sans-serif">Auth logic</text>
+            <text x="170" y="180" text-anchor="middle" style="fill:var(--dg-pink);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">&#10007; Hard to maintain</text>
+
+            <!-- Arrow -->
+            <line x1="310" y1="110" x2="370" y2="110" style="stroke:var(--dg-cyan);stroke-width:2" marker-end="url(#arr)"/>
+            <text x="340" y="100" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">refactor</text>
+
+            <!-- Layered -->
+            <rect x="380" y="20" width="300" height="36" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="530" y="43" text-anchor="middle" style="fill:var(--dg-cyan);font-size:12;font-weight:600;font-family:Inter,sans-serif">Controller</text>
+            <rect x="380" y="64" width="300" height="36" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="530" y="87" text-anchor="middle" style="fill:var(--dg-violet);font-size:12;font-weight:600;font-family:Inter,sans-serif">Service</text>
+            <rect x="380" y="108" width="300" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="530" y="131" text-anchor="middle" style="fill:var(--dg-green);font-size:12;font-weight:600;font-family:Inter,sans-serif">Repository</text>
+            <rect x="380" y="152" width="300" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="530" y="175" text-anchor="middle" style="fill:var(--dg-amber);font-size:12;font-weight:600;font-family:Inter,sans-serif">Database</text>
+            <text x="530" y="200" text-anchor="middle" style="fill:var(--dg-green);font-size:10;font-weight:600;font-family:JetBrains Mono,monospace">&#10003; Each layer has one job</text>
           </svg>
           <div class="cap">Layered architecture splits one messy file into four focused layers</div>
         </div>
-      </div>
-    </section>
+        <p>When you're starting out, it's tempting to put everything in one file. A single script that handles HTTP requests, runs database queries, formats JSON responses, and sends emails. It works — for a while. Then the codebase grows, and that single file becomes a nightmare. A change in one place breaks something unrelated. You can't test individual pieces.</p>
+        <p>This is why production systems use <strong>layered architecture</strong>. Instead of one big blob, you split your application into distinct layers, each with a single responsibility. Each layer only talks to the layer directly below it. The most common pattern: <strong>Controller &rarr; Service &rarr; Repository &rarr; Database</strong>.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>The Controller Layer: The Traffic Cop</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The controller is the entry point for every request. It validates input, calls the appropriate service, and sends back a response. No business logic, no database queries.</p>
-          <ul>
-            <li><strong>Parses</strong> — Extracts method, path, headers, body from the request</li>
-            <li><strong>Validates</strong> — Checks input is well-formed, returns 400 if not</li>
-            <li><strong>Delegates</strong> — Calls the service layer, then formats the response</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <section class="topic-section">
+        <h2>The Controller Layer: The Traffic Cop</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
             </defs>
-            <rect x="30" y="60" width="100" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="80" y="87" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Client</text>
-            <line x1="130" y1="82" x2="190" y2="82" style="stroke:var(--dg-1);stroke-width:2" marker-end="url(#m2)"/>
-            <text x="160" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">HTTP request</text>
-            <rect x="195" y="40" width="180" height="84" rx="10" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="285" y="65" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:700">CONTROLLER</text>
-            <text x="285" y="82" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Parses URL, validates input</text>
-            <text x="285" y="96" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Checks auth token</text>
-            <text x="285" y="110" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Calls service, returns response</text>
-            <line x1="375" y1="82" x2="435" y2="82" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#m2)"/>
-            <text x="405" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">sanitized data</text>
-            <rect x="440" y="40" width="130" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-2);stroke-width:2"/>
-            <text x="505" y="67" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Service</text>
-            <rect x="440" y="92" width="130" height="32" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1"/>
-            <text x="505" y="112" text-anchor="middle" style="fill:var(--dg-2);font-size:14;font-weight:600;font-family:JetBrains Mono,monospace">business logic</text>
-            <rect x="195" y="140" width="200" height="28" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1"/>
-            <text x="295" y="158" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600;font-family:JetBrains Mono,monospace">&#10007; No DB queries &#10007; No business logic</text>
+            <!-- Client -->
+            <rect x="30" y="60" width="100" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="80" y="87" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600;font-family:Inter,sans-serif">Client</text>
+            <!-- Arrow -->
+            <line x1="130" y1="82" x2="190" y2="82" style="stroke:var(--dg-cyan);stroke-width:2" marker-end="url(#arr2)"/>
+            <text x="160" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">HTTP request</text>
+            <!-- Controller -->
+            <rect x="195" y="40" width="180" height="84" rx="10" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:2"/>
+            <text x="285" y="65" text-anchor="middle" style="fill:var(--dg-cyan);font-size:13;font-weight:700;font-family:Inter,sans-serif">CONTROLLER</text>
+            <text x="285" y="82" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Parses URL, validates input</text>
+            <text x="285" y="96" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Checks auth token</text>
+            <text x="285" y="110" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Calls service, returns response</text>
+            <!-- Arrow -->
+            <line x1="375" y1="82" x2="435" y2="82" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#arr2)"/>
+            <text x="405" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">sanitized data</text>
+            <!-- Service -->
+            <rect x="440" y="40" width="130" height="44" rx="8" style="fill:var(--dg-node);stroke:var(--dg-violet);stroke-width:2"/>
+            <text x="505" y="67" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600;font-family:Inter,sans-serif">Service</text>
+            <!-- Rules -->
+            <rect x="440" y="92" width="130" height="32" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1"/>
+            <text x="505" y="112" text-anchor="middle" style="fill:var(--dg-violet);font-size:9;font-weight:600;font-family:JetBrains Mono,monospace">business logic</text>
+            <!-- X marks -->
+            <rect x="195" y="140" width="200" height="28" rx="6" style="fill:var(--pink-dim);stroke:var(--dg-pink);stroke-width:1"/>
+            <text x="295" y="158" text-anchor="middle" style="fill:var(--dg-pink);font-size:9;font-weight:600;font-family:JetBrains Mono,monospace">&#10007; No DB queries &#10007; No business logic</text>
           </svg>
           <div class="cap">The controller is thin — it validates, delegates, and responds. No business logic here.</div>
         </div>
-      </div>
-    </section>
+        <p>The <strong>controller</strong> is the entry point for every request. It's the first layer that touches incoming data. Think of it as a traffic cop: its job isn't to know where every car is going, but to point each car in the right direction.</p>
+        <p>When your browser sends <code>GET /api/search?q=backend</code>, a controller catches that request. It parses the URL, extracts the query parameter, and checks if everything is well-formed. If something's wrong, it returns an error immediately. If everything looks good, it passes the sanitized data to the service layer.</p>
+        <p>The controller should be <strong>thin</strong>. It validates input, calls the appropriate service, and sends back a response. That's it. No database queries, no complex calculations.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>The Service Layer: The Brain of the Operation</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The service layer contains your application's business logic. It orchestrates repositories, enforces rules, and makes decisions. A well-written service is framework-agnostic.</p>
-          <ul>
-            <li><strong>Business rules</strong> — Defines what your application does and why</li>
-            <li><strong>Orchestration</strong> — Calls multiple repositories, combines data from different sources</li>
-            <li><strong>Framework-agnostic</strong> — Works the same from HTTP, CLI, or tests</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <section class="topic-section">
+        <h2>The Service Layer: The Brain of the Operation</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
             </defs>
-            <rect x="30" y="20" width="120" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="90" y="45" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Controller</text>
-            <line x1="150" y1="40" x2="200" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#m3)"/>
-            <rect x="205" y="10" width="280" height="60" rx="10" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:2"/>
-            <text x="345" y="33" text-anchor="middle" style="fill:var(--dg-2);font-size:13;font-weight:700">SERVICE LAYER</text>
-            <text x="345" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Business rules &middot; Orchestration &middot; Decisions</text>
-            <line x1="485" y1="40" x2="535" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#m3)"/>
-            <rect x="540" y="20" width="120" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="600" y="45" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Repository</text>
+            <!-- Controller -->
+            <rect x="30" y="20" width="120" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="90" y="45" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:Inter,sans-serif">Controller</text>
+            <line x1="150" y1="40" x2="200" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr3)"/>
+            <!-- Service -->
+            <rect x="205" y="10" width="280" height="60" rx="10" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:2"/>
+            <text x="345" y="33" text-anchor="middle" style="fill:var(--dg-violet);font-size:13;font-weight:700;font-family:Inter,sans-serif">SERVICE LAYER</text>
+            <text x="345" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Business rules &middot; Orchestration &middot; Decisions</text>
+            <line x1="485" y1="40" x2="535" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr3)"/>
+            <!-- Repository -->
+            <rect x="540" y="20" width="120" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="600" y="45" text-anchor="middle" style="fill:var(--dg-green);font-size:11;font-weight:600;font-family:Inter,sans-serif">Repository</text>
+            <!-- Service responsibilities -->
             <rect x="205" y="85" width="280" height="95" rx="8" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
-            <text x="345" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">What the service does:</text>
-            <text x="220" y="122" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">&#9654; Applies business rules</text>
-            <text x="220" y="138" style="fill:var(--dg-2);font-size:11;font-family:JetBrains Mono,monospace">&#9654; Orchestrates multiple repositories</text>
-            <text x="220" y="154" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">&#9654; Enforces permissions</text>
-            <text x="220" y="170" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">&#9654; Can call external services</text>
+            <text x="345" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:Inter,sans-serif">What the service does:</text>
+            <text x="220" y="122" style="fill:var(--dg-cyan);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Applies business rules</text>
+            <text x="220" y="138" style="fill:var(--dg-violet);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Orchestrates multiple repositories</text>
+            <text x="220" y="154" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Enforces permissions</text>
+            <text x="220" y="170" style="fill:var(--dg-green);font-size:10;font-family:JetBrains Mono,monospace">&#9654; Can call external services</text>
           </svg>
           <div class="cap">The service layer is where your application's intelligence lives</div>
         </div>
-      </div>
-    </section>
+        <p>Below the controller sits the <strong>service layer</strong>. This is where your application's actual intelligence lives. If the controller is the traffic cop, the service is the strategist who decides where traffic should go and why.</p>
+        <p>The service contains <strong>business logic</strong> — the rules and decisions that define what your application does. A search service knows how to rank results by relevance. A payment service knows how to calculate tax and apply discounts. A notification service decides whether to send an email or a push notification based on user preferences.</p>
+        <p>Services orchestrate. They call multiple repositories, combine data from different sources, enforce business rules, and decide what the final result looks like. A well-written service is <strong>framework-agnostic</strong> — it doesn't know whether it's being called from an HTTP controller, a CLI tool, or a test suite.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>The Repository Layer: The Data Gatekeeper</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The repository abstracts the database behind clean method names. It speaks your application's language — not raw SQL.</p>
-          <ul>
-            <li><strong>Abstraction</strong> — Methods like findUserById(id), saveOrder(order) hide SQL</li>
-            <li><strong>Swapability</strong> — Switch databases by changing only the repository implementation</li>
-            <li><strong>Cross-cutting</strong> — Caching, retry logic, connection pooling live here</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+      <section class="topic-section">
+        <h2>The Repository Layer: The Data Gatekeeper</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
             </defs>
-            <rect x="30" y="20" width="120" height="40" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="90" y="45" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">Service</text>
-            <line x1="150" y1="40" x2="210" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#m4)"/>
-            <rect x="215" y="10" width="280" height="60" rx="10" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
-            <text x="355" y="33" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:700">REPOSITORY</text>
-            <text x="355" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Abstracts the database behind clean methods</text>
-            <line x1="495" y1="40" x2="555" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#m4)"/>
-            <rect x="560" y="20" width="120" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="620" y="45" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Database</text>
-            <rect x="215" y="85" width="280" height="95" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="355" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600;font-family:JetBrains Mono,monospace">// Clean method names</text>
-            <text x="230" y="125" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">findUserById(id)</text>
-            <text x="230" y="143" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">saveOrder(order)</text>
-            <text x="230" y="161" style="fill:var(--dg-5);font-size:11;font-family:JetBrains Mono,monospace">deleteExpiredSessions()</text>
-            <text x="230" y="175" style="fill:var(--dg-text-dim);font-size:14">Not raw SQL — clean abstractions</text>
+            <!-- Service -->
+            <rect x="30" y="20" width="120" height="40" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="90" y="45" text-anchor="middle" style="fill:var(--dg-violet);font-size:11;font-weight:600;font-family:Inter,sans-serif">Service</text>
+            <line x1="150" y1="40" x2="210" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr4)"/>
+            <!-- Repository -->
+            <rect x="215" y="10" width="280" height="60" rx="10" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:2"/>
+            <text x="355" y="33" text-anchor="middle" style="fill:var(--dg-green);font-size:13;font-weight:700;font-family:Inter,sans-serif">REPOSITORY</text>
+            <text x="355" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Abstracts the database behind clean methods</text>
+            <line x1="495" y1="40" x2="555" y2="40" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr4)"/>
+            <!-- Database -->
+            <rect x="560" y="20" width="120" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="620" y="45" text-anchor="middle" style="fill:var(--dg-amber);font-size:11;font-weight:600;font-family:Inter,sans-serif">Database</text>
+            <!-- Code examples -->
+            <rect x="215" y="85" width="280" height="95" rx="8" style="fill:var(--bg-code);stroke:var(--border);stroke-width:1"/>
+            <text x="355" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:JetBrains Mono,monospace">// Clean method names</text>
+            <text x="230" y="125" style="fill:var(--dg-cyan);font-size:10;font-family:JetBrains Mono,monospace">findUserById(id)</text>
+            <text x="230" y="143" style="fill:var(--dg-green);font-size:10;font-family:JetBrains Mono,monospace">saveOrder(order)</text>
+            <text x="230" y="161" style="fill:var(--dg-pink);font-size:10;font-family:JetBrains Mono,monospace">deleteExpiredSessions()</text>
+            <text x="230" y="175" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">Not raw SQL — clean abstractions</text>
           </svg>
-          <div class="cap">The repository translates clean method calls into database queries.</div>
+          <div class="cap">The repository translates clean method calls into database queries. Swap databases without touching services.</div>
         </div>
-      </div>
-    </section>
+        <p>Once the service has decided what data it needs, it calls the <strong>repository layer</strong>. The repository is a clean abstraction over the database. It speaks the language of your application — methods like <code>findUserById(id)</code>, <code>saveOrder(order)</code> — rather than raw SQL.</p>
+        <p>Why not just put database queries directly in the service? Because that couples your business logic to a specific database technology. If you switch from PostgreSQL to MongoDB, you'd only change the repository implementation — the service code stays untouched.</p>
+        <p>Repositories also provide a natural place for cross-cutting concerns like caching, retry logic, connection pooling, and query optimization. The service doesn't need to know the repository maintains an in-memory cache — it just calls <code>findUserById</code> and gets the result.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>The Database Layer: Where Data Sleeps</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>The database is where data actually lives — on disk, in memory, or across a cluster. Modern systems use multiple data stores behind a single repository interface.</p>
-          <ul>
-            <li><strong>Persistence</strong> — The only layer that deals with raw storage</li>
-            <li><strong>Multiple stores</strong> — PostgreSQL for accounts, Redis for cache, MongoDB for content</li>
-            <li><strong>Hidden complexity</strong> — Service calls searchProducts(query) without knowing where data lives</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
-            <rect x="260" y="10" width="180" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="350" y="35" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Repository</text>
-            <line x1="350" y1="50" x2="350" y2="70" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <polygon points="346,66 350,76 354,66" fill="var(--dg-line)"/>
-            <rect x="30" y="75" width="300" height="120" rx="10" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
-            <text x="180" y="100" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:700">DATABASE CLUSTER</text>
-            <rect x="50" y="110" width="120" height="38" rx="6" style="fill:var(--dg-node);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="110" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:12">Primary (write)</text>
-            <rect x="185" y="110" width="120" height="38" rx="6" style="fill:var(--dg-node);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="245" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:12">Replica (read)</text>
+      <section class="topic-section">
+        <h2>The Database Layer: Where Data Sleeps</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Repository -->
+            <rect x="260" y="10" width="180" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1.5"/>
+            <text x="350" y="35" text-anchor="middle" style="fill:var(--dg-green);font-size:12;font-weight:600;font-family:Inter,sans-serif">Repository</text>
+            <line x1="350" y1="50" x2="350" y2="70" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#arr5)"/>
+            <!-- Database cluster -->
+            <rect x="30" y="75" width="300" height="120" rx="10" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:2"/>
+            <text x="180" y="100" text-anchor="middle" style="fill:var(--dg-amber);font-size:13;font-weight:700;font-family:Inter,sans-serif">DATABASE CLUSTER</text>
+            <rect x="50" y="110" width="120" height="38" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="110" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-family:Inter,sans-serif">Primary (write)</text>
+            <rect x="185" y="110" width="120" height="38" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="245" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-family:Inter,sans-serif">Replica (read)</text>
             <line x1="110" y1="148" x2="245" y2="148" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:3 3"/>
-            <polygon points="241,145 251,148 241,151" fill="var(--dg-line)"/>
-            <text x="180" y="162" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">replication</text>
-            <text x="180" y="182" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">PostgreSQL / MySQL / Mongo / Redis</text>
+            <text x="180" y="162" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">replication</text>
+            <text x="180" y="182" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family:Inter,sans-serif">PostgreSQL / MySQL / Mongo / Redis</text>
+            <!-- Side: multiple DB types -->
             <rect x="380" y="75" width="300" height="120" rx="10" style="fill:var(--dg-node);stroke:var(--border);stroke-width:1.5"/>
-            <text x="530" y="100" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Different databases for</text>
-            <text x="530" y="116" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">different jobs</text>
-            <rect x="395" y="125" width="120" height="30" rx="5" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="455" y="144" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-family:JetBrains Mono,monospace">PostgreSQL</text>
-            <rect x="525" y="125" width="70" height="30" rx="5" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1"/>
-            <text x="560" y="144" text-anchor="middle" style="fill:var(--dg-2);font-size:11;font-family:JetBrains Mono,monospace">Redis</text>
-            <rect x="395" y="162" width="120" height="30" rx="5" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1"/>
-            <text x="455" y="181" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-family:JetBrains Mono,monospace">MongoDB</text>
-            <rect x="525" y="162" width="70" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1"/>
-            <text x="560" y="181" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">Elastic</text>
+            <text x="530" y="100" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:Inter,sans-serif">Different databases for</text>
+            <text x="530" y="116" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600;font-family:Inter,sans-serif">different jobs</text>
+            <rect x="395" y="125" width="120" height="30" rx="5" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1"/>
+            <text x="455" y="144" text-anchor="middle" style="fill:var(--dg-cyan);font-size:10;font-family:JetBrains Mono,monospace">PostgreSQL</text>
+            <rect x="525" y="125" width="70" height="30" rx="5" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1"/>
+            <text x="560" y="144" text-anchor="middle" style="fill:var(--dg-violet);font-size:10;font-family:JetBrains Mono,monospace">Redis</text>
+            <rect x="395" y="162" width="120" height="30" rx="5" style="fill:var(--pink-dim);stroke:var(--dg-pink);stroke-width:1"/>
+            <text x="455" y="181" text-anchor="middle" style="fill:var(--dg-pink);font-size:10;font-family:JetBrains Mono,monospace">MongoDB</text>
+            <rect x="525" y="162" width="70" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1"/>
+            <text x="560" y="181" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">Elastic</text>
           </svg>
           <div class="cap">Modern backends use multiple data stores behind a single repository interface</div>
         </div>
-      </div>
-    </section>
+        <p>At the bottom of the stack is the <strong>database</strong>. This is where data actually lives — on disk, in memory, or spread across a cluster of machines. The database is the only layer that deals with raw persistence. Everything above it is just moving, shaping, and transforming data on its way in or out.</p>
+        <p>In modern systems, the "database" isn't always a single thing. You might have PostgreSQL for user accounts and orders, MongoDB for flexible content, Redis for fast caching, and Elasticsearch for full-text search. The repository layer hides this complexity — the service calls <code>searchProducts(query)</code> without knowing whether the repository hits a dedicated search index or falls back to a SQL query.</p>
+      </section>
 
-    <section class="topic-section">
-      <h2>Why Layers Matter: The Google Example</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Google's search pipeline follows the same layered pattern. The controller receives your query, the search service orchestrates ranking, personalization, and ads — each in its own layer.</p>
-          <ul>
-            <li><strong>Independent optimization</strong> — Engineers improve ranking without touching ads</li>
-            <li><strong>Swappable components</strong> — Swap caching layer without changing business logic</li>
-            <li><strong>Multiple frontends</strong> — New interfaces reuse existing services</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
-            <rect x="30" y="10" width="660" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="360" y="30" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Controller: receives GET /search?q=latest+news</text>
+      <section class="topic-section">
+        <h2>Why Layers Matter: The Google Example</h2>
+        <div class="diagram-wrap">
+          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Full flow -->
+            <rect x="30" y="10" width="660" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="360" y="30" text-anchor="middle" style="fill:var(--dg-cyan);font-size:11;font-weight:600;font-family:Inter,sans-serif">Controller: receives GET /search?q=latest+news</text>
             <line x1="360" y1="40" x2="360" y2="55" style="stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:4 3"/>
-            <rect x="30" y="58" width="660" height="30" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="360" y="78" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">SearchService: orchestrates ranking, personalization, ads</text>
+            <rect x="30" y="58" width="660" height="30" rx="6" style="fill:var(--violet-dim);stroke:var(--dg-violet);stroke-width:1.5"/>
+            <text x="360" y="78" text-anchor="middle" style="fill:var(--dg-violet);font-size:11;font-weight:600;font-family:Inter,sans-serif">SearchService: orchestrates ranking, personalization, ads</text>
+            <!-- Split into 3 sub-services -->
             <line x1="150" y1="88" x2="150" y2="103" style="stroke:var(--dg-line);stroke-width:1.5"/>
             <line x1="360" y1="88" x2="360" y2="103" style="stroke:var(--dg-line);stroke-width:1.5"/>
             <line x1="570" y1="88" x2="570" y2="103" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="40" y="106" width="210" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="145" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:11">QueryRepository</text>
-            <rect x="260" y="106" width="190" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="355" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:11">RankingService</text>
-            <rect x="465" y="106" width="220" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="575" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:11">PersonalizationService</text>
+            <rect x="40" y="106" width="210" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-cyan);stroke-width:1.5"/>
+            <text x="145" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">QueryRepository</text>
+            <rect x="260" y="106" width="190" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="355" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">RankingService</text>
+            <rect x="465" y="106" width="220" height="36" rx="6" style="fill:var(--dg-node);stroke:var(--dg-pink);stroke-width:1.5"/>
+            <text x="575" y="128" text-anchor="middle" style="fill:var(--dg-text);font-size:10;font-family:Inter,sans-serif">PersonalizationService</text>
+            <!-- Databases -->
             <line x1="145" y1="142" x2="145" y2="162" style="stroke:var(--dg-line);stroke-width:1.5"/>
             <line x1="355" y1="142" x2="355" y2="162" style="stroke:var(--dg-line);stroke-width:1.5"/>
             <line x1="575" y1="142" x2="575" y2="162" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="40" y="165" width="210" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="145" y="184" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">Cache / Search Index</text>
-            <rect x="260" y="165" width="190" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="355" y="184" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">User Profiles DB</text>
-            <rect x="465" y="165" width="220" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="575" y="184" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-family:JetBrains Mono,monospace">Ad Targeting DB</text>
-            <rect x="120" y="210" width="480" height="24" rx="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="360" y="226" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Each layer can change independently. That's how Google ships hundreds of changes per day.</text>
+            <rect x="40" y="165" width="210" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="145" y="184" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">Cache / Search Index</text>
+            <rect x="260" y="165" width="190" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="355" y="184" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">User Profiles DB</text>
+            <rect x="465" y="165" width="220" height="30" rx="5" style="fill:var(--amber-dim);stroke:var(--dg-amber);stroke-width:1.5"/>
+            <text x="575" y="184" text-anchor="middle" style="fill:var(--dg-amber);font-size:10;font-family:JetBrains Mono,monospace">Ad Targeting DB</text>
+            <!-- Insight -->
+            <rect x="120" y="210" width="480" height="24" rx="12" style="fill:var(--green-dim);stroke:var(--dg-green);stroke-width:1"/>
+            <text x="360" y="226" text-anchor="middle" style="fill:var(--dg-green);font-size:10;font-weight:600;font-family:Inter,sans-serif">Each layer can change independently. That's how Google ships hundreds of changes per day.</text>
           </svg>
           <div class="cap">Google's search architecture follows the same layered pattern at massive scale</div>
         </div>
-      </div>
-    </section>
+        <p>Think about what happens when you search on Google. The controller receives your <code>GET /search?q=latest+news</code> request. The search service orchestrates a complex pipeline: it calls the QueryRepository to check cached results, the RankingService to score results, the PersonalizationService to factor in your history, and the AdService to pick relevant ads.</p>
+        <p>Each of these is a separate layer or service with a clear boundary. Google's engineers can optimize the ranking algorithm without touching the ad system. They can swap out the caching layer from Memcached to Redis without changing any business logic. They can add a new frontend (like voice search) by writing a new controller that calls the same services.</p>
+        <p>That's the power of layered architecture. It's not extra work — it's <strong>insurance</strong> against the chaos that every growing codebase inevitably faces.</p>
+      </section>
 
-  </div> <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="4">Mark Complete</button>
+    </div>
+
+    <div class="mark-complete-wrap">
+      <button class="btn-mark" data-ch="4">&#9876; Mark Level Complete</button>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-03.html" class="prev"><div class="dir">Previous Level</div><div class="title">What a Server Actually Does</div></a>
+      <a href="ch-05.html" class="next"><div class="dir">Next Level</div><div class="title">Memory, Threads &amp; Processes</div></a>
+    </nav>
   </div>
+</main>
 
-  <nav class="chapter-nav">
-    <a href="ch-03.html" class="prev"><div class="dir">Previous</div><div class="title">What a Server Actually Does</div></a>
-    <a href="ch-05.html" class="next"><div class="dir">Next</div><div class="title">Memory, Threads &amp; Processes</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
+<footer class="site-footer">
+  <div class="container">
+    <p>No frameworks. No magic. Just the machinery every server runs on.</p>
+    <div class="stamp">Backend Terminal &#183; Free &#183; Always</div>
+  </div>
+</footer>
 
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">&#9788;</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>

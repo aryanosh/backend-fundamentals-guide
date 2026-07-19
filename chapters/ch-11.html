@@ -4,298 +4,162 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Monolith vs microservices vs event-driven architecture. How to structure a codebase that scales.">
-<meta property="og:title" content="Ch 11 — Architecture Patterns">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 11 â€” Architecture Patterns">
 <meta property="og:description" content="Monolith vs microservices vs event-driven architecture. How to structure a codebase that scales.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 11 — Architecture Patterns">
-<meta name="twitter:description" content="Monolith vs microservices vs event-driven architecture.">
-<title>Ch 11 — Architecture Patterns</title>
+<meta name="twitter:title" content="Chapter 11 â€” Architecture Patterns">
+<meta name="twitter:description" content="Monolith vs microservices vs event-driven architecture. How to structure a codebase that scales.">
+<title>Chapter 11 â€” Architecture Patterns</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">â—ˆ</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link active" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status">&#9654;</span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 11</div>
+      <h1>Architecture Patterns</h1>
+      <p class="subtitle">Monoliths, microservices, MVC, and event-driven design â€” and when to use each</p>
+      <div class="meta"><span>~14 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 11.1 â€” Three common architecture styles compared</span><span>google.com</span></div>
+      <svg viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg">
+        <text x="133" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Monolith</text>
+        <rect x="50" y="40" width="166" height="200" rx="10" class="dg-node" fill="#4a90d9"/>
+        <text x="133" y="90" text-anchor="middle" fill="white" font-size="12" font-family="monospace">UI</text>
+        <line x1="80" y1="100" x2="186" y2="100" stroke="#3a7abf" stroke-width="1"/>
+        <text x="133" y="120" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Business Logic</text>
+        <line x1="80" y1="130" x2="186" y2="130" stroke="#3a7abf" stroke-width="1"/>
+        <text x="133" y="150" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Database Access</text>
+        <line x1="80" y1="160" x2="186" y2="160" stroke="#3a7abf" stroke-width="1"/>
+        <text x="133" y="180" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Auth</text>
+        <text x="133" y="200" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Notifications</text>
+        <text x="133" y="220" text-anchor="middle" fill="white" font-size="12" font-family="monospace">Everything</text>
+
+        <text x="400" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Microservices</text>
+        <rect x="290" y="40" width="100" height="180" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="340" y="100" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Users</text>
+        <text x="340" y="120" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Service</text>
+        <rect x="400" y="40" width="100" height="180" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="450" y="100" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Tweets</text>
+        <text x="450" y="120" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Service</text>
+        <rect x="510" y="40" width="100" height="180" rx="8" class="dg-node" fill="#50b87a"/>
+        <text x="560" y="100" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Timeline</text>
+        <text x="560" y="120" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Service</text>
+
+        <path d="M390 130 L400 130" class="dg-line" stroke="#7cb342" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+        <path d="M500 130 L510 130" class="dg-line" stroke="#7cb342" stroke-width="2" fill="none" marker-end="url(#arrowGreen)"/>
+
+        <text x="133" y="290" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">Everything in one deployable unit</text>
+        <text x="425" y="290" text-anchor="middle" font-size="10" fill="#888" font-family="monospace">Independent services, each with its own DB</text>
+
+        <text x="700" y="30" text-anchor="middle" font-size="13" fill="#ddd" font-family="monospace" font-weight="bold">Event-Driven</text>
+        <rect x="630" y="50" width="120" height="40" rx="8" class="dg-node" fill="#9b59b6"/>
+        <text x="690" y="75" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Publisher</text>
+        <rect x="630" y="120" width="120" height="40" rx="8" class="dg-accent" fill="#ff6b35"/>
+        <text x="690" y="145" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Message Queue</text>
+        <rect x="630" y="190" width="120" height="40" rx="8" class="dg-node" fill="#9b59b6"/>
+        <text x="690" y="215" text-anchor="middle" fill="white" font-size="11" font-family="monospace">Consumer</text>
+
+        <path d="M690 90 L690 118" class="dg-line" stroke="#ff6b35" stroke-width="2" fill="none" marker-end="url(#arrowOrange)"/>
+        <path d="M690 160 L690 188" class="dg-line" stroke="#9b59b6" stroke-width="2" fill="none" marker-end="url(#arrowPurple)"/>
+
+        <defs>
+          <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#7cb342"/>
+          </marker>
+          <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#ff6b35"/>
+          </marker>
+          <marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#9b59b6"/>
+          </marker>
+        </defs>
+      </svg>
+      <figcaption>Monoliths keep everything together (simple early on). Microservices split concerns into independent deployable units. Event-driven systems communicate asynchronously through a message queue.</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>No "Right" Architecture â€” Only Tradeoffs</h2>
+<p>Architecture isn't about picking the trendiest pattern. It's about understanding tradeoffs. A monolith is simple but can become unwieldy at scale. Microservices offer flexibility but add operational complexity. Event-driven systems decouple services but make debugging harder. The best architecture is the one that solves your current problem without overcomplicating things.</p>
+
+<h2>Monolith: Start Here</h2>
+<p>A monolith is a single application that handles everything â€” user interface, business logic, database access, authentication, email sending, everything. It runs as one process, deploys as one unit, and is usually one codebase. Monoliths are simple to build, test, and deploy. They're the default choice for startups, small teams, and early-stage products.</p>
+<p>The downsides come with scale. As the codebase grows, it becomes harder to reason about. A tiny change to one feature can break something unrelated. Deploy times increase. Teams step on each other's toes. But here's the secret: many successful companies ran monoliths for years before splitting them up.</p>
+
+<h2>Microservices: Split When It Hurts</h2>
+<p>Microservices break your application into smaller, independent services that communicate over the network (usually via HTTP or message queues). Each service owns its data and can be developed, deployed, and scaled independently.</p>
+<p>You might have a Users Service (handles signup, login, profiles), a Tweets Service (stores and serves tweets), a Timeline Service (computes your home feed), and a Search Service (indexes and queries tweets). Each has its own database and its own API.</p>
+
+<h3>The Good</h3>
+<ul>
+  <li><strong>Independent scaling:</strong> If the Timeline Service needs 100 instances but Users Service needs only 2, you can scale them separately</li>
+  <li><strong>Team autonomy:</strong> Different teams own different services and can deploy independently</li>
+  <li><strong>Isolation:</strong> A bug in one service doesn't take down the whole system</li>
+  <li><strong>Technology diversity:</strong> Use the best tool for each job â€” Postgres for user data, Redis for caching, Elasticsearch for search</li>
+</ul>
+
+<h3>The Bad</h3>
+<ul>
+  <li><strong>Operational complexity:</strong> You now manage N services instead of 1 â€” monitoring, logging, deployment, networking</li>
+  <li><strong>Distributed systems are hard:</strong> Network latency, partial failures, data consistency, retries, timeouts</li>
+  <li><strong>Testing is harder:</strong> You need to test interactions between services</li>
+  <li><strong>Data duplication:</strong> Each service may need its own copy of data that another service owns</li>
+</ul>
+
+<h2>MVC: Model-View-Controller</h2>
+<p>MVC is a design pattern that separates your code into three layers:</p>
+<ul>
+  <li><strong>Model:</strong> The data and business logic â€” represents real-world things like User, Tweet, Like. Handles database queries and validation.</li>
+  <li><strong>View:</strong> What the user sees â€” HTML templates, JSON responses, or mobile app screens. In modern backends, this is often an API response rather than rendered HTML.</li>
+  <li><strong>Controller:</strong> The glue â€” receives HTTP requests, asks the Model for data, and passes it to the View. Think of it as the waiter who takes your order and brings your food.</li>
+</ul>
+<p>MVC isn't a full system architecture â€” it's a way to organize code within a single service. Frameworks like Rails (Ruby), Django (Python), and Spring Boot (Java) are heavily MVC-oriented. Even if you don't use a strict MVC framework, separating concerns into data, presentation, and logic layers is a good practice.</p>
+
+<h2>Event-Driven Architecture</h2>
+<p>In an event-driven system, services communicate by publishing and consuming events. When something happens (a user signs up, a tweet is posted, a like is recorded), the service publishes an event to a message queue (like RabbitMQ, Kafka, or Amazon SQS). Other services consume those events and react accordingly.</p>
+<p>Example: When a user posts a tweet, the Tweets Service publishes a "tweet_created" event. The Timeline Service consumes it and adds the tweet to followers' home timelines. The Search Service consumes it and indexes the tweet. The Notification Service consumes it and sends push notifications to followers.</p>
+<p>Event-driven systems are highly decoupled â€” services don't need to know about each other. They just emit and listen to events. The downside: eventual consistency. When you post a tweet, it might take a few seconds to appear in followers' timelines. Debugging is also harder because the flow of data is spread across multiple services and queues.</p>
+
+<h2>Google's Architecture Evolution</h2>
+<p>Google started as a monolith â€” a single Ruby on Rails application with a single MySQL database. It worked fine for thousands of users. But as Google grew to millions and then hundreds of millions of users, the monolith couldn't keep up. The database was getting hammered. Deployments took 30 minutes. A bug in any feature risked taking down the whole site.</p>
+<p>Google gradually evolved into a microservices architecture. They broke the timeline into its own service (now called Timelines Service, built on Redis clusters). Search became its own service using Java and Lucene. The API layer was separated. User graph management (who follows whom) became its own service. Today, Google runs hundreds of services, each with its own team, codebase, and deployment pipeline.</p>
+<p>The lesson? Google didn't start with microservices. They started simple and split things apart as the pain of the monolith exceeded the pain of distributed systems. That's the right approach for almost everyone.</p>
+
+<h2>Key Takeaways</h2>
+<ul>
+  <li>Start with a monolith â€” it's simpler and faster to build</li>
+  <li>Migrate to microservices only when the monolith's pain (deploy time, team coordination, scaling) outweighs distributed system complexity</li>
+  <li>MVC helps organize code within a service by separating data, logic, and presentation</li>
+  <li>Event-driven architecture decouples services via message queues, at the cost of eventual consistency and debugging difficulty</li>
+  <li>Google evolved from monolith to microservices as they scaled â€” they didn't start there</li>
+  <li>There is no perfect architecture, only tradeoffs</li>
+</ul>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-10.html"><div class="dir">Previous</div><div class="title">Chapter 10 â€” Security Essentials</div></a>
+      <a href="ch-12.html"><div class="dir">Next</div><div class="title">Chapter 12 â€” Networking Essentials</div></a>
+    </nav>
   </div>
-</div>
-
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches â€” this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals Â· Free Â· Always</div>
   </div>
-
-  <header class="page-header">
-    <div class="eyebrow">Ch 11 / 17</div>
-    <h1>Architecture Patterns</h1>
-    <p class="subtitle">Monoliths, microservices, MVC, and event-driven design — and when to use each</p>
-    <div class="meta"><span>~14 min read</span></div>
-  </header>
-
-  <div class="chapter-content">
-
-    <section class="topic-section">
-      <h2>Monolithic Architecture</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>A monolithic architecture packs everything — UI, business logic, data access, database — into a single deployable unit. It's the default choice for startups and small teams because it's simple to build, test, and deploy.</p>
-          <p>As the codebase grows, the monolith becomes harder to reason about. A tiny change in one feature can break something unrelated, and deployments get riskier over time.</p>
-          <ul>
-            <li><strong>Single codebase:</strong> One repository, one deployment pipeline</li>
-            <li><strong>Shared database:</strong> All features access the same data store</li>
-            <li><strong>Simple scaling:</strong> Scale the entire application — not individual components</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Microservices Architecture</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Microservices break your application into smaller, independent services that communicate over the network. Each service owns its data and can be developed, deployed, and scaled independently by separate teams.</p>
-          <p>This flexibility comes with operational complexity — you now manage N services instead of 1, with network latency, partial failures, and data consistency challenges.</p>
-          <ul>
-            <li><strong>Independent scaling:</strong> Scale only the services that need it</li>
-            <li><strong>Team autonomy:</strong> Different teams own and deploy different services</li>
-            <li><strong>Fault isolation:</strong> A bug in one service doesn't take down the whole system</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Monolith vs Microservices</h2>
-      <div class="topic-grid">
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="mvm-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <!-- LEFT: Monolith -->
-            <rect x="20" y="30" width="320" height="200" rx="8" fill="var(--bg-surface)" stroke="var(--dg-4)" stroke-width="2"/>
-            <text x="180" y="22" text-anchor="middle" fill="var(--dg-text)" font-size="13" font-weight:600>Monolith</text>
-            <rect x="40" y="50" width="280" height="28" rx="4" fill="var(--cyan-dim)"/>
-            <text x="180" y="69" text-anchor="middle" fill="var(--dg-text)" font-size="12">UI / Frontend</text>
-            <rect x="40" y="85" width="280" height="28" rx="4" fill="var(--green-dim)"/>
-            <text x="180" y="104" text-anchor="middle" fill="var(--dg-text)" font-size="12">Business Logic</text>
-            <rect x="40" y="120" width="280" height="28" rx="4" fill="var(--amber-dim)"/>
-            <text x="180" y="139" text-anchor="middle" fill="var(--dg-text)" font-size="12">Data Access</text>
-            <rect x="40" y="155" width="280" height="28" rx="4" fill="var(--red-dim)"/>
-            <text x="180" y="174" text-anchor="middle" fill="var(--dg-text)" font-size="12">Database</text>
-            <line x1="180" y1="183" x2="180" y2="192" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#mvm-a)"/>
-            <text x="180" y="204" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Deploy as one unit</text>
-            <text x="180" y="218" text-anchor="middle" fill="var(--dg-4)" font-size="11">Simple to start, hard to scale</text>
-            <!-- RIGHT: Microservices -->
-            <rect x="380" y="30" width="320" height="200" rx="8" fill="var(--bg-surface)" stroke="var(--dg-1)" stroke-width="2"/>
-            <text x="540" y="22" text-anchor="middle" fill="var(--dg-text)" font-size="13" font-weight:600>Microservices</text>
-            <rect x="400" y="45" width="130" height="36" rx="6" fill="var(--cyan-dim)"/>
-            <text x="465" y="67" text-anchor="middle" fill="var(--dg-text)" font-size="11">Auth Service</text>
-            <rect x="550" y="45" width="130" height="36" rx="6" fill="var(--green-dim)"/>
-            <text x="615" y="67" text-anchor="middle" fill="var(--dg-text)" font-size="11">Search Svc</text>
-            <rect x="400" y="95" width="130" height="36" rx="6" fill="var(--amber-dim)"/>
-            <text x="465" y="117" text-anchor="middle" fill="var(--dg-text)" font-size="11">Payments</text>
-            <rect x="550" y="95" width="130" height="36" rx="6" fill="var(--indigo-dim)"/>
-            <text x="615" y="117" text-anchor="middle" fill="var(--dg-text)" font-size="11">Recommend</text>
-            <rect x="470" y="145" width="130" height="36" rx="6" fill="var(--red-dim)"/>
-            <text x="535" y="167" text-anchor="middle" fill="var(--dg-text)" font-size="11">Notifications</text>
-            <!-- Arrows connecting services -->
-            <path d="M530 81 L548 81" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#mvm-a)"/>
-            <path d="M465 131 L465 143" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#mvm-a)"/>
-            <path d="M615 81 L615 93" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#mvm-a)"/>
-            <path d="M530 81 L465 93" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#mvm-a)"/>
-            <path d="M615 81 L550 93" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#mvm-a)"/>
-            <path d="M530 131 L550 143" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#mvm-a)"/>
-            <text x="540" y="215" text-anchor="middle" fill="var(--dg-1)" font-size="11">Independent deploy &amp; scale</text>
-            <text x="540" y="227" text-anchor="middle" fill="var(--dg-5)" font-size="10">Complex coordination needed</text>
-            <!-- Bottom bar -->
-            <rect x="100" y="240" width="520" height="24" rx="4" fill="var(--cyan-dim)"/>
-            <text x="360" y="256" text-anchor="middle" fill="var(--dg-text)" font-size="11">Start monolith. Extract services when the monolith's pain exceeds distributed complexity.</text>
-          </svg>
-          <div class="cap">Monolith bundles everything into one unit; microservices split into independent services with their own data and deployment pipelines</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Event-Driven Architecture</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>In an event-driven system, services communicate by publishing and consuming events via a message queue. When something happens (a user signs up, a tweet is posted), the service publishes an event. Other services consume that event and react — without knowing about each other.</p>
-          <p>This decoupling comes at the cost of eventual consistency and harder debugging, since data flow is spread across multiple services and queues.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="evta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Pub / Sub Pattern</text>
-            <rect x="260" y="40" width="200" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-2);stroke-width:2"/>
-            <text x="360" y="60" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Tweets Service</text>
-            <text x="360" y="78" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Publishes: tweet_created</text>
-            <line x1="360" y1="90" x2="360" y2="120" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#evta)"/>
-            <rect x="230" y="120" width="260" height="40" rx="20" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
-            <text x="360" y="145" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Event Bus (Kafka / RabbitMQ)</text>
-            <line x1="270" y1="160" x2="270" y2="190" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#evta)"/>
-            <line x1="360" y1="160" x2="360" y2="190" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#evta)"/>
-            <line x1="450" y1="160" x2="450" y2="190" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#evta)"/>
-            <rect x="200" y="190" width="140" height="50" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="270" y="210" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Timeline</text>
-            <text x="270" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Updates feeds</text>
-            <rect x="360" y="190" width="140" height="50" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="430" y="210" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Search</text>
-            <text x="430" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Indexes tweet</text>
-            <rect x="520" y="190" width="140" height="50" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="590" y="210" text-anchor="middle" style="fill:var(--dg-2);font-size:11;font-weight:600>Notifications</text>
-            <text x="590" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Sends push</text>
-            <text x="270" y="265" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Consumer</text>
-            <text x="430" y="265" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Consumer</text>
-            <text x="590" y="265" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Consumer</text>
-            <rect x="180" y="280" width="360" height="24" rx="12" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="296" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Services are decoupled — they only know about events, not about each other</text>
-          </svg>
-          <div class="cap">In the pub/sub pattern, a single event published to the bus is consumed by multiple independent subscribers</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Message Queues</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Message queues provide reliable asynchronous communication between services. A producer sends a message to a queue, and one of several workers picks it up for processing — called the <strong>competing consumers</strong> pattern. This enables high throughput and fault tolerance.</p>
-          <p>Common systems include RabbitMQ, Apache Kafka, Amazon SQS, and Redis Streams. Queues handle traffic spikes, decouple producers from consumers, and provide retry/dead-letter mechanisms for failed messages.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="a73" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="40" y="60" width="160" height="60" rx="8" style="fill:var(--dg-node);stroke:var(--dg-4);stroke-width:2"/>
-            <text x="120" y="85" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">Producer</text>
-            <text x="120" y="105" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">API Gateway / Client</text>
-            <line x1="200" y1="90" x2="270" y2="90" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#a73)"/>
-            <rect x="275" y="45" width="170" height="90" rx="10" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
-            <text x="360" y="70" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Message Queue</text>
-            <rect x="285" y="80" width="150" height="22" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="95" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">[msg1] [msg2] [msg3]</text>
-            <text x="360" y="122" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Buffers &amp; persists messages</text>
-            <line x1="445" y1="75" x2="510" y2="55" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a73)"/>
-            <line x1="445" y1="90" x2="510" y2="90" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a73)"/>
-            <line x1="445" y1="105" x2="510" y2="125" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#a73)"/>
-            <rect x="515" y="40" width="130" height="45" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="580" y="58" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Worker 1</text>
-            <text x="580" y="74" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Processes msg</text>
-            <rect x="515" y="90" width="130" height="45" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="580" y="108" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Worker 2</text>
-            <text x="580" y="124" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Processes msg</text>
-            <rect x="515" y="140" width="130" height="45" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="580" y="158" text-anchor="middle" style="fill:var(--dg-2);font-size:11;font-weight:600">Worker 3</text>
-            <text x="580" y="174" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Processes msg</text>
-            <text x="580" y="205" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Competing Consumers</text>
-            <rect x="160" y="245" width="400" height="24" rx="12" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="261" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Each message is delivered to exactly one worker — enables horizontal scaling</text>
-          </svg>
-          <div class="cap">In the competing consumers pattern, workers pull messages from a shared queue and each message is processed by exactly one worker</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Sync vs Async Communication</h2>
-      <div class="topic-grid">
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="sync-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-              <marker id="sync-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-3)"/></marker>
-            </defs>
-            <!-- LEFT: Synchronous -->
-            <rect x="20" y="30" width="320" height="170" rx="8" fill="var(--bg-surface)" stroke="var(--dg-5)"/>
-            <text x="180" y="55" text-anchor="middle" fill="var(--dg-text)" font-size="13" font-weight:600>REST / gRPC</text>
-            <rect x="35" y="70" width="100" height="30" rx="4" fill="var(--dg-node)"/>
-            <text x="85" y="89" text-anchor="middle" fill="var(--dg-text)" font-size="11">Service A</text>
-            <rect x="200" y="70" width="120" height="30" rx="4" fill="var(--dg-node)"/>
-            <text x="260" y="89" text-anchor="middle" fill="var(--dg-text)" font-size="11">Service B</text>
-            <line x1="135" y1="85" x2="198" y2="85" stroke="var(--dg-5)" stroke-width="1.5" marker-end="url(#sync-a)"/>
-            <text x="167" y="80" text-anchor="middle" fill="var(--dg-5)" font-size="10">Request</text>
-            <line x1="200" y1="95" x2="135" y2="95" stroke="var(--dg-3)" stroke-width="1.5" marker-end="url(#sync-b)"/>
-            <text x="167" y="108" text-anchor="middle" fill="var(--dg-3)" font-size="10">Response</text>
-            <text x="180" y="130" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">A is blocked waiting</text>
-            <text x="180" y="150" text-anchor="middle" fill="var(--dg-3)" font-size="11">Simple to reason about</text>
-            <text x="180" y="165" text-anchor="middle" fill="var(--dg-5)" font-size="11">Tight coupling, cascading failures</text>
-            <!-- RIGHT: Asynchronous -->
-            <rect x="380" y="30" width="320" height="170" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)"/>
-            <text x="540" y="55" text-anchor="middle" fill="var(--dg-text)" font-size="13" font-weight:600>Events / Message Queue</text>
-            <rect x="395" y="70" width="100" height="30" rx="4" fill="var(--dg-node)"/>
-            <text x="445" y="89" text-anchor="middle" fill="var(--dg-text)" font-size="11">Service A</text>
-            <rect x="510" y="60" width="80" height="50" rx="6" fill="var(--amber-dim)"/>
-            <text x="550" y="85" text-anchor="middle" fill="var(--dg-text)" font-size="11">Queue</text>
-            <line x1="495" y1="85" x2="508" y2="85" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#sync-a)"/>
-            <rect x="510" y="125" width="100" height="30" rx="4" fill="var(--dg-node)"/>
-            <text x="560" y="144" text-anchor="middle" fill="var(--dg-text)" font-size="11">Service B</text>
-            <line x1="550" y1="110" x2="550" y2="123" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#sync-a)"/>
-            <text x="540" y="175" text-anchor="middle" fill="var(--dg-3)" font-size="11">A doesn't wait — just emits</text>
-            <text x="540" y="190" text-anchor="middle" fill="var(--dg-5)" font-size="11">Looser coupling, harder to debug</text>
-            <!-- Bottom bar -->
-            <rect x="100" y="210" width="520" height="24" rx="4" fill="var(--cyan-dim)"/>
-            <text x="360" y="226" text-anchor="middle" fill="var(--dg-text)" font-size="11">Sync for queries. Async for commands. Use queues to decouple.</text>
-          </svg>
-          <div class="cap">Synchronous calls block the caller; asynchronous communication via queues allows services to operate independently</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Which Pattern to Choose?</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Start with a monolith — it's simpler and faster to build. Split into microservices only when the monolith's pain (deploy time, team coordination, scaling bottlenecks) outweighs the complexity of distributed systems. Use event-driven patterns when services need to react to changes without tight coupling. Message queues are ideal for reliable async processing and traffic buffering. There is no perfect architecture — only tradeoffs that evolve as your system grows.</p>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="11">Mark Complete</button>
-  </div>
-
-  <nav class="chapter-nav">
-    <a href="ch-10.html" class="prev"><div class="dir">Previous</div><div class="title">Security Essentials</div></a>
-    <a href="ch-12.html" class="next"><div class="dir">Next</div><div class="title">Networking Essentials</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">ðŸŒ™</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>

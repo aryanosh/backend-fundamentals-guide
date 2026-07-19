@@ -4,337 +4,110 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Essential Linux commands for backend developers. Terminal basics, SSH, process management, file operations.">
-<meta property="og:title" content="Ch 13 &#8212; Working with Linux">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 13 — Working with Linux">
 <meta property="og:description" content="Essential Linux commands for backend developers. Terminal basics, SSH, process management, file operations.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 13 &#8212; Working with Linux">
+<meta name="twitter:title" content="Chapter 13 — Working with Linux">
 <meta name="twitter:description" content="Essential Linux commands for backend developers. Terminal basics, SSH, process management, file operations.">
-<title>Ch 13 &#8212; Working with Linux</title>
+<title>Chapter 13 — Working with Linux</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link active" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status">&#9654;</span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 13</div>
+      <h1>Working with Linux</h1>
+      <p class="subtitle">The operating system that runs the internet</p>
+      <div class="meta"><span>~12 min read</span></div>
+    </header>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 13 — Essential Linux commands in action</span><span>google.com</span></div>
+      <svg viewBox="0 0 800 350" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="800" height="350" fill="#1a1a2e" rx="8"/>
+        <rect x="20" y="15" width="760" height="30" rx="4" fill="#16213e"/>
+        <circle cx="38" cy="30" r="5" fill="#ff5f56"/>
+        <circle cx="58" cy="30" r="5" fill="#ffbd2e"/>
+        <circle cx="78" cy="30" r="5" fill="#27c93f"/>
+        <text x="400" y="35" text-anchor="middle" fill="#888" font-family="monospace" font-size="12">user@server:~$</text>
+        <text x="25" y="75" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">pwd</tspan></text>
+        <text x="25" y="95" fill="#a0d6a0" font-family="monospace" font-size="13">/home/deploy</text>
+        <text x="25" y="125" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">ls -la</tspan></text>
+        <text x="25" y="145" fill="#a0d6a0" font-family="monospace" font-size="13">drwxr-xr-x  5 deploy deploy  4096 Jul 18 12:34 .</text>
+        <text x="25" y="162" fill="#a0d6a0" font-family="monospace" font-size="13">-rw-r--r--  1 deploy deploy  2048 Jul 18 12:30 config.yml</text>
+        <text x="25" y="179" fill="#a0d6a0" font-family="monospace" font-size="13">-rw-r--r--  1 deploy deploy 65536 Jul 18 11:00 log.txt</text>
+        <text x="25" y="209" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">grep "error" log.txt</tspan></text>
+        <text x="25" y="229" fill="#f5a623" font-family="monospace" font-size="13">2026-07-18 10:32:15 [ERROR] connection timeout on endpoint /api/timeline</text>
+        <text x="25" y="246" fill="#f5a623" font-family="monospace" font-size="13">2026-07-18 10:33:01 [ERROR] memory usage exceeded threshold (92%)</text>
+        <text x="25" y="276" fill="#e0e0e0" font-family="monospace" font-size="13">user@server:~$ <tspan fill="#7ec8e3">ps aux | grep nginx</tspan></text>
+        <text x="25" y="296" fill="#a0d6a0" font-family="monospace" font-size="13">root    1234  0.1  0.2  45672  1024 ?   Ss   10:00   0:00 nginx: master</text>
+        <text x="25" y="313" fill="#a0d6a0" font-family="monospace" font-size="13">www    1235  0.0  0.1  45928   892 ?   S    10:00   0:00 nginx: worker</text>
+      </svg>
+      <figcaption>A live terminal session showing common server diagnostics commands</figcaption>
+    </figure>
+    <div class="chapter-content">
+
+<h2>Why Linux?</h2>
+<p>Walk into any server room — or open any cloud console — and you will find Linux. It runs about 96% of the world's top one million servers. Windows? Around 2%. If you work on the backend, you will live in a Linux terminal. There is no escaping it, and that is a good thing.</p>
+
+<p>Linux is free, open-source, and incredibly stable. Servers running Linux have been known to stay up for years without a reboot. It is also lightweight — the same operating system that powers supercomputers runs comfortably on a tiny virtual machine with 512 MB of RAM. For a company like Google (now X), which serves hundreds of millions of users a day, Linux is the only realistic choice. The cost savings alone are staggering. Multiply the licensing fees of a proprietary OS by tens of thousands of servers and you get the picture.</p>
+
+<p>But cost is only part of the story. Linux gives engineers complete control. You can see every process running, every file open, every network connection. You can tweak the kernel itself if you need to. For backend engineers, that visibility is gold. When something breaks, you can get to the bottom of it. You do not stare at a friendly GUI that hides the details. You open a terminal and start asking questions.</p>
+
+<h2>The Terminal is Your Cockpit</h2>
+<p>If Linux is the engine, the terminal is the cockpit. Every command you type is an instrument. You do not need to memorize everything — nobody does — but you do need to know the essentials. Think of these as your go-to instruments for daily server work.</p>
+
+<h3>Navigating the Filesystem</h3>
+<p><code>pwd</code> prints the current directory. When you SSH into a server, the first thing you want to know is, "Where am I?" <code>pwd</code> answers that. <code>ls</code> lists what is in the current directory. Add <code>-la</code> and you get hidden files and detailed info (permissions, size, last modified). <code>cd</code> moves you around. That is all you need to start exploring any Linux server.</p>
+
+<h3>Reading and Searching Files</h3>
+<p><code>cat</code> dumps a file's contents to the terminal. For config files and logs, that is your quick look. But logs can be gigabytes. That is where <code>grep</code> shines. <code>grep "error" log.txt</code> finds every line containing the word "error". You can chain it: <code>grep "timeline" access.log | grep "500"</code> to find failed timeline requests. This is how real debugging happens. An engineer at Google does not open a log file in a GUI editor. They <code>grep</code> for the problem.</p>
+
+<h3>Watching Processes</h3>
+<p><code>ps</code> shows running processes. With <code>aux</code>, it shows all processes from all users in a detailed format. <code>top</code> gives you a live-updating dashboard of what is eating CPU and memory. When Google's timeline slows down, an engineer runs <code>top</code> and looks for the process hogging resources. If a service is stuck, <code>kill</code> sends a signal to terminate it. <code>kill -9</code> is the nuclear option — use it only when a process refuses to die.</p>
+
+<h3>Connecting to Servers</h3>
+<p><code>ssh user@server</code> opens a secure shell to a remote machine. This is how you log into production servers. Google's engineers SSH into thousands of servers daily to check on services, deploy code, and troubleshoot. <code>curl</code> makes HTTP requests from the command line. <code>curl -I https://google.com</code> fetches the response headers to check if a server is responding and what status code it returns. It is your quick health check.</p>
+
+<h3>Permissions</h3>
+<p><code>chmod</code> changes file permissions. Every file has read (r), write (w), and execute (x) permissions for the owner, group, and others. <code>chmod +x script.sh</code> makes a file executable. Misconfigured permissions are a common source of server problems. Understanding them is essential.</p>
+
+<h2>Package Managers</h2>
+<p>Installing software on Linux is not like downloading from a website. You use a package manager — a tool that downloads, installs, and updates software from trusted repositories. On Ubuntu and Debian, that is <code>apt</code>. On Red Hat and CentOS, it is <code>yum</code>. On Alpine (popular with Docker), it is <code>apk</code>.</p>
+
+<p>To install Nginx, you type <code>sudo apt install nginx</code>. The package manager resolves dependencies, downloads the files, and configures everything. To update all software on the system: <code>sudo apt update && sudo apt upgrade</code>. This is how you keep a server secure.</p>
+
+<h2>Google's Linux Reality</h2>
+<p>Google's servers run Linux. Every single one. When an engineer needs to debug why the timeline is slow, they SSH into a server and start typing commands. They check <code>top</code> to see CPU usage. They <code>grep</code> the application logs for error messages. They use <code>curl</code> to hit internal endpoints and check response times. They look at <code>ps aux</code> to confirm the right processes are running.</p>
+
+<p>There is no dashboard that tells them everything. The terminal is the dashboard. The commands are the instruments. Learning Linux is not about becoming a sysadmin — it is about being able to take care of your own code in production.</p>
+
+<p>If you are new to Linux, start by installing it on a virtual machine or using the Windows Subsystem for Linux. Open the terminal and practice these commands until they become reflex. Your future self, debugging a production issue at 2 AM, will thank you.</p>
+
+    </div>
+    <nav class="chapter-nav">
+      <a href="ch-12.html"><div class="dir">Previous</div><div class="title">Chapter 12 — ...</div></a>
+      <a href="ch-14.html"><div class="dir">Next</div><div class="title">Chapter 14 — Version Control with Git</div></a>
+    </nav>
   </div>
-</div>
-
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
   </div>
-
-  <header class="page-header">
-    <div class="eyebrow">Ch 13 / 17</div>
-    <h1>Working with Linux</h1>
-    <p class="subtitle">The operating system that runs the internet</p>
-    <div class="meta"><span>~12 min read</span></div>
-  </header>
-
-  <div class="chapter-content">
-
-    <section class="topic-section">
-      <h2>The Linux Filesystem</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Linux runs about 96% of the world's top one million servers. The filesystem is a single tree rooted at <code>/</code> with standard directories for specific purposes.</p>
-          <ul>
-            <li><code>/home</code> &#8212; user home directories for personal files</li>
-            <li><code>/etc</code> &#8212; system configuration files</li>
-            <li><code>/var</code> &#8212; variable data like logs and databases</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
-            <rect x="310" y="10" width="100" height="36" rx="8" style="fill:var(--dg-node);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="360" y="33" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:700;font-family:JetBrains Mono,monospace">/</text>
-            <line x1="360" y1="46" x2="360" y2="70" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="120" y1="70" x2="600" y2="70" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="120" y1="70" x2="120" y2="90" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="240" y1="70" x2="240" y2="90" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="360" y1="70" x2="360" y2="90" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="480" y1="70" x2="480" y2="90" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="600" y1="70" x2="600" y2="90" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="60" y="90" width="120" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="120" y="115" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600;font-family:JetBrains Mono,monospace">/home</text>
-            <rect x="180" y="90" width="120" height="40" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="240" y="115" text-anchor="middle" style="fill:var(--dg-2);font-size:13;font-weight:600;font-family:JetBrains Mono,monospace">/etc</text>
-            <rect x="300" y="90" width="120" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="360" y="115" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600;font-family:JetBrains Mono,monospace">/var</text>
-            <rect x="420" y="90" width="120" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="480" y="115" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:600;font-family:JetBrains Mono,monospace">/usr</text>
-            <rect x="540" y="90" width="120" height="40" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="600" y="115" text-anchor="middle" style="fill:var(--dg-5);font-size:13;font-weight:600;font-family:JetBrains Mono,monospace">/bin</text>
-            <line x1="360" y1="70" x2="720" y2="70" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="720" y1="70" x2="720" y2="90" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="660" y="90" width="120" height="40" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1.5"/>
-            <text x="720" y="115" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:13;font-weight:600;font-family:JetBrains Mono,monospace">/tmp</text>
-            <line x1="120" y1="130" x2="120" y2="150" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="60" y1="150" x2="120" y2="150" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="40" y="150" width="80" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="80" y="169" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/user</text>
-            <line x1="120" y1="130" x2="120" y2="195" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="120" y1="195" x2="170" y2="195" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="170" y="180" width="100" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="220" y="199" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/nginx</text>
-            <line x1="480" y1="130" x2="480" y2="160" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="440" y="160" width="80" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="480" y="179" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/local</text>
-            <line x1="480" y1="190" x2="480" y2="235" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="360" y1="130" x2="360" y2="150" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="300" y1="150" x2="360" y2="150" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="270" y="150" width="90" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="315" y="169" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/log</text>
-            <line x1="360" y1="130" x2="360" y2="210" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <line x1="360" y1="210" x2="410" y2="210" style="stroke:var(--dg-line);stroke-width:1.5"/>
-            <rect x="410" y="195" width="100" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="460" y="214" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/nginx</text>
-            <rect x="100" y="270" width="520" height="50" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="292" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Everything is a file &#8212; configuration, logs, devices, all under /</text>
-            <text x="360" y="308" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">pwd to locate yourself, ls to explore, cd to navigate</text>
-          </svg>
-          <div class="cap">The Linux filesystem hierarchy &#8212; a single tree rooted at / with standard directories for specific purposes</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>SSH: Secure Shell</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>SSH (Secure Shell) creates an encrypted tunnel between your machine and a remote server. It is how backend engineers log into production servers to deploy code and troubleshoot issues.</p>
-          <ul>
-            <li><code>ssh user@host</code> &#8212; connect to a remote server securely</li>
-            <li>Port 22 is the default SSH port</li>
-            <li>Key-based authentication is more secure than passwords</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
-            <rect x="40" y="100" width="130" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="105" y="120" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Client</text>
-            <text x="105" y="138" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">ssh user@server</text>
-            <rect x="540" y="100" width="140" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-3);stroke-width:2"/>
-            <text x="610" y="120" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Server</text>
-            <text x="610" y="138" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">SSH daemon (sshd)</text>
-            <rect x="190" y="80" width="340" height="160" rx="10" style="fill:var(--bg-surface);stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:6 3"/>
-            <text x="360" y="105" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Encrypted SSH Tunnel</text>
-            <rect x="210" y="115" width="100" height="28" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="260" y="133" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Key Exchange</text>
-            <line x1="260" y1="143" x2="260" y2="155" style="stroke:var(--dg-1);stroke-width:1"/>
-            <rect x="210" y="155" width="100" height="28" rx="4" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1"/>
-            <text x="260" y="173" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Authenticate</text>
-            <line x1="260" y1="183" x2="260" y2="195" style="stroke:var(--dg-4);stroke-width:1"/>
-            <rect x="210" y="195" width="100" height="28" rx="4" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="260" y="213" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Session Open</text>
-            <line x1="170" y1="125" x2="205" y2="125" style="stroke:var(--dg-1);stroke-width:1.5" marker-end="url(#a1)"/>
-            <line x1="360" y1="215" x2="535" y2="125" style="stroke:var(--dg-3);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="390" y="115" width="120" height="100" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="450" y="135" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Commands</text>
-            <text x="400" y="152" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">ps aux</text>
-            <text x="400" y="166" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">grep error</text>
-            <text x="400" y="180" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">curl -I</text>
-            <text x="400" y="194" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">top</text>
-            <line x1="510" y1="125" x2="535" y2="125" style="stroke:var(--dg-text-dim);stroke-width:1.5" marker-end="url(#a1)"/>
-            <rect x="100" y="280" width="520" height="40" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="298" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">SSH encrypts everything &#8212; no one can see your commands, output, or data</text>
-            <text x="360" y="312" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Port 22 &#8212; Password or key-based authentication</text>
-          </svg>
-          <div class="cap">SSH creates an encrypted tunnel &#8212; key exchange, authentication, then a secure session for commands</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Permissions: rwx</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Every file in Linux has read (r), write (w), and execute (x) permissions for the owner, group, and others. These bits control who can view, modify, or run a file.</p>
-          <ul>
-            <li><code>chmod 755</code> &#8212; owner can write, everyone can read/execute</li>
-            <li><code>chmod +x script.sh</code> &#8212; makes a file executable</li>
-            <li><code>chown user:group file</code> &#8212; changes file ownership</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
-            <rect x="30" y="10" width="660" height="36" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="140" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Owner (u)</text>
-            <text x="360" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Group (g)</text>
-            <text x="580" y="34" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Others (o)</text>
-
-            <rect x="30" y="52" width="660" height="50" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1"/>
-            <text x="140" y="82" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:700;font-family:JetBrains Mono,monospace">rwx</text>
-            <text x="360" y="82" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:700;font-family:JetBrains Mono,monospace">r-x</text>
-            <text x="580" y="82" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:700;font-family:JetBrains Mono,monospace">r-x</text>
-            <line x1="220" y1="52" x2="220" y2="102" style="stroke:var(--border);stroke-width:1"/>
-            <line x1="440" y1="52" x2="440" y2="102" style="stroke:var(--border);stroke-width:1"/>
-
-            <rect x="30" y="106" width="660" height="36" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="140" y="129" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">chmod 755 (rwxr-xr-x)</text>
-            <text x="360" y="129" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Owner: read+write+execute</text>
-            <text x="580" y="129" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Group/Others: read+execute</text>
-
-            <rect x="30" y="148" width="660" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
-            <text x="140" y="171" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:700;font-family:JetBrains Mono,monospace">rw-r--r--</text>
-            <text x="360" y="171" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">chmod 644</text>
-            <text x="580" y="171" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Owner: read+write, Others: read</text>
-
-            <rect x="100" y="210" width="520" height="50" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="230" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Permission bits: r=4, w=2, x=1</text>
-            <text x="360" y="248" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">755 = owner(7=4+2+1) group(5=4+1) others(5=4+1)</text>
-
-            <rect x="30" y="275" width="660" height="50" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="45" y="295" style="fill:var(--dg-1);font-size:12;font-weight:600">Common patterns:</text>
-            <text x="45" y="312" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">chmod +x script.sh  &#8212;  make executable</text>
-            <text x="370" y="312" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">chmod -R 755 /app  &#8212;  recursive</text>
-          </svg>
-          <div class="cap">Linux permissions split into owner, group, and others &#8212; each with read, write, execute bits</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>Essential Linux Commands</h2>
-      <div class="topic-grid">
-        <div class="topic-diagram" style="grid-column:1/-1">
-          <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
-            <!-- Row 1: File Operations -->
-            <rect x="20" y="30" width="210" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-1)" stroke-width="1.5"/>
-            <text x="125" y="50" text-anchor="middle" font-size="12" font-weight:600 fill="var(--dg-1)">File Operations</text>
-
-            <rect x="30" y="60" width="90" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="34" y="74" font-size="10" fill="var(--dg-text)">ls -la</text>
-            <text x="130" y="74" font-size="10" fill="var(--dg-text-dim)">list all files</text>
-
-            <rect x="30" y="85" width="90" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="34" y="99" font-size="10" fill="var(--dg-text)">cd /var/log</text>
-            <text x="130" y="99" font-size="10" fill="var(--dg-text-dim)">change directory</text>
-
-            <rect x="30" y="105" width="95" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="34" y="119" font-size="10" fill="var(--dg-text)">cat /etc/hosts</text>
-            <text x="130" y="119" font-size="10" fill="var(--dg-text-dim)">read file</text>
-
-            <!-- Row 1: Process Management -->
-            <rect x="245" y="30" width="220" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)" stroke-width="1.5"/>
-            <text x="355" y="50" text-anchor="middle" font-size="12" font-weight:600 fill="var(--dg-3)">Processes</text>
-
-            <rect x="255" y="60" width="80" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="259" y="74" font-size="10" fill="var(--dg-text)">ps aux</text>
-            <text x="345" y="74" font-size="10" fill="var(--dg-text-dim)">list processes</text>
-
-            <rect x="255" y="85" width="60" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="259" y="99" font-size="10" fill="var(--dg-text)">top</text>
-            <text x="325" y="99" font-size="10" fill="var(--dg-text-dim)">live monitor</text>
-
-            <rect x="255" y="105" width="85" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="259" y="119" font-size="10" fill="var(--dg-text)">kill -9 PID</text>
-            <text x="350" y="119" font-size="10" fill="var(--dg-text-dim)">force stop</text>
-
-            <!-- Row 1: Network -->
-            <rect x="485" y="30" width="215" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-2)" stroke-width="1.5"/>
-            <text x="590" y="50" text-anchor="middle" font-size="12" font-weight:600 fill="var(--dg-2)">Network</text>
-
-            <rect x="495" y="60" width="70" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="499" y="74" font-size="10" fill="var(--dg-text)">curl -I</text>
-            <text x="575" y="74" font-size="10" fill="var(--dg-text-dim)">check headers</text>
-
-            <rect x="495" y="85" width="75" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="499" y="99" font-size="10" fill="var(--dg-text)">ping host</text>
-            <text x="580" y="99" font-size="10" fill="var(--dg-text-dim)">test reachable</text>
-
-            <rect x="495" y="105" width="90" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="499" y="119" font-size="10" fill="var(--dg-text)">netstat -tln</text>
-            <text x="595" y="119" font-size="10" fill="var(--dg-text-dim)">list ports</text>
-
-            <!-- Row 2: Permissions -->
-            <rect x="20" y="145" width="210" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-4)" stroke-width="1.5"/>
-            <text x="125" y="165" text-anchor="middle" font-size="12" font-weight:600 fill="var(--dg-4)">Permissions</text>
-
-            <rect x="30" y="175" width="85" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="34" y="189" font-size="10" fill="var(--dg-text)">chmod 755</text>
-            <text x="125" y="189" font-size="10" fill="var(--dg-text-dim)">set permissions</text>
-
-            <rect x="30" y="200" width="110" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="34" y="214" font-size="10" fill="var(--dg-text)">chown user:group</text>
-            <text x="155" y="214" font-size="10" fill="var(--dg-text-dim)">change owner</text>
-
-            <!-- Row 2: System -->
-            <rect x="245" y="145" width="220" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-5)" stroke-width="1.5"/>
-            <text x="355" y="165" text-anchor="middle" font-size="12" font-weight:600 fill="var(--dg-5)">System</text>
-
-            <rect x="255" y="175" width="65" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="259" y="189" font-size="10" fill="var(--dg-text)">df -h</text>
-            <text x="330" y="189" font-size="10" fill="var(--dg-text-dim)">disk usage</text>
-
-            <rect x="255" y="200" width="70" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="259" y="214" font-size="10" fill="var(--dg-text)">free -m</text>
-            <text x="335" y="214" font-size="10" fill="var(--dg-text-dim)">memory usage</text>
-
-            <!-- Row 2: Search -->
-            <rect x="485" y="145" width="215" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)" stroke-width="1.5"/>
-            <text x="590" y="165" text-anchor="middle" font-size="12" font-weight:600 fill="var(--dg-3)">Search</text>
-
-            <rect x="495" y="175" width="90" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="499" y="189" font-size="10" fill="var(--dg-text)">grep pattern</text>
-            <text x="595" y="189" font-size="10" fill="var(--dg-text-dim)">search text</text>
-
-            <rect x="495" y="200" width="95" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="499" y="214" font-size="10" fill="var(--dg-text)">find / -name</text>
-            <text x="600" y="214" font-size="10" fill="var(--dg-text-dim)">find files</text>
-
-            <!-- Bottom bar -->
-            <rect x="130" y="255" width="460" height="24" rx="4" fill="var(--cyan-dim)"/>
-            <text x="360" y="271" text-anchor="middle" font-size="11" fill="var(--dg-text)">These 15 commands cover 90% of what you'll do on a Linux server</text>
-          </svg>
-          <div class="cap">A categorized cheat sheet of essential Linux commands every backend engineer should know</div>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="13">Mark Complete</button>
-  </div>
-
-  <nav class="chapter-nav">
-    <a href="ch-12.html" class="prev"><div class="dir">Previous</div><div class="title">Networking Essentials</div></a>
-    <a href="ch-14.html" class="next"><div class="dir">Next</div><div class="title">Version Control with Git</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>
-

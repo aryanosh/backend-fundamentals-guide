@@ -4,312 +4,212 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions. How Google stores billions of searches.">
-<meta property="og:title" content="Ch 06 � Where Data Actually Lives">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 06 — Where Data Actually Lives">
 <meta property="og:description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions. How Google stores billions of searches.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 06 � Where Data Actually Lives">
-<meta name="twitter:description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions.">
-<title>Ch 06 � Where Data Actually Lives</title>
+<meta name="twitter:title" content="Chapter 06 — Where Data Actually Lives">
+<meta name="twitter:description" content="Relational vs NoSQL databases, SQL queries, indexes, transactions. How Google stores billions of searches.">
+<title>Chapter 06 — Where Data Actually Lives</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link active" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status">&#9654;</span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 06</div>
+      <h1>Where Data Actually Lives</h1>
+      <p class="subtitle">Relational databases, SQL, tables, keys, indexes, and when to go NoSQL</p>
+      <div class="meta"><span>~13 min read</span></div>
+    </header>
+
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 6.1 — Relational schema vs NoSQL document for Google data</span><span>google.com</span></div>
+      <svg viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
+        <!-- USERS table -->
+        <rect x="40" y="20" width="320" height="155" rx="6" class="dg-node"/>
+        <rect x="60" y="30" width="280" height="28" rx="4" class="dg-accent"/>
+        <text x="200" y="49" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">USERS</text>
+
+        <rect x="60" y="65" width="40" height="22" rx="3" class="dg-accent2"/>
+        <text x="80" y="80" text-anchor="middle" class="dg-label" font-size="9">PK</text>
+        <text x="110" y="80" class="dg-label" font-size="10">user_id</text>
+        <text x="240" y="80" text-anchor="end" class="dg-label-dim" font-size="9">BIGINT</text>
+
+        <rect x="60" y="92" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="107" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="107" class="dg-label" font-size="10">username</text>
+        <text x="240" y="107" text-anchor="end" class="dg-label-dim" font-size="9">VARCHAR(50)</text>
+
+        <rect x="60" y="119" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="134" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="134" class="dg-label" font-size="10">email</text>
+        <text x="240" y="134" text-anchor="end" class="dg-label-dim" font-size="9">VARCHAR(255)</text>
+
+        <rect x="60" y="146" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="161" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="161" class="dg-label" font-size="10">created_at</text>
+        <text x="240" y="161" text-anchor="end" class="dg-label-dim" font-size="9">TIMESTAMP</text>
+
+        <!-- TWEETS table -->
+        <rect x="40" y="195" width="320" height="170" rx="6" class="dg-node"/>
+        <rect x="60" y="205" width="280" height="28" rx="4" class="dg-accent"/>
+        <text x="200" y="224" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">TWEETS</text>
+
+        <rect x="60" y="240" width="40" height="22" rx="3" class="dg-accent2"/>
+        <text x="80" y="255" text-anchor="middle" class="dg-label" font-size="9">PK</text>
+        <text x="110" y="255" class="dg-label" font-size="10">tweet_id</text>
+        <text x="240" y="255" text-anchor="end" class="dg-label-dim" font-size="9">BIGINT</text>
+
+        <rect x="60" y="267" width="40" height="22" rx="3" class="dg-line-dash"/>
+        <rect x="60" y="267" width="40" height="22" rx="3" class="dg-accent" fill-opacity="0.6"/>
+        <text x="80" y="282" text-anchor="middle" class="dg-label" font-size="9">FK</text>
+        <text x="110" y="282" class="dg-label" font-size="10">user_id</text>
+        <text x="240" y="282" text-anchor="end" class="dg-label-dim" font-size="9">BIGINT</text>
+
+        <rect x="60" y="294" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="309" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="309" class="dg-label" font-size="10">text</text>
+        <text x="240" y="309" text-anchor="end" class="dg-label-dim" font-size="9">VARCHAR(280)</text>
+
+        <rect x="60" y="321" width="40" height="22" rx="3" class="dg-accent"/>
+        <text x="80" y="336" text-anchor="middle" class="dg-label" font-size="9"></text>
+        <text x="110" y="336" class="dg-label" font-size="10">created_at</text>
+        <text x="240" y="336" text-anchor="end" class="dg-label-dim" font-size="9">TIMESTAMP</text>
+
+        <!-- Foreign key arrow -->
+        <line x1="100" y1="267" x2="100" y2="187" class="dg-line-accent"/>
+        <polygon points="96,190 100,183 104,190" fill="var(--accent)"/>
+        <text x="115" y="230" class="dg-label-dim" font-size="9">FK: user_id → USERS</text>
+
+        <!-- MongoDB side -->
+        <rect x="420" y="20" width="340" height="340" rx="6" class="dg-node"/>
+        <rect x="440" y="30" width="300" height="28" rx="4" class="dg-accent2"/>
+        <text x="590" y="49" text-anchor="middle" class="dg-label" font-size="12" font-weight="bold">MongoDB Document (NoSQL)</text>
+
+        <text x="440" y="80" class="dg-label-dim" font-size="10">db.users.findOne({ username: "jack" })</text>
+
+        <rect x="440" y="90" width="300" height="210" rx="4" class="dg-node" fill="var(--bg-dim)"/>
+        <text x="445" y="110" class="dg-label" font-size="10" fill="var(--text-soft)">{</text>
+        <text x="455" y="130" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"_id"</tspan>: ObjectId("..."),</text>
+        <text x="455" y="150" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"username"</tspan>: "jack",</text>
+        <text x="455" y="170" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"email"</tspan>: "jack@google.com",</text>
+        <text x="455" y="190" class="dg-label" font-size="10"><tspan fill="var(--accent-2)">"tweets"</tspan>: [</text>
+        <text x="475" y="210" class="dg-label" font-size="9" fill="var(--text-soft)">{ "text": "just setting up my twttr",</text>
+        <text x="475" y="225" class="dg-label" font-size="9" fill="var(--text-soft)">"created_at": "2006-03-21" },</text>
+        <text x="475" y="245" class="dg-label" font-size="9" fill="var(--text-soft)">{ "text": "Hello world",</text>
+        <text x="475" y="260" class="dg-label" font-size="9" fill="var(--text-soft)">"created_at": "2024-01-15" }</text>
+        <text x="455" y="280" class="dg-label" font-size="10">]</text>
+        <text x="445" y="300" class="dg-label" font-size="10" fill="var(--text-soft)">}</text>
+
+        <!-- Annotation -->
+        <line x1="560" y1="215" x2="640" y2="215" class="dg-line-dash"/>
+        <text x="648" y="219" class="dg-label-dim" font-size="9">Embedded sub-array</text>
+
+        <line x1="560" y1="130" x2="640" y2="130" class="dg-line-dash"/>
+        <text x="648" y="134" class="dg-label-dim" font-size="9">No schema enforced</text>
+      </svg>
+      <figcaption>Left: normalized relational schema with USERS and TWEETS tables linked by a foreign key. Right: the same data as a single MongoDB document with embedded tweets. SQL enforces structure; NoSQL prioritizes flexibility and speed.</figcaption>
+    </figure>
+
+    <div class="chapter-content">
+      <h2>What Happens After You Hit "Post"?</h2>
+      <p>You type a tweet, tap "Post," and the app says "Your tweet was sent." But where did it go? The server received it, sure — but what happens next? The server could acknowledge your tweet and then immediately forget it. That would be terrible: you refresh the page and the tweet is gone. Every tweet you've ever posted, every like, every follower — it all needs to be stored somewhere permanent.</p>
+
+      <p>That somewhere is a <strong>database</strong>. A database is a specialized program designed to store, retrieve, and manage data reliably. It's not a file on a hard drive (though that's what it uses under the hood). It's a sophisticated system that handles concurrent access, crash recovery, efficient searching, and data integrity. Google uses multiple databases for different purposes, but the core storage for tweets, users, and relationships is a <strong>relational database</strong>: PostgreSQL.</p>
+
+      <p>Why not just write to a file? You could store every tweet as a line in a text file. That would work for a few users. But now imagine 500 million tweets per day. Searching that file for all tweets by user #48291 would mean reading the entire file — billions of lines — to find the ones that match. That search would take hours. A database can find every tweet by that user in milliseconds, because it uses sophisticated data structures called <strong>indexes</strong> and stores data in a way optimized for the queries you actually run.</p>
+
+      <h2>Tables, Rows, and Columns</h2>
+      <p>A relational database stores data in <strong>tables</strong>. Think of a table like a spreadsheet. Each <strong>row</strong> is one record (one user, one tweet, one like). Each <strong>column</strong> is a field of that record (username, email, text, date). When you define a table, you define its columns and their types (text, number, date, etc.). This is called the <strong>schema</strong> — the blueprint of your data.</p>
+
+      <p>In Google's database, there's a <code>users</code> table. Every row in that table represents one user. The columns might be: <code>user_id</code> (a unique number), <code>username</code> (the @ handle), <code>email</code>, <code>password_hash</code>, <code>created_at</code>, <code>display_name</code>, and <code>bio</code>. Each column has a specific data type. The <code>user_id</code> column is a big integer (BIGINT). The <code>username</code> column is a string with a max length of 50 characters (VARCHAR(50)). The <code>created_at</code> column is a timestamp.</p>
+
+      <p>Then there's a <code>tweets</code> table. Each row is one tweet. Columns: <code>tweet_id</code>, <code>user_id</code> (which user posted this), <code>text</code> (the content, max 280 characters), <code>created_at</code>, <code>like_count</code>, <code>retweet_count</code>. The <code>user_id</code> column in the <code>tweets</code> table references the <code>user_id</code> column in the <code>users</code> table. This is a <strong>foreign key</strong> — it creates a link between the two tables. Instead of storing the full user data (name, email, bio) in every tweet row, you store just the user ID. This is called <strong>normalization</strong>, and it saves enormous amounts of space.</p>
+
+      <p>Normalization also prevents inconsistency. If a user changes their display name, you update one row in the <code>users</code> table. Because tweets only reference the user ID, every tweet by that user automatically shows the new name. If you had stored the display name in every tweet row, you'd need to update millions of rows to change one name.</p>
+
+      <h2>Primary Keys — The Unique ID</h2>
+      <p>Every table needs a way to uniquely identify each row. This is the <strong>primary key</strong> (PK). It's usually a single column, like <code>user_id</code> or <code>tweet_id</code>, and no two rows can have the same value. The database enforces this — if you try to insert a row with a duplicate primary key, the database throws an error.</p>
+
+      <p>Primary keys in Google's database are often auto-incrementing integers or UUIDs (Universally Unique Identifiers). Auto-increment numbers are simple: 1, 2, 3, 4... But they leak information: if users see their user ID is 128493, they know Google has at least 128,493 users. UUIDs are long random strings like <code>a1b2c3d4-e5f6-7890-abcd-ef1234567890</code> that are effectively unique without revealing sequence. Google uses a custom ID system called Snowflake that generates 64-bit IDs sorted by time — this allows IDs to be generated across many servers without collisions and also gives an approximate timestamp.</p>
+
+      <h2>SQL — The Language of Databases</h2>
+      <p>To talk to a relational database, you use <strong>SQL</strong> (Structured Query Language). Pronounced "sequel" or "ess-cue-ell," it's the universal language of relational databases. SQL has been around since the 1970s, and it's still the most important language for data work.</p>
+
+      <p>Here are the basic SQL commands every backend developer should know:</p>
+
+      <p><strong>SELECT</strong> — Retrieve data. <code>SELECT text, created_at FROM tweets WHERE user_id = 42 ORDER BY created_at DESC LIMIT 20;</code> This says: "Give me the text and date of the 20 most recent tweets by user #42." The database uses an index on the <code>user_id</code> column to find the matching rows without scanning the entire table.</p>
+
+      <p><strong>INSERT</strong> — Add data. <code>INSERT INTO tweets (user_id, text) VALUES (42, 'Hello world!');</code> This creates a new tweet row. The database assigns a new <code>tweet_id</code> automatically, records the current timestamp, and returns the created row.</p>
+
+      <p><strong>UPDATE</strong> — Modify data. <code>UPDATE users SET display_name = 'New Name' WHERE user_id = 42;</code> This changes the display name for user #42. The database ensures the change is persistent immediately.</p>
+
+      <p><strong>DELETE</strong> — Remove data. <code>DELETE FROM tweets WHERE tweet_id = 999;</code> This deletes the tweet with that ID. But should it? Most apps use "soft deletes" — they set a <code>deleted_at</code> column instead of actually removing the row. This allows undoing deletes and maintaining data integrity.</p>
+
+      <p><strong>JOIN</strong> — Combine tables. <code>SELECT tweets.text, users.username FROM tweets JOIN users ON tweets.user_id = users.user_id WHERE users.username = 'jack';</code> This joins the tweets and users tables, matching each tweet to its author, and returns only tweets by the user "jack." JOINs are the superpower of relational databases — they let you query across multiple tables in a single operation.</p>
+
+      <h2>Indexes — The Book's Table of Contents</h2>
+      <p>Without indexes, every query requires a full table scan — reading every row in the table. For a table with a billion tweets, that's impossibly slow. An <strong>index</strong> is a separate data structure (usually a B-tree) that maps values to their locations in the table, allowing the database to find rows in logarithmic time instead of linear.</p>
+
+      <p>When Google queries <code>WHERE user_id = 42</code>, the database checks if there's an index on the <code>user_id</code> column. If there is (and there definitely is — this is Google's most common query pattern), the index tells the database exactly which rows to read. The database skips the other billions of rows entirely.</p>
+
+      <p>Indexes speed up reads but slow down writes. Every time you insert or update a row, the database must update every relevant index. A table with 10 indexes requires 11 writes — one for the table and one for each index. This is a trade-off: indexes for frequent query patterns, minimal indexes for write-heavy tables. Google's tweet inserts are extremely frequent, so they carefully choose which columns to index. The <code>user_id</code> column is always indexed (for timeline queries). The <code>text</code> column might have a full-text search index (for search queries).</p>
+
+      <h2>Transactions — The All-or-Nothing Guarantee</h2>
+      <p>Imagine a user retweets a post. This involves two operations: (1) insert a new row in the <code>retweets</code> table, and (2) increment the <code>retweet_count</code> in the <code>tweets</code> table. What if the first operation succeeds but the server crashes before the second one completes? The retweet doesn't exist, but the count went up. The data is inconsistent.</p>
+
+      <p><strong>Transactions</strong> solve this. A transaction wraps multiple operations into a single atomic unit. Either all operations succeed (the transaction is <strong>committed</strong>), or none of them take effect (the transaction is <strong>rolled back</strong>). The database guarantees this no matter what — even if the server loses power mid-transaction.</p>
+
+      <p>Transactions also provide <strong>isolation</strong>. If two users retweet the same tweet simultaneously, the database ensures they don't interfere with each other. The final retweet count will be exactly 2, not 1 because both threads read the count before either wrote the new value (a classic race condition prevented by the database's transaction isolation).</p>
+
+      <p>PostgreSQL implements transactions with something called <strong>MVCC</strong> (Multi-Version Concurrency Control). Every transaction sees a snapshot of the data as of the moment the transaction started. Changes made by other transactions are invisible until committed. This allows many readers and one writer to coexist without blocking each other — critical for a site like Google where millions of people are reading while a few thousand are writing.</p>
+
+      <h2>SQL vs NoSQL — When to Use What</h2>
+      <p>Not everything needs to be in a relational database. Google uses different storage systems for different jobs. The <strong>timeline</strong> (the list of tweets you see when you open the app) is generated by a service called Earlybird and stored in a specialized in-memory store. <strong>Caches</strong> use Redis (an in-memory key-value store). <strong>Search</strong> uses an inverted index (Lucene/Elasticsearch). <strong>Analytics</strong> might use a columnar store.</p>
+
+      <p><strong>NoSQL databases</strong> (which stands for "Not Only SQL") are a category of databases that don't use the relational model. Instead of tables with rows and columns, they use various data models: key-value pairs (Redis), documents (MongoDB), wide columns (Cassandra), or graphs (Neo4j).</p>
+
+      <p>When would you choose NoSQL over SQL? Here are some scenarios:</p>
+
+      <p>1. <strong>Flexible schema</strong> — If your data doesn't have a fixed structure, or the structure changes frequently, NoSQL's schema flexibility is a benefit. For example, if different tweets could have different fields (some have media, some have poll data, some have location), a document database lets you store them all in the same collection without defining every possible column in advance.</p>
+
+      <p>2. <strong>High write throughput</strong> — Google writes billions of events per day (tweets, likes, retweets, follows). Some NoSQL databases (like Cassandra) are designed for extreme write throughput across many servers.</p>
+
+      <p>3. <strong>Simple read patterns</strong> — If you only ever read data by a single key (like "get tweet by tweet_id"), a key-value store or document database can be faster than a relational database because there's no query planning overhead.</p>
+
+      <p>But NoSQL comes with trade-offs. Most NoSQL databases don't support transactions across multiple documents. They don't enforce schemas, so application code must handle validation. They often don't support JOINs, so you have to manually combine data in your application code. For Google's core data — users, tweets, relationships — the relational model's consistency guarantees and query flexibility are essential. That's why PostgreSQL is at the heart of Google's stack, with NoSQL systems handling specialized workloads around the edges.</p>
+
+      <h2>Every Tweet You've Ever Posted</h2>
+      <p>So where does your tweet actually live? It lives in a PostgreSQL row on a server in a data center somewhere in the world. That row is part of a table that is part of a database instance running on a machine with 64 CPU cores and 512 GB of RAM. The database writes the row to disk (for durability), updates its indexes (for fast lookups), records the change in a write-ahead log (for crash recovery), and notifies any replicas (so other servers have up-to-date copies).</p>
+
+      <p>When you reload your profile page, the server queries that PostgreSQL row (<code>SELECT * FROM tweets WHERE tweet_id = 12345</code>), the database finds it via the primary key index in microseconds, and the server sends the data back to your phone. The entire journey — from your phone to the data center and back — takes less than 200 milliseconds. And you did none of that work. The database did it all.</p>
+
+      <p>In the next chapter, we'll explore how the server and the database actually talk to each other — the APIs that make data flow possible.</p>
+    </div>
+
+    <nav class="chapter-nav">
+      <a href="ch-05.html"><div class="dir">Previous</div><div class="title">Memory, Threads &amp; Processes</div></a>
+      <a href="ch-07.html"><div class="dir">Next</div><div class="title">How Systems Talk to Each Other</div></a>
+    </nav>
   </div>
-</div>
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
   </div>
-  <header class="page-header">
-    <div class="eyebrow">Ch 06 / 17</div>
-    <h1>Where Data Actually Lives</h1>
-    <p class="subtitle">Relational databases, SQL, tables, keys, indexes, and when to go NoSQL</p>
-    <div class="meta"><span>~13 min read</span></div>
-  </header>
-  <div class="chapter-content">
-    <section class="topic-section">
-      <h2>SQL vs NoSQL</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Relational databases (SQL) store data in <strong>tables</strong> with rows and columns, enforcing a fixed schema and linking tables via <strong>foreign keys</strong>. <strong>NoSQL</strong> databases use flexible data models � documents, key-value pairs, wide columns, or graphs � trading strict consistency for scalability and schema flexibility.</p>
-          <ul>
-            <li><strong>SQL</strong>: normalized tables, ACID transactions, JOINs, fixed schema � best for core relational data with integrity constraints</li>
-            <li><strong>NoSQL</strong>: flexible schema, high write throughput, fast key lookups � best for specialized or high-volume workloads</li>
-            <li><strong>Polyglot persistence</strong>: use both � SQL for relational data, NoSQL for everything else</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
-            <text x="180" y="22" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:700">SQL � Relational</text>
-            <text x="540" y="22" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:700">NoSQL � Document</text>
-            <rect x="30" y="35" width="300" height="120" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
-            <rect x="40" y="42" width="130" height="105" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="105" y="58" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">users</text>
-            <rect x="48" y="65" width="114" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="55" y="78" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">PK user_id</text>
-            <rect x="48" y="86" width="114" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="55" y="99" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">username</text>
-            <rect x="48" y="107" width="114" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="55" y="120" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">email</text>
-            <rect x="48" y="128" width="114" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="55" y="141" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">created_at</text>
-            <rect x="185" y="42" width="135" height="105" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="252" y="58" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">tweets</text>
-            <rect x="193" y="65" width="119" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="200" y="78" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">PK tweet_id</text>
-            <rect x="193" y="86" width="119" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="200" y="99" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">FK user_id</text>
-            <rect x="193" y="107" width="119" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="200" y="120" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">text</text>
-            <rect x="193" y="128" width="119" height="18" rx="2" style="fill:var(--bg-surface)"/>
-            <text x="200" y="141" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">created_at</text>
-            <line x1="170" y1="95" x2="185" y2="95" style="stroke:var(--dg-5);stroke-width:1.5" marker-end="url(#s1)"/>
-            <text x="177" y="88" text-anchor="end" style="fill:var(--dg-5);font-size:12;font-style:italic">FK</text>
-            <rect x="390" y="35" width="300" height="120" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
-            <rect x="400" y="42" width="280" height="105" rx="4" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1"/>
-            <text x="540" y="58" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">users (collection)</text>
-            <text x="408" y="76" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">{</text>
-            <text x="416" y="92" style="fill:var(--dg-text);font-size:14;font-family:JetBrains Mono,monospace">"_id": ObjectId("..."),</text>
-            <text x="416" y="108" style="fill:var(--dg-text);font-size:14;font-family:JetBrains Mono,monospace">"username": "jack",</text>
-            <text x="416" y="124" style="fill:var(--dg-text);font-size:14;font-family:JetBrains Mono,monospace">"tweets": [</text>
-            <text x="432" y="138" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">{ "text": "hello", "created": "..." }</text>
-            <text x="416" y="150" style="fill:var(--dg-text);font-size:14;font-family:JetBrains Mono,monospace">]</text>
-            <text x="408" y="158" style="fill:var(--dg-text-dim);font-size:14;font-family:JetBrains Mono,monospace">}</text>
-            <line x1="580" y1="120" x2="650" y2="120" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:3 2"/>
-            <text x="655" y="124" style="fill:var(--dg-text-dim);font-size:12">Embedded sub-array</text>
-            <text x="655" y="136" style="fill:var(--dg-text-dim);font-size:12">No schema enforced</text>
-            <rect x="30" y="175" width="660" height="105" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="195" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">When to use which</text>
-            <rect x="40" y="205" width="190" height="30" rx="4" style="fill:var(--green-dim)"/>
-            <text x="135" y="224" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">SQL: Complex queries, JOINs, ACID</text>
-            <rect x="250" y="205" width="190" height="30" rx="4" style="fill:var(--amber-dim)"/>
-            <text x="345" y="224" text-anchor="middle" style="fill:var(--dg-4);font-size:14;font-weight:600">NoSQL: Flexible schema, high write throughput</text>
-            <rect x="460" y="205" width="220" height="30" rx="4" style="fill:var(--cyan-dim)"/>
-            <text x="570" y="224" text-anchor="middle" style="fill:var(--dg-1);font-size:14;font-weight:600">SQL + NoSQL: Use both (polyglot persistence)</text>
-            <line x1="135" y1="235" x2="135" y2="255" style="stroke:var(--dg-3);stroke-width:1"/>
-            <text x="135" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Transactions, relations, integrity</text>
-            <line x1="345" y1="235" x2="345" y2="255" style="stroke:var(--dg-4);stroke-width:1"/>
-            <text x="345" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Prototyping, flexible fields, scale-out</text>
-            <line x1="570" y1="235" x2="570" y2="255" style="stroke:var(--dg-1);stroke-width:1"/>
-            <text x="570" y="270" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Use the right tool for each job</text>
-          </svg>
-          <div class="cap">SQL uses normalized tables with foreign keys; NoSQL embeds related data in documents. Choose based on query patterns.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>How Indexes Work</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Without indexes, every query requires a <strong>full table scan</strong> � reading every row, taking hours on a billion-row table. An <strong>index</strong> (usually a B-tree) maps values to row locations, reducing lookup from O(n) to O(log n).</p>
-          <p>The trade-off: faster reads come at the cost of slower writes, since every index must be updated on each INSERT or UPDATE.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <text x="360" y="22" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:700">B-Tree Index (B-tree)</text>
-            <rect x="290" y="35" width="140" height="36" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="360" y="52" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Root Node</text>
-            <text x="360" y="66" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">50 | 150 | 300</text>
-            <line x1="300" y1="71" x2="200" y2="95" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#s1)"/>
-            <line x1="360" y1="71" x2="360" y2="95" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#s1)"/>
-            <line x1="420" y1="71" x2="520" y2="95" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#s1)"/>
-            <rect x="125" y="95" width="150" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="200" y="112" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Internal Node</text>
-            <text x="200" y="126" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">10 | 25 | 40</text>
-            <rect x="285" y="95" width="150" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="360" y="112" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Internal Node</text>
-            <text x="360" y="126" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">80 | 120</text>
-            <rect x="460" y="95" width="150" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="535" y="112" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Internal Node</text>
-            <text x="535" y="126" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">200 | 250</text>
-            <line x1="160" y1="131" x2="110" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="200" y1="131" x2="200" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="240" y1="131" x2="290" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="320" y1="131" x2="360" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="400" y1="131" x2="430" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="500" y1="131" x2="500" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="535" y1="131" x2="570" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <line x1="570" y1="131" x2="600" y2="155" style="stroke:var(--dg-line);stroke-width:1" marker-end="url(#s1)"/>
-            <rect x="45" y="155" width="130" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="110" y="172" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Leaf: user_id=10</text>
-            <text x="110" y="186" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">row_ptr -> disk</text>
-            <rect x="185" y="155" width="130" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="250" y="172" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Leaf: user_id=25</text>
-            <text x="250" y="186" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">row_ptr -> disk</text>
-            <rect x="325" y="155" width="130" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="390" y="172" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Leaf: user_id=42</text>
-            <text x="390" y="186" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">row_ptr -> disk</text>
-            <rect x="465" y="155" width="130" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="530" y="172" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Leaf: user_id=80</text>
-            <text x="530" y="186" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">row_ptr -> disk</text>
-            <rect x="605" y="155" width="100" height="36" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="655" y="172" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">...</text>
-            <text x="655" y="186" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">more leaves</text>
-            <rect x="45" y="215" width="230" height="36" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="160" y="232" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Full Table Scan (no index)</text>
-            <text x="160" y="246" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Read all 1B rows ? hours</text>
-            <rect x="300" y="215" width="230" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="415" y="232" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Index Seek (with B-tree)</text>
-            <text x="415" y="246" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Follow 3 levels ? microseconds</text>
-            <line x1="390" y1="155" x2="390" y2="210" style="stroke:var(--dg-3);stroke-width:1.5;stroke-dasharray:4 2" marker-end="url(#s1)"/>
-            <text x="400" y="205" style="fill:var(--dg-3);font-size:12">&#9654;</text>
-            <text x="30" y="285" style="fill:var(--dg-text-dim);font-size:14">Index on user_id: O(log n) lookup time instead of O(n)</text>
-            <text x="30" y="300" style="fill:var(--dg-text-dim);font-size:14">Trade-off: faster reads, slower writes (must update index on every INSERT/UPDATE)</text>
-          </svg>
-          <div class="cap">A B-tree index organizes keys in a balanced tree � a 3-level tree can find any row among billions in microseconds.</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>The B-Tree Index</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>A <strong>B-tree</strong> is a self-balancing tree data structure that keeps data sorted and enables searches, insertions, and deletions in logarithmic time. Most database indexes are built on B-trees.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="bt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <rect x="310" y="15" width="100" height="30" rx="6" fill="var(--cyan-dim)" stroke="var(--dg-1)" stroke-width="1.5"/>
-            <text x="360" y="35" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Root: [50, 100]</text>
-            <rect x="140" y="70" width="80" height="30" rx="6" fill="var(--indigo-dim)" stroke="var(--dg-2)" stroke-width="1.5"/>
-            <text x="180" y="90" text-anchor="middle" style="fill:var(--dg-text);font-size:11">[1, 25, 40]</text>
-            <rect x="320" y="70" width="80" height="30" rx="6" fill="var(--indigo-dim)" stroke="var(--dg-2)" stroke-width="1.5"/>
-            <text x="360" y="90" text-anchor="middle" style="fill:var(--dg-text);font-size:11">[60, 75, 90]</text>
-            <rect x="500" y="70" width="80" height="30" rx="6" fill="var(--indigo-dim)" stroke="var(--dg-2)" stroke-width="1.5"/>
-            <text x="540" y="90" text-anchor="middle" style="fill:var(--dg-text);font-size:11">[110, 200]</text>
-            <line x1="360" y1="45" x2="180" y2="70" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#bt)"/>
-            <line x1="360" y1="45" x2="360" y2="70" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#bt)"/>
-            <line x1="360" y1="45" x2="540" y2="70" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#bt)"/>
-            <rect x="50" y="140" width="90" height="28" rx="4" fill="var(--green-dim)" stroke="var(--dg-3)" stroke-width="1"/>
-            <text x="95" y="158" text-anchor="middle" style="fill:var(--dg-text);font-size:10">1, 10, 22</text>
-            <rect x="165" y="140" width="90" height="28" rx="4" fill="var(--green-dim)" stroke="var(--dg-3)" stroke-width="1"/>
-            <text x="210" y="158" text-anchor="middle" style="fill:var(--dg-text);font-size:10">25, 30, 38</text>
-            <rect x="280" y="140" width="90" height="28" rx="4" fill="var(--amber-dim)" stroke="var(--dg-4)" stroke-width="1"/>
-            <text x="325" y="158" text-anchor="middle" style="fill:var(--dg-text);font-size:10">55, 60, 72</text>
-            <rect x="395" y="140" width="90" height="28" rx="4" fill="var(--amber-dim)" stroke="var(--dg-4)" stroke-width="1"/>
-            <text x="440" y="158" text-anchor="middle" style="fill:var(--dg-text);font-size:10">90, 95, 100</text>
-            <rect x="510" y="140" width="90" height="28" rx="4" fill="var(--red-dim)" stroke="var(--dg-5)" stroke-width="1"/>
-            <text x="555" y="158" text-anchor="middle" style="fill:var(--dg-text);font-size:10">110, 150</text>
-            <line x1="180" y1="100" x2="95" y2="140" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#bt)"/>
-            <line x1="180" y1="100" x2="210" y2="140" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#bt)"/>
-            <line x1="360" y1="100" x2="325" y2="140" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#bt)"/>
-            <line x1="360" y1="100" x2="440" y2="140" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#bt)"/>
-            <line x1="540" y1="100" x2="555" y2="140" stroke="var(--dg-line)" stroke-width="1" marker-end="url(#bt)"/>
-            <rect x="120" y="210" width="480" height="50" rx="6" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="360" y="230" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">B-Tree: O(log n) lookup. Most databases use this.</text>
-            <text x="360" y="248" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Index on id = 'user_42' ? 3 level traversals ? microseconds</text>
-          </svg>
-          <div class="cap">B-tree indexes allow logarithmic search � millions of rows in microseconds</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>ACID Transactions</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>ACID transactions ensure database operations are reliable: either all succeed (<strong>commit</strong>) or none take effect (<strong>rollback</strong>). This prevents data corruption from crashes, network failures, or concurrent access.</p>
-          <ul>
-            <li><strong>Atomicity</strong>: All or nothing � the transaction completes fully or not at all</li>
-            <li><strong>Consistency</strong>: Data follows defined rules and constraints at all times</li>
-            <li><strong>Isolation</strong>: Concurrent transactions don't interfere with each other (MVCC)</li>
-            <li><strong>Durability</strong>: Committed data persists even if the server crashes</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-              <marker id="sg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-3)"/></marker>
-              <marker id="sr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-5)"/></marker>
-            </defs>
-            <text x="360" y="22" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:700">ACID Transaction Flow</text>
-            <rect x="250" y="35" width="220" height="40" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="360" y="52" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">BEGIN TRANSACTION</text>
-            <text x="360" y="66" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Database records start of atomic unit</text>
-            <line x1="360" y1="75" x2="360" y2="95" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#s1)"/>
-            <rect x="100" y="95" width="220" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="210" y="112" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">INSERT INTO retweets</text>
-            <text x="210" y="126" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Add retweet record</text>
-            <line x1="210" y1="131" x2="210" y2="145" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#s1)"/>
-            <rect x="100" y="145" width="220" height="36" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="210" y="162" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">UPDATE tweets SET count++</text>
-            <text x="210" y="176" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Increment retweet_count</text>
-            <line x1="210" y1="181" x2="210" y2="195" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#s1)"/>
-            <rect x="100" y="195" width="220" height="36" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="210" y="212" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-weight:600">More operations...</text>
-            <line x1="210" y1="231" x2="160" y2="255" style="stroke:var(--dg-3);stroke-width:2" marker-end="url(#sg)"/>
-            <line x1="210" y1="231" x2="410" y2="255" style="stroke:var(--dg-5);stroke-width:2;stroke-dasharray:6 3" marker-end="url(#sr)"/>
-            <rect x="60" y="255" width="200" height="50" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
-            <text x="160" y="275" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:700">COMMIT</text>
-            <text x="160" y="293" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">All changes saved permanently</text>
-            <rect x="320" y="255" width="200" height="50" rx="8" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="420" y="275" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:700">ROLLBACK</text>
-            <text x="420" y="293" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">All changes discarded</text>
-            <rect x="560" y="95" width="130" height="150" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="625" y="114" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">ACID</text>
-            <text x="625" y="134" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Atomicity</text>
-            <text x="625" y="150" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Consistency</text>
-            <text x="625" y="166" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Isolation (MVCC)</text>
-            <text x="625" y="182" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Durability</text>
-            <text x="625" y="210" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">All or nothing.</text>
-            <text x="625" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Even if the server</text>
-            <text x="625" y="244" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">crashes mid-way.</text>
-          </svg>
-          <div class="cap">ACID transactions guarantee atomicity: all operations commit together or roll back together � even on crash.</div>
-        </div>
-      </div>
-    </section>
-
-  </div>
-
-  <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="6">Mark Complete</button>
-  </div>
-
-  <nav class="chapter-nav">
-    <a href="ch-05.html" class="prev"><div class="dir">Previous</div><div class="title">Memory, Threads &amp; Processes</div></a>
-    <a href="ch-07.html" class="next"><div class="dir">Next</div><div class="title">How Systems Talk to Each Other</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>

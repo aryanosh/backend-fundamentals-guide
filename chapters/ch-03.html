@@ -4,294 +4,173 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server. Middleware explained for beginners.">
-<meta property="og:title" content="Ch 03 — What a Server Actually Does">
+<meta name="keywords" content="backend, web development, programming, server, API, database, deployment">
+<meta name="author" content="Backend Fundamentals Guide">
+<meta property="og:title" content="Chapter 03 — What a Server Actually Does">
 <meta property="og:description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server. Middleware explained for beginners.">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ch 03 — What a Server Actually Does">
-<meta name="twitter:description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server.">
-<title>Ch 03 — What a Server Actually Does</title>
+<meta name="twitter:title" content="Chapter 03 — What a Server Actually Does">
+<meta name="twitter:description" content="Listen, receive, route, process, respond — the infinite loop at the heart of every server. Middleware explained for beginners.">
+<title>Chapter 03 — What a Server Actually Does</title>
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+<nav class="top-nav">
+  <a href="../index.html" class="brand"><span class="mark">◈</span> Backend Fundamentals</a>
+  <div class="nav-links">
+    <a href="../index.html">Home</a>
+    <a href="ch-01.html">Start</a>
   </div>
-  <nav class="sidebar-nav">
-    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
-    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
-    <a href="ch-03.html" class="sidebar-link active" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status">&#9654;</span></a>
-    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
-    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
-    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
-    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
-    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
-    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
-    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
-    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
-    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
-    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
-    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
-    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
-    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
-    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
-  </nav>
-  <div class="sidebar-footer">
-    <span class="sidebar-progress-text">0 / 17 completed</span>
-    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
-  </div>
-</div>
+</nav>
+<main>
+  <div class="container">
+    <header class="page-header">
+      <div class="eyebrow">Chapter 03</div>
+      <h1>What a Server Actually Does</h1>
+      <p class="subtitle">The listen-receive-route-process-respond loop and the middleware pipeline that handles every request</p>
+      <div class="meta"><span>~10 min read</span></div>
+    </header>
 
-<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <figure class="chapter-visual">
+      <div class="vis-label"><span>Fig. 3.1 — The server request loop and middleware pipeline</span><span>google.com</span></div>
+      <svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="130" cy="80" r="30" fill="#4A90D9" opacity="0.85"/>
+        <text x="130" y="78" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">LISTEN</text>
+        <text x="130" y="90" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">(443)</text>
 
-<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
-    <div class="cp-bar"><div class="cp-fill"></div></div>
-    <span class="cp-label">0/17 completed</span>
-  </div>
+        <circle cx="300" cy="80" r="30" fill="#E67E22" opacity="0.85"/>
+        <text x="300" y="78" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">RECEIVE</text>
+        <text x="300" y="90" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">request</text>
 
-  <header class="page-header">
-    <div class="eyebrow">Ch 03 / 17</div>
-    <h1>What a Server Actually Does</h1>
-    <p class="subtitle">The listen-receive-route-process-respond loop and the middleware pipeline that handles every request</p>
-    <div class="meta"><span>~10 min read</span></div>
-  </header>
+        <circle cx="400" cy="160" r="30" fill="#9B59B6" opacity="0.85"/>
+        <text x="400" y="158" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">ROUTE</text>
+        <text x="400" y="170" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">path</text>
+
+        <circle cx="300" cy="240" r="30" fill="#27AE60" opacity="0.85"/>
+        <text x="300" y="238" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">PROCESS</text>
+        <text x="300" y="250" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">+ respond</text>
+
+        <circle cx="130" cy="240" r="30" fill="#E74C3C" opacity="0.85"/>
+        <text x="130" y="242" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">SEND</text>
+        <text x="130" y="254" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">response</text>
+
+        <line x1="160" y1="80" x2="270" y2="80" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="265,76 275,80 265,84" fill="#888"/>
+
+        <line x1="315" y1="107" x2="385" y2="135" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="381,131 391,139 383,141" fill="#888"/>
+
+        <line x1="385" y1="187" x2="325" y2="215" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="329,211 319,219 327,221" fill="#888"/>
+
+        <line x1="270" y1="240" x2="160" y2="240" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="165,236 155,240 165,244" fill="#888"/>
+
+        <line x1="130" y1="210" x2="130" y2="110" class="dg-line" stroke="#888" stroke-dasharray="4,3"/>
+        <polygon points="126,115 130,105 134,115" fill="#888"/>
+
+        <rect x="460" y="50" width="300" height="200" rx="8" fill="#f0f4f8" stroke="#ccc" stroke-width="1.5"/>
+        <text x="610" y="75" text-anchor="middle" class="dg-label" font-weight="bold" fill="#2C3E50" font-size="13">MIDDLEWARE PIPELINE</text>
+
+        <rect x="480" y="90" width="80" height="30" rx="4" fill="#E74C3C" opacity="0.8"/>
+        <text x="520" y="109" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">Logging</text>
+        <line x1="560" y1="105" x2="580" y2="105" class="dg-line" stroke="#888"/>
+        <polygon points="576,101 586,105 576,109" fill="#888"/>
+
+        <rect x="590" y="90" width="80" height="30" rx="4" fill="#9B59B6" opacity="0.8"/>
+        <text x="630" y="109" text-anchor="middle" fill="#fff" font-size="9" font-family="system-ui">Auth</text>
+        <line x1="670" y1="105" x2="690" y2="105" class="dg-line" stroke="#888"/>
+        <polygon points="686,101 696,105 686,109" fill="#888"/>
+
+        <rect x="700" y="90" width="40" height="30" rx="4" fill="#3498DB" opacity="0.8"/>
+        <text x="720" y="109" text-anchor="middle" fill="#fff" font-size="8" font-family="system-ui">Val</text>
+
+        <line x1="720" y1="120" x2="720" y2="150" class="dg-line" stroke="#888"/>
+        <polygon points="716,146 720,156 724,146" fill="#888"/>
+
+        <rect x="640" y="155" width="100" height="40" rx="4" fill="#27AE60" opacity="0.9"/>
+        <text x="690" y="175" text-anchor="middle" fill="#fff" font-size="10" font-family="system-ui" font-weight="bold">HANDLER</text>
+        <text x="690" y="188" text-anchor="middle" fill="#fff" font-size="8" font-family="system-ui">(your code)</text>
+
+        <text x="610" y="220" text-anchor="middle" class="dg-label" fill="#999" font-size="9">→ request flows through each box first ←</text>
+      </svg>
+      <figcaption>Top: the five-step circular loop every server runs on each request. Right: the middleware pipeline that filters and enriches requests before they reach your handler code.</figcaption>
+    </figure>
 
     <div class="chapter-content">
+      <h2>The Infinite Loop That Runs the Internet</h2>
+      <p>Every server on the internet — whether it's Google handling millions of search requests per second, or a tiny blog with five daily visitors — runs the same fundamental loop. Server software is surprisingly simple in its core structure. It's a loop that never ends, waiting for requests, processing them, and sending responses. This is called the <strong>event loop</strong> or the <strong>request-response loop</strong>, and understanding it is the key to understanding what servers actually <em>are</em>.</p>
 
-    <section class="topic-section">
-      <h2>The Server Loop</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>A server follows a simple loop: listen, accept, parse, route, process, respond, then go back to listen. This cycle runs on every server, from a Raspberry Pi to a Google datacenter.</p>
-          <ul>
-            <li><strong>Listen</strong> — The OS reserves a port for the process</li>
-            <li><strong>Accept</strong> — A TCP connection is established with the client</li>
-            <li><strong>Parse → Route → Process → Respond</strong> — Transform bytes into a structured reply</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="360" cy="180" r="140" style="fill:none;stroke:var(--border);stroke-width:1.5;stroke-dasharray:6 4"/>
+      <p>Think of a server like a fast-food cashier. The cashier stands at the register (LISTEN), waits for a customer to walk up (RECEIVE), figures out what the customer ordered (ROUTE), prepares the food (PROCESS), hands it over (SEND), and then goes back to waiting for the next customer. A server does exactly this, but with data instead of burgers, and it does it millions of times a day without getting tired.</p>
 
-            <rect x="300" y="40" width="120" height="44" rx="22" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="360" y="67" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">LISTEN</text>
+      <p>Let's walk through each step of the loop with the Google example.</p>
 
-            <rect x="460" y="130" width="120" height="44" rx="22" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:2"/>
-            <text x="520" y="157" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">RECEIVE</text>
+      <h2>Step 1: LISTEN — "I'm Ready for Requests"</h2>
+      <p>Before Google's server can handle any requests, it has to start <strong>listening</strong>. This means it tells the operating system: "I want to accept connections on port 443 (HTTPS)." In code, this is typically a single function call like <code>server.listen(443)</code>. The operating system reserves that port for this specific server process. If another program tries to listen on port 443, it'll get an error saying the address is already in use.</p>
 
-            <rect x="460" y="240" width="120" height="44" rx="22" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
-            <text x="520" y="267" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">ROUTE</text>
+      <p>Google's production servers don't just listen on one port. A typical setup might have: port 443 for HTTPS (handled by a reverse proxy like nginx), port 80 for HTTP (which immediately redirects to HTTPS), port 3000 for an internal API, port 5432 for PostgreSQL database connections (only accessible within Google's internal network). Each port is like a different door into the server, and each door is guarded by a different program listening for requests.</p>
 
-            <rect x="300" y="290" width="120" height="44" rx="22" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
-            <text x="360" y="317" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">PROCESS</text>
+      <h2>Step 2: RECEIVE — "Got the Raw Data"</h2>
+      <p>When a request arrives (say, your search request), the server <strong>receives</strong> the raw bytes off the TCP connection. The operating system's network stack has already done the heavy lifting — it reassembled the TCP packets in order, checked for errors, and presented the data as a clean stream of bytes. The server now parses those bytes into a structured HTTP request: it reads the method (GET), the path (/home), the HTTP version, all the headers, and the body if present.</p>
 
-            <rect x="150" y="240" width="120" height="44" rx="22" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2"/>
-            <text x="210" y="267" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">SEND</text>
+      <p>At Google's scale, this step is highly optimized. The server doesn't read one byte at a time — it reads chunks of data in buffers and parses them with specialized C libraries (like <code>picohttpparser</code>) that can parse thousands of requests per second. The parsed request is then wrapped into a <strong>request object</strong> that the rest of the server code can work with conveniently.</p>
 
-            <rect x="150" y="130" width="120" height="44" rx="22" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="210" y="157" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">WAIT</text>
+      <h2>Step 3: ROUTE — "Who Handles This?"</h2>
+      <p>Now the server has a parsed request object. It knows the method is GET and the path is <code>/api/v2/search</code>. The next job is <strong>routing</strong>: figuring out which piece of code should handle this request. The server has a routing table — a big list of pattern-to-handler mappings that looks something like this:</p>
 
-            <line x1="360" y1="84" x2="460" y2="152" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar01)"/>
-            <line x1="520" y1="174" x2="520" y2="240" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar01)"/>
-            <line x1="460" y1="284" x2="420" y2="312" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar01)"/>
-            <line x1="300" y1="312" x2="270" y2="284" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar01)"/>
-            <line x1="210" y1="240" x2="210" y2="174" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar01)"/>
-            <line x1="270" y1="152" x2="360" y2="84" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar01)"/>
+      <p><code>GET /api/v2/search</code> → <code>searchHandler</code><br>
+      <code>POST /api/v2/search</code> → <code>submitSearchHandler</code><br>
+      <code>GET /api/v2/users/:username</code> → <code>userProfileHandler</code><br>
+      <code>DELETE /api/v2/history/:id</code> → <code>clearHistoryHandler</code></p>
 
-            <text x="360" y="345" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">This loop runs millions of times per day on every server</text>
-            <defs>
-              <marker id="ar01" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-          </svg>
-          <div class="cap">The six-state server loop — LISTEN, RECEIVE, ROUTE, PROCESS, SEND, WAIT — cycles endlessly</div>
-        </div>
-      </div>
-    </section>
+      <p>The router tries to match the incoming request's method and path against these patterns. If it finds a match, it passes control to that handler function. If it doesn't find a match, the router returns a <strong>404 Not Found</strong> response: "There's nothing at this address." The <code>:username</code> and <code>:id</code> parts are called <strong>route parameters</strong> — they capture variable parts of the path so the handler can access them (like knowing which user's profile to fetch).</p>
 
-    <section class="topic-section">
-      <h2>What Each Step Looks Like</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Each step in the loop transforms the request. Parsing turns raw bytes into structured data, routing matches method+path to a handler, and processing runs your business logic.</p>
-          <ul>
-            <li><strong>Parsing</strong> — Turns raw TCP bytes into a structured request (method, path, headers, body)</li>
-            <li><strong>Routing</strong> — Matches method + path to a handler function</li>
-            <li><strong>Processing</strong> — Runs business logic: DB queries, auth checks, data transformation</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="ar11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
+      <p>Route matching seems simple, but at Google's scale it's a fascinating engineering challenge. Hundreds of route patterns must be matched against millions of requests per minute, and the matching has to happen in microseconds. Google uses <strong>trie-based routers</strong> (prefix trees) that can match any path in O(n) time where n is the path length, not the number of routes. Without this optimization, routing would slow down as Google added more API endpoints.</p>
 
-            <rect x="30" y="10" width="660" height="42" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
-            <text x="360" y="28" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">1. LISTEN</text>
-            <text x="360" y="42" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">server.listen(443) — OS reserves the port for this process</text>
+      <h2>Step 4: PROCESS & RESPOND — "Do the Work"</h2>
+      <p>This is where the actual business logic lives — the code that Google engineers wrote to make the product work. The handler function receives the request object and does whatever is necessary: queries the database, checks permissions, processes data, and builds a response. This step is where your code runs, and it's where most of the interesting stuff happens (which we'll cover in depth in Chapter 4).</p>
 
-            <line x1="360" y1="52" x2="360" y2="68" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar11)"/>
+      <p>Importantly, the <strong>response</strong> is built here too. The handler constructs an HTTP response with a status code (like 200 for success), headers (like <code>Content-Type: application/json</code>), and a body (the JSON data). This response object is then passed back to the server framework, which serializes it into raw bytes and sends them back through the TCP connection.</p>
 
-            <rect x="30" y="72" width="660" height="42" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="360" y="90" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">2. RECEIVE</text>
-            <text x="360" y="104" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Parse raw bytes into a structured request (method, path, headers, body)</text>
+      <h2>Step 5: SEND — "Data Goes Out"</h2>
+      <p>The response bytes travel back through the TCP connection, through the network, through the internet, and eventually arrive at your phone's browser, which renders the timeline you see. The server then goes back to Step 2, waiting for the next request. This loop repeats billions of times a day across Google's thousands of servers.</p>
 
-            <line x1="360" y1="114" x2="360" y2="130" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar11)"/>
+      <h2>The Middleware Pipeline: Request Filtering</h2>
+      <p>Before a request reaches your handler, it usually passes through a series of <strong>middleware functions</strong>. Middleware is one of the most important concepts in backend development — it's software that sits <em>between</em> the server and your handler, processing every request that comes through. Think of middleware like airport security: before you board your flight (reach your handler), you pass through multiple checkpoints (middleware). Each checkpoint checks one thing: your ID, your boarding pass, your luggage.</p>
 
-            <rect x="30" y="134" width="660" height="42" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="360" y="152" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">3. ROUTE</text>
-            <text x="360" y="166" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Match method+path against routing table → find handler or 404</text>
+      <p>A typical middleware pipeline might look like this:</p>
 
-            <line x1="360" y1="176" x2="360" y2="192" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar11)"/>
+      <p><strong>1. Logging middleware</strong> — This middleware records every request: what method, what path, when it arrived, how long it took, what status code was returned. If something breaks, engineers look at these logs to understand what happened. Without logging middleware, debugging a production issue would be like finding a needle in a haystack while blindfolded.</p>
 
-            <rect x="30" y="196" width="660" height="42" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="360" y="214" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">4. PROCESS</text>
-            <text x="360" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Business logic: DB queries, permission checks, data transformation</text>
+      <p><strong>2. Authentication middleware</strong> — This checks whether the request includes valid credentials. For Google, it examines the <code>Authorization</code> header, verifies the token (often a JWT — JSON Web Token), and either attaches the authenticated user's info to the request object or returns a 401 Unauthorized response. Authentication middleware runs before your handler so that your handler never has to worry about auth logic — it just knows that any request reaching it is from an authenticated user.</p>
 
-            <line x1="360" y1="238" x2="360" y2="254" style="stroke:var(--dg-line);stroke-width:1.5" marker-end="url(#ar11)"/>
+      <p><strong>3. Validation middleware</strong> — This checks that the request data is well-formed and complete. If the API expects a <code>text</code> field in the body and it's missing, the validation middleware returns a 400 Bad Request before your handler ever sees it. This keeps your handler code clean — you write business logic, not input validation.</p>
 
-            <rect x="30" y="258" width="660" height="42" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="360" y="276" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:700;font-family:JetBrains Mono,monospace">5. SEND</text>
-            <text x="360" y="290" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Serialise response → write to TCP socket → back to LISTEN</text>
+      <p><strong>4. Rate limiting middleware</strong> — This checks whether the user has exceeded their request quota. Google allows a certain number of requests per 15-minute window. If you exceed it, the middleware returns 429 Too Many Requests without ever touching your handler. This protects the server from abuse and ensures fair resource distribution.</p>
 
-            <line x1="360" y1="300" x2="360" y2="316" style="stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:6 3" marker-end="url(#ar11)"/>
+      <p><strong>5. The handler</strong> — Finally, the request reaches your handler, which has been guaranteed to be from an authenticated user with valid data who hasn't exceeded their rate limit. Your handler can focus entirely on business logic — like fetching tweets from the database and returning them.</p>
 
-            <rect x="260" y="320" width="200" height="28" rx="14" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="339" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">loop back to step 1</text>
-          </svg>
-          <div class="cap">The five-step pipeline processes every request through the same sequential flow</div>
-        </div>
-      </div>
-    </section>
+      <p>Middleware is often described as an <strong>onion</strong> — the request passes through each layer going in, and the response passes through each layer going out (in reverse order). The logging middleware that logged the incoming request can also log the outgoing response. The auth middleware added the user object to the request going in, and can add security headers to the response going out.</p>
 
-    <section class="topic-section">
-      <h2>Bare Server vs Framework</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>A raw server gives you full control but requires you to handle every detail. A framework wraps the plumbing — parsing, routing, error handling — so you focus on writing handlers.</p>
-        </div>
-        <div class="topic-diagram">
-          <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="bfm1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
-            </defs>
-            <!-- Raw Server side -->
-            <rect x="20" y="40" width="320" height="180" rx="6" fill="var(--bg-surface)" stroke="var(--dg-5)" stroke-width="2"/>
-            <text x="180" y="65" text-anchor="middle" fill="var(--dg-5)" font-size="13" font-weight:600>You handle everything</text>
-            <rect x="35" y="80" width="290" height="28" rx="4" fill="var(--red-dim)"/>
-            <text x="180" y="99" text-anchor="middle" fill="var(--dg-text)" font-size="11">Parse raw TCP bytes</text>
-            <rect x="35" y="115" width="290" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="180" y="134" text-anchor="middle" fill="var(--dg-text)" font-size="11">Manual routing (if/else)</text>
-            <rect x="35" y="150" width="290" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="180" y="169" text-anchor="middle" fill="var(--dg-text)" font-size="11">Parse headers manually</text>
-            <rect x="35" y="185" width="290" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="180" y="204" text-anchor="middle" fill="var(--dg-text)" font-size="11">Write HTTP response bytes</text>
-            <text x="180" y="230" text-anchor="middle" fill="var(--dg-1)" font-size="11">More control, more code</text>
-            <!-- Framework side -->
-            <rect x="380" y="40" width="320" height="180" rx="6" fill="var(--bg-surface)" stroke="var(--dg-3)" stroke-width="2"/>
-            <text x="540" y="65" text-anchor="middle" fill="var(--dg-3)" font-size="13" font-weight:600>You write handlers</text>
-            <rect x="395" y="80" width="290" height="28" rx="4" fill="var(--green-dim)"/>
-            <text x="540" y="99" text-anchor="middle" fill="var(--dg-text)" font-size="11">app.get('/api', handler)</text>
-            <rect x="395" y="115" width="290" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="540" y="134" text-anchor="middle" fill="var(--dg-text)" font-size="11">Framework parses request</text>
-            <rect x="395" y="150" width="290" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="540" y="169" text-anchor="middle" fill="var(--dg-text)" font-size="11">Framework routes + error handling</text>
-            <rect x="395" y="185" width="290" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
-            <text x="540" y="204" text-anchor="middle" fill="var(--dg-text)" font-size="11">Framework sends response</text>
-            <text x="540" y="230" text-anchor="middle" fill="var(--dg-1)" font-size="11">Less code, faster development</text>
-            <!-- Bottom bar -->
-            <rect x="100" y="240" width="520" height="24" rx="6" fill="var(--cyan-dim)"/>
-            <text x="360" y="256" text-anchor="middle" fill="var(--dg-1)" font-size="11">Start with a framework. Learn the bare metal later.</text>
-          </svg>
-          <div class="cap">Frameworks handle the plumbing so you focus on business logic</div>
-        </div>
-      </div>
-    </section>
+      <p>This pipeline architecture is what makes frameworks like Express.js (Node.js), Django (Python), and Rails (Ruby) so powerful. They provide the infrastructure — the listen loop, the router, the middleware system — and you just write the handlers. You don't need to worry about how TCP connections work or how to parse HTTP headers. The framework handles all of that, and you focus on what makes your application unique.</p>
 
-    <section class="topic-section">
-      <h2>Middleware</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Middleware functions sit between the server and your handler. Each layer can inspect, modify, or reject a request before passing it forward.</p>
-          <ul>
-            <li><strong>Before</strong> — Logging, auth, validation, rate limiting run before your handler</li>
-            <li><strong>After</strong> — Response headers, compression, error formatting run on the way back</li>
-          </ul>
-        </div>
-        <div class="topic-diagram">
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="ar12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z"/></marker>
-            </defs>
+      <p>Now that you understand what a server does with each request, the next logical question is: <strong>where does the data actually come from?</strong> Chapter 4 traces that journey through the backend layers.</p>
+    </div>
 
-            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Request flows through each middleware layer</text>
-
-            <rect x="30" y="42" width="120" height="44" rx="22" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
-            <text x="90" y="69" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:700">Request</text>
-            <line x1="150" y1="64" x2="190" y2="64" style="stroke:var(--dg-1);stroke-width:2" marker-end="url(#ar12)"/>
-
-            <rect x="195" y="42" width="100" height="44" rx="8" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
-            <text x="245" y="62" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Logging</text>
-            <text x="245" y="76" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">middleware</text>
-            <line x1="295" y1="64" x2="330" y2="64" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#ar12)"/>
-
-            <rect x="335" y="42" width="100" height="44" rx="8" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
-            <text x="385" y="62" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Auth</text>
-            <text x="385" y="76" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">middleware</text>
-            <line x1="435" y1="64" x2="470" y2="64" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#ar12)"/>
-
-            <rect x="475" y="42" width="100" height="44" rx="8" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
-            <text x="525" y="62" text-anchor="middle" style="fill:var(--dg-2);font-size:11;font-weight:600">Validation</text>
-            <text x="525" y="76" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">middleware</text>
-            <line x1="575" y1="64" x2="610" y2="64" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#ar12)"/>
-
-            <rect x="615" y="42" width="80" height="44" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="655" y="69" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Handler</text>
-
-            <text x="360" y="110" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Each middleware can reject the request (401, 400, 429) or pass it forward</text>
-
-            <rect x="30" y="130" width="660" height="80" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
-            <text x="360" y="150" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">What each middleware does</text>
-            <text x="50" y="168" style="fill:var(--dg-5);font-size:11">&#9654; Logging: records method, path, timing, status</text>
-            <text x="50" y="184" style="fill:var(--dg-4);font-size:11">&#9654; Auth: verifies JWT/session, attaches user to request</text>
-            <text x="50" y="200" style="fill:var(--dg-2);font-size:11">&#9654; Validation: checks body fields, types, constraints</text>
-
-            <rect x="30" y="230" width="660" height="36" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
-            <text x="360" y="253" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Response flows back through middleware in reverse order (onion model)</text>
-
-            <rect x="200" y="285" width="320" height="28" rx="14" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
-            <text x="360" y="303" text-anchor="middle" style="fill:var(--dg-1);font-size:11">Middleware is why frameworks like Express, Django, Rails exist</text>
-
-            <text x="360" y="340" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">You write handlers. The framework handles infrastructure — listen, parse, route, middleware.</text>
-          </svg>
-          <div class="cap">Middleware layers filter and enrich requests before they reach your handler, then process responses on the way back</div>
-        </div>
-      </div>
-    </section>
-
-    <section class="topic-section">
-      <h2>The Framework Abstraction</h2>
-      <div class="topic-grid">
-        <div class="topic-text">
-          <p>Frameworks like Express, Fastify, and Django wrap the server loop, middleware pipeline, and routing into a clean API. You write handlers. The framework handles everything else — listening, parsing, routing, error handling, serialization.</p>
-        </div>
-      </div>
-    </section>
-
-  </div> <div class="mark-complete-wrap">
-    <button class="btn-mark" data-ch="3">Mark Complete</button>
+    <nav class="chapter-nav">
+      <a href="ch-02.html" class="prev"><div class="dir">Previous</div><div class="title">The Anatomy of a Request</div></a>
+      <a href="ch-04.html" class="next"><div class="dir">Next</div><div class="title">How Data Flows Through a System</div></a>
+    </nav>
   </div>
-
-  <nav class="chapter-nav">
-    <a href="ch-02.html" class="prev"><div class="dir">Previous</div><div class="title">The Anatomy of a Request</div></a>
-    <a href="ch-04.html" class="next"><div class="dir">Next</div><div class="title">How Data Flows Through a System</div></a>
-  </nav></div><footer class="site-footer">
-    <p>All bytes considered, you made it through. Now go build something.</p>
-  </footer>
-</div>
-
+</main>
+<footer class="site-footer">
+  <div class="container">
+    <p>Written from the trenches — this guide teaches the concepts that stay constant while frameworks come and go.</p>
+    <div class="stamp">Backend Fundamentals · Free · Always</div>
+  </div>
+</footer>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><span class="icon">🌙</span></button>
 <script src="../js/script.js"></script>
 </body>
 </html>
