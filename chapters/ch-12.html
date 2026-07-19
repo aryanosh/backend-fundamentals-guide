@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="OSI model, WebSockets vs HTTP, load balancing strategies. What happens when one server isn't enough.">
+<meta property="og:title" content="Ch 12 — Networking Essentials">
+<meta property="og:description" content="OSI model, WebSockets vs HTTP, load balancing strategies. What happens when one server isn't enough.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ch 12 — Networking Essentials">
+<meta name="twitter:description" content="OSI model, WebSockets vs HTTP, load balancing strategies.">
+<title>Ch 12 — Networking Essentials</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
+    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
+    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
+    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
+    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
+    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
+    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
+    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
+    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
+    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
+    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
+    <a href="ch-12.html" class="sidebar-link active" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status">&#9654;</span></a>
+    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
+    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
+    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
+    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
+    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-progress-text">0 / 17 completed</span>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+  </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
+    <div class="cp-bar"><div class="cp-fill"></div></div>
+    <span class="cp-label">0/17 completed</span>
+  </div>
+
+  <header class="page-header">
+    <div class="eyebrow">Ch 12 / 17</div>
+    <h1>Networking Essentials</h1>
+    <p class="subtitle">How data travels across the internet — and how to handle millions of connections</p>
+    <div class="meta"><span>~13 min read</span></div>
+  </header>
+
+  <div class="chapter-content">
+
+    <section class="topic-section">
+      <h2>The OSI Model</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>The OSI model breaks networking into 7 layers. As a backend engineer, you mostly care about the top three (Application, Presentation, Session) for the code you write, and the bottom four (Transport, Network, Data Link, Physical) for understanding how data moves across the wire. Each layer serves the layer above it, abstracting away lower-level details so you can focus on your protocol without worrying about electrical signals or routing tables.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+            <rect x="190" y="10" width="340" height="30" rx="4" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
+            <text x="360" y="30" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">7 &mdash; Application (HTTP, WebSocket, gRPC)</text>
+            <rect x="190" y="44" width="340" height="30" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="360" y="64" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">6 &mdash; Presentation (TLS, SSL, encryption)</text>
+            <rect x="190" y="78" width="340" height="30" rx="4" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="360" y="98" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">5 &mdash; Session (auth, connection mgmt)</text>
+            <rect x="190" y="112" width="340" height="30" rx="4" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
+            <text x="360" y="132" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">4 &mdash; Transport (TCP <span style="fill:var(--dg-3)">reliable</span> / UDP <span style="fill:var(--dg-4)">fast</span>)</text>
+            <rect x="190" y="146" width="340" height="30" rx="4" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
+            <text x="360" y="166" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">3 &mdash; Network (IP addressing &amp; routing)</text>
+            <rect x="190" y="180" width="340" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1.5"/>
+            <text x="360" y="200" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">2 &mdash; Data Link (Ethernet, MAC addresses)</text>
+            <rect x="190" y="214" width="340" height="30" rx="4" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1.5"/>
+            <text x="360" y="234" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-weight:600">1 &mdash; Physical (cables, radio, light)</text>
+            <text x="360" y="270" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Upper layers (5-7): application concerns</text>
+            <text x="360" y="284" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Lower layers (1-4): transport concerns</text>
+            <rect x="160" y="300" width="400" height="24" rx="12" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="360" y="316" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Each layer serves the layer above it, abstracting away lower-level details</text>
+          </svg>
+          <div class="cap">The 7-layer OSI model — backend engineers primarily work with layers 3, 4, and 7 but benefit from understanding the full stack</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>TLS 1.3 Handshake</h2>
+      <div class="topic-grid">
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="tls-c2s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-5)"/></marker>
+              <marker id="tls-s2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-1)"/></marker>
+            </defs>
+            <!-- Client -->
+            <rect x="40" y="30" width="120" height="40" rx="6" fill="var(--dg-node)" stroke="var(--dg-1)" stroke-width="2"/>
+            <text x="100" y="55" text-anchor="middle" fill="var(--dg-text)" font-size="12" font-weight:600>Browser</text>
+            <!-- Server -->
+            <rect x="540" y="30" width="120" height="40" rx="6" fill="var(--dg-node)" stroke="var(--dg-5)" stroke-width="2"/>
+            <text x="600" y="55" text-anchor="middle" fill="var(--dg-text)" font-size="12" font-weight:600>Server</text>
+            <!-- Step 1: ClientHello -->
+            <line x1="160" y1="70" x2="538" y2="70" stroke="var(--dg-5)" stroke-width="1.5" marker-end="url(#tls-c2s)"/>
+            <text x="350" y="65" text-anchor="middle" fill="var(--dg-5)" font-size="11">ClientHello + Key Share</text>
+            <!-- Step 2: ServerHello -->
+            <line x1="538" y1="110" x2="160" y2="110" stroke="var(--dg-1)" stroke-width="1.5" marker-end="url(#tls-s2c)"/>
+            <text x="350" y="105" text-anchor="middle" fill="var(--dg-1)" font-size="11">ServerHello + Certificate + Done</text>
+            <!-- Step 3: Shared Secret -->
+            <rect x="200" y="150" width="300" height="30" rx="6" fill="var(--green-dim)"/>
+            <text x="350" y="169" text-anchor="middle" fill="var(--dg-text)" font-size="12">Shared Secret Established</text>
+            <!-- Step 4: Encrypted Request -->
+            <line x1="160" y1="200" x2="538" y2="200" stroke="var(--dg-5)" stroke-width="1.5" marker-end="url(#tls-c2s)"/>
+            <text x="350" y="195" text-anchor="middle" fill="var(--dg-5)" font-size="11">Encrypted HTTP Request</text>
+            <!-- Step 5: Encrypted Response -->
+            <line x1="538" y1="235" x2="160" y2="235" stroke="var(--dg-1)" stroke-width="1.5" marker-end="url(#tls-s2c)"/>
+            <text x="350" y="230" text-anchor="middle" fill="var(--dg-1)" font-size="11">Encrypted Response</text>
+            <!-- Bottom bar -->
+            <rect x="150" y="260" width="400" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="350" y="276" text-anchor="middle" fill="var(--dg-text)" font-size="11">TLS 1.3: 1-RTT handshake (vs 2-RTT in TLS 1.2)</text>
+          </svg>
+          <div class="cap">TLS 1.3 completes the handshake in a single round trip — the client shares its key in the first message, eliminating one round of negotiation</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>TCP vs UDP</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p><strong>TCP</strong> (Transmission Control Protocol) guarantees reliable, ordered delivery. If a packet is lost, TCP retransmits it. This ensures data arrives intact but adds latency. Used by HTTP, WebSocket, SSH, and email.</p>
+          <p><strong>UDP</strong> (User Datagram Protocol) is fast with no guarantees. Packets may be lost, arrive out of order, or be duplicated — the application handles it. Used by video streaming, gaming, DNS lookups, and real-time communications where speed matters more than perfect delivery.</p>
+          <ul>
+            <li><strong>TCP:</strong> Connection-oriented, guaranteed delivery, in-order, higher latency</li>
+            <li><strong>UDP:</strong> Connectionless, no guarantees, low overhead, no ordering</li>
+            <li><strong>Choose TCP</strong> when data integrity matters; <strong>choose UDP</strong> when speed matters and occasional loss is acceptable</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>WebSocket Upgrade</h2>
+      <div class="topic-grid">
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="ws-c2s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="ws-s2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-3)"/></marker>
+              <marker id="ws-dup" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-1)"/></marker>
+              <marker id="ws-ddown" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-3)"/></marker>
+            </defs>
+            <!-- Client -->
+            <rect x="40" y="20" width="120" height="36" rx="6" fill="var(--dg-node)" stroke="var(--dg-1)" stroke-width="2"/>
+            <text x="100" y="43" text-anchor="middle" fill="var(--dg-text)" font-size="12" font-weight:600>Client</text>
+            <!-- Server -->
+            <rect x="540" y="20" width="120" height="36" rx="6" fill="var(--dg-node)" stroke="var(--dg-5)" stroke-width="2"/>
+            <text x="600" y="43" text-anchor="middle" fill="var(--dg-text)" font-size="12" font-weight:600>Server</text>
+            <!-- HTTP Upgrade Request -->
+            <line x1="160" y1="65" x2="538" y2="65" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#ws-c2s)"/>
+            <text x="350" y="55" text-anchor="middle" fill="var(--dg-line)" font-size="11">GET /chat HTTP/1.1</text>
+            <text x="350" y="78" text-anchor="middle" fill="var(--dg-line)" font-size="11">Upgrade: websocket</text>
+            <!-- 101 Switching Protocols -->
+            <line x1="538" y1="105" x2="160" y2="105" stroke="var(--dg-3)" stroke-width="1.5" marker-end="url(#ws-s2c)"/>
+            <text x="350" y="95" text-anchor="middle" fill="var(--dg-3)" font-size="11">Connection: Upgrade</text>
+            <!-- Bidirectional arrows -->
+            <path d="M160 140 L538 140" stroke="var(--dg-1)" stroke-width="1.5" marker-end="url(#ws-dup)"/>
+            <path d="M538 155 L160 155" stroke="var(--dg-3)" stroke-width="1.5" marker-end="url(#ws-ddown)"/>
+            <text x="350" y="145" text-anchor="middle" fill="var(--dg-1)" font-size="11">Server pushes data</text>
+            <text x="350" y="165" text-anchor="middle" fill="var(--dg-3)" font-size="11">Client sends data anytime</text>
+            <!-- Bottom bar -->
+            <rect x="130" y="200" width="460" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="216" text-anchor="middle" fill="var(--dg-text)" font-size="11">WebSocket: persistent full-duplex connection after initial HTTP upgrade</text>
+          </svg>
+          <div class="cap">WebSocket upgrades an HTTP connection to a persistent full-duplex channel — both sides can send messages anytime without polling</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Load Balancers</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>No single server can handle all traffic. Load balancers sit in front of your servers and distribute incoming requests across multiple backend instances. They provide fault tolerance (if a server fails, traffic routes to healthy ones) and enable horizontal scaling (add more servers to handle more load).</p>
+          <ul>
+            <li><strong>Round-Robin:</strong> Simple fair distribution — cycles through servers regardless of load</li>
+            <li><strong>Least Connections:</strong> Sends requests to the server with the fewest active connections</li>
+            <li><strong>IP Hash:</strong> Routes the same client to the same server for session persistence</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="lba" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <rect x="100" y="10" width="140" height="50" rx="25" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
+            <text x="170" y="35" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Clients</text>
+            <text x="170" y="50" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Incoming requests</text>
+            <line x1="170" y1="60" x2="170" y2="85" style="stroke:var(--dg-line);stroke-width:2"/>
+            <line x1="170" y1="60" x2="310" y2="85" style="stroke:var(--dg-line);stroke-width:2"/>
+            <line x1="170" y1="60" x2="530" y2="85" style="stroke:var(--dg-line);stroke-width:2"/>
+            <rect x="300" y="85" width="180" height="60" rx="10" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="390" y="110" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">Load Balancer</text>
+            <text x="390" y="130" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Round-Robin / Least Connections</text>
+            <line x1="340" y1="145" x2="250" y2="185" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#lba)"/>
+            <line x1="390" y1="145" x2="390" y2="185" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#lba)"/>
+            <line x1="440" y1="145" x2="530" y2="185" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#lba)"/>
+            <rect x="180" y="185" width="140" height="60" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="250" y="210" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600">Server A</text>
+            <text x="250" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">10 active connections</text>
+            <rect x="320" y="185" width="140" height="60" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="390" y="210" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600">Server B</text>
+            <text x="390" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">5 active connections</text>
+            <rect x="460" y="185" width="140" height="60" rx="8" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:2"/>
+            <text x="530" y="210" text-anchor="middle" style="fill:var(--dg-2);font-size:13;font-weight:600">Server C</text>
+            <text x="530" y="228" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">20 active connections</text>
+            <text x="250" y="268" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">&#8592; Least Connections sends next request here</text>
+            <path d="M390 228 Q390 250 280 260" style="fill:none;stroke:var(--dg-3);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#lba)"/>
+            <rect x="160" y="280" width="400" height="24" rx="12" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="360" y="296" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Load balancers distribute traffic, provide fault tolerance, and enable horizontal scaling</text>
+          </svg>
+          <div class="cap">A load balancer distributes incoming requests across multiple backend servers. If a server fails, traffic is routed to the remaining healthy servers.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>HTTP/2 &amp; HTTP/3</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>HTTP/1.1 opened one connection per request — loading a page with 100 assets meant 100 connections. <strong>HTTP/2</strong> introduced multiplexing: multiple requests share a single TCP connection, with header compression and server push. This dramatically reduced latency for resource-heavy pages.</p>
+          <p><strong>HTTP/3</strong> goes further by replacing TCP with QUIC (built on UDP). QUIC eliminates head-of-line blocking (where one lost packet stalls all streams) and reduces connection setup time. HTTP/3 is already used by Google, YouTube, Facebook, and most major websites.</p>
+          <ul>
+            <li><strong>HTTP/1.1:</strong> One request per connection, text-based, simple</li>
+            <li><strong>HTTP/2:</strong> Multiplexed streams, header compression, server push over TCP</li>
+            <li><strong>HTTP/3:</strong> QUIC over UDP, no head-of-line blocking, 0-RTT handshake</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="mark-complete-wrap">
+    <button class="btn-mark" data-ch="12">Mark Complete</button>
+  </div>
+
+  <nav class="chapter-nav">
+    <a href="ch-11.html" class="prev"><div class="dir">Previous</div><div class="title">Architecture Patterns</div></a>
+    <a href="ch-13.html" class="next"><div class="dir">Next</div><div class="title">Working with Linux</div></a>
+  </nav></div><footer class="site-footer">
+    <p>All bytes considered, you made it through. Now go build something.</p>
+  </footer>
+</div>
+
+<script src="../js/script.js"></script>
+</body>
+</html>

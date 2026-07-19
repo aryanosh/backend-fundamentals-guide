@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Unit tests, integration tests, E2E tests, testing pyramid. Why testing matters and how to start.">
+<meta property="og:title" content="Ch 15 — Testing Your Code">
+<meta property="og:description" content="Unit tests, integration tests, E2E tests, testing pyramid. Why testing matters and how to start.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ch 15 — Testing Your Code">
+<meta name="twitter:description" content="Unit tests, integration tests, E2E tests, testing pyramid. Why testing matters and how to start.">
+<title>Ch 15 — Testing Your Code</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
+    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
+    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
+    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
+    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
+    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
+    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
+    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
+    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
+    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
+    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
+    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
+    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
+    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
+    <a href="ch-15.html" class="sidebar-link active" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status">&#9654;</span></a>
+    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
+    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-progress-text">0 / 17 completed</span>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+  </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
+    <div class="cp-bar"><div class="cp-fill"></div></div>
+    <span class="cp-label">0/17 completed</span>
+  </div>
+
+  <header class="page-header">
+    <div class="eyebrow">Ch 15 / 17</div>
+    <h1>Testing Your Code</h1>
+    <p class="subtitle">Catch bugs before they catch your users</p>
+    <div class="meta"><span>~13 min read</span></div>
+  </header>
+  <div class="chapter-content">
+
+    <section class="topic-section">
+      <h2>Why Test?</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>Testing is how you sleep at night after a deploy. It is how you refactor code with confidence and stop being afraid of your own codebase.</p>
+          <p>A healthy test suite catches bugs before they reach users and gives you instant feedback when something breaks.</p>
+          <ul>
+            <li><strong>Confidence</strong> — Push code and know it works</li>
+            <li><strong>Speed</strong> — Catch regressions in seconds, not days</li>
+            <li><strong>Safety</strong> — Refactor without fear of breaking things</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="a15" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <polygon points="360,30 160,310 560,310" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2.5"/>
+            <text x="360" y="145" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:700">E2E Tests</text>
+            <text x="360" y="163" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Few — test entire system</text>
+            <text x="360" y="178" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Slow but thorough</text>
+
+            <polygon points="360,145 120,310 600,310" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2.5"/>
+            <text x="360" y="240" text-anchor="middle" style="fill:var(--dg-4);font-size:20;font-weight:700">Integration Tests</text>
+            <text x="360" y="260" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Some — test combined pieces</text>
+            <text x="360" y="275" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Verify services work together</text>
+
+            <polygon points="360,235 60,310 660,310" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2.5"/>
+            <text x="360" y="280" text-anchor="middle" style="fill:var(--dg-3);font-size:20;font-weight:700">Unit Tests</text>
+            <text x="360" y="298" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Many — test one function at a time</text>
+            <text x="360" y="313" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Fast, reliable, easy to write</text>
+
+            <rect x="100" y="270" width="520" height="50" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="360" y="290" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">The pyramid shape: lots of unit, moderate integration, few E2E</text>
+            <text x="360" y="306" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Inverting it means slow, flaky, unmaintainable tests</text>
+          </svg>
+          <div class="cap">The testing pyramid — invest most in unit tests, fewer in integration, fewest in E2E</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>The Testing Pyramid</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>The pyramid shape tells you how many of each type to write: lots of unit tests at the base, a moderate number of integration tests, and a few E2E tests at the top. Inverting this leads to slow, flaky test suites that are a nightmare to maintain.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="pyramidArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- BASE: Unit Tests -->
+            <rect x="220" y="240" width="280" height="60" rx="6" fill="var(--green-dim)" stroke="var(--dg-3)" stroke-width="2"/>
+            <text x="360" y="265" text-anchor="middle" fill="var(--dg-3)" font-size="14" font-weight:700>Unit Tests</text>
+            <text x="360" y="285" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Test individual functions in isolation</text>
+            <text x="360" y="298" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Fast, reliable, many</text>
+
+            <!-- MIDDLE: Integration Tests -->
+            <rect x="260" y="160" width="200" height="60" rx="6" fill="var(--amber-dim)" stroke="var(--dg-4)" stroke-width="2"/>
+            <text x="360" y="185" text-anchor="middle" fill="var(--dg-4)" font-size="13" font-weight:700>Integration Tests</text>
+            <text x="360" y="205" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Test components working together</text>
+            <text x="360" y="218" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Medium speed, moderate count</text>
+
+            <!-- TOP: E2E Tests -->
+            <rect x="295" y="85" width="130" height="55" rx="6" fill="var(--red-dim)" stroke="var(--dg-5)" stroke-width="2"/>
+            <text x="360" y="108" text-anchor="middle" fill="var(--dg-5)" font-size="12" font-weight:700>E2E Tests</text>
+            <text x="360" y="128" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Full system from UI to DB</text>
+            <text x="360" y="138" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Slow, few, brittle</text>
+
+            <!-- Left side labels with arrows -->
+            <line x1="195" y1="270" x2="218" y2="270" stroke="var(--dg-3)" stroke-width="1.5" marker-end="url(#pyramidArrow)"/>
+            <text x="190" y="270" text-anchor="end" fill="var(--dg-3)" font-size="11">Fast &#10003;</text>
+
+            <line x1="195" y1="290" x2="218" y2="290" stroke="var(--dg-3)" stroke-width="1.5" marker-end="url(#pyramidArrow)"/>
+            <text x="190" y="290" text-anchor="end" fill="var(--dg-3)" font-size="11">More</text>
+
+            <line x1="195" y1="110" x2="293" y2="110" stroke="var(--dg-5)" stroke-width="1.5" marker-end="url(#pyramidArrow)"/>
+            <text x="190" y="110" text-anchor="end" fill="var(--dg-5)" font-size="11">Slow &#10007;</text>
+
+            <line x1="195" y1="130" x2="293" y2="130" stroke="var(--dg-5)" stroke-width="1.5" marker-end="url(#pyramidArrow)"/>
+            <text x="190" y="130" text-anchor="end" fill="var(--dg-5)" font-size="11">Fewer</text>
+
+            <!-- Right side labels -->
+            <text x="530" y="270" fill="var(--dg-text-dim)" font-size="11">Mock everything</text>
+            <text x="530" y="190" fill="var(--dg-text-dim)" font-size="11">Use real deps</text>
+            <text x="530" y="115" fill="var(--dg-text-dim)" font-size="11">Full setup</text>
+
+            <!-- Bottom bar -->
+            <rect x="150" y="310" width="420" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="326" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">The pyramid shape: lots of unit, moderate integration, few E2E</text>
+          </svg>
+          <div class="cap">The testing pyramid — layer from many cheap unit tests to few expensive E2E tests</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>CI/CD Pipeline</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>CI/CD automates the entire process from code push to production deployment. Every commit runs through linting, testing, building, and deploying — all without human intervention.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="ciArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <!-- Stage 1: Code Push -->
+            <rect x="30" y="80" width="100" height="70" rx="8" fill="var(--bg-surface)" stroke="var(--dg-1)" stroke-width="2"/>
+            <text x="80" y="105" text-anchor="middle" fill="var(--dg-1)" font-size="11" font-weight:600>1. Code Push</text>
+            <text x="80" y="125" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">git push</text>
+
+            <line x1="130" y1="115" x2="155" y2="115" stroke="var(--dg-line)" stroke-width="2" marker-end="url(#ciArrow)"/>
+
+            <!-- Stage 2: Lint -->
+            <rect x="160" y="80" width="100" height="70" rx="8" fill="var(--bg-surface)" stroke="var(--dg-2)" stroke-width="2"/>
+            <text x="210" y="100" text-anchor="middle" fill="var(--dg-2)" font-size="11" font-weight:600>2. Lint</text>
+            <text x="210" y="115" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">ESLint</text>
+            <text x="210" y="128" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Prettier</text>
+            <text x="210" y="140" text-anchor="middle" fill="var(--dg-3)" font-size="11">&#10003;</text>
+
+            <line x1="260" y1="115" x2="285" y2="115" stroke="var(--dg-line)" stroke-width="2" marker-end="url(#ciArrow)"/>
+
+            <!-- Stage 3: Test -->
+            <rect x="290" y="80" width="100" height="70" rx="8" fill="var(--bg-surface)" stroke="var(--dg-4)" stroke-width="2"/>
+            <text x="340" y="100" text-anchor="middle" fill="var(--dg-4)" font-size="11" font-weight:600>3. Test</text>
+            <text x="340" y="115" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Unit tests</text>
+            <text x="340" y="128" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Integration</text>
+
+            <line x1="390" y1="115" x2="415" y2="115" stroke="var(--dg-line)" stroke-width="2" marker-end="url(#ciArrow)"/>
+
+            <!-- Stage 4: Build -->
+            <rect x="420" y="80" width="100" height="70" rx="8" fill="var(--bg-surface)" stroke="var(--dg-5)" stroke-width="2"/>
+            <text x="470" y="100" text-anchor="middle" fill="var(--dg-5)" font-size="11" font-weight:600>4. Build</text>
+            <text x="470" y="115" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Compile</text>
+            <text x="470" y="128" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Package</text>
+
+            <line x1="520" y1="115" x2="545" y2="115" stroke="var(--dg-line)" stroke-width="2" marker-end="url(#ciArrow)"/>
+
+            <!-- Stage 5: Deploy -->
+            <rect x="550" y="80" width="100" height="70" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)" stroke-width="2"/>
+            <text x="600" y="100" text-anchor="middle" fill="var(--dg-3)" font-size="11" font-weight:600>5. Deploy</text>
+            <text x="600" y="115" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Push to</text>
+            <text x="600" y="128" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">production</text>
+
+            <!-- Below -->
+            <text x="360" y="190" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Every push triggers the same pipeline</text>
+
+            <!-- Bottom bar -->
+            <rect x="160" y="210" width="400" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="226" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">CI/CD: automate everything from lint to deploy. Fail fast, fix fast.</text>
+          </svg>
+          <div class="cap">Every commit runs through the CI/CD pipeline — lint, test, build, deploy, all automated</div>
+        </div>
+      </div>
+    </section>
+
+  </div>  </div>
+
+  <div class="mark-complete-wrap">
+    <button class="btn-mark" data-ch="15">Mark Complete</button>
+  </div>
+
+  <nav class="chapter-nav">
+    <a href="ch-14.html" class="prev"><div class="dir">Previous</div><div class="title">Version Control with Git</div></a>
+    <a href="ch-16.html" class="next"><div class="dir">Next</div><div class="title">Deployment &amp; DevOps</div></a>
+  </nav></div><footer class="site-footer">
+    <p>All bytes considered, you made it through. Now go build something.</p>
+  </footer>
+</div>
+
+<script src="../js/script.js"></script>
+</body>
+</html>

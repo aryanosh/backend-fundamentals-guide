@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Caching strategies, Redis, CDNs, cache invalidation. How top apps serve millions of users fast.">
+<meta property="og:title" content="Ch 09 — Making Things Fast with Caching">
+<meta property="og:description" content="Caching strategies, Redis, CDNs, cache invalidation. How top apps serve millions of users fast.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ch 09 — Making Things Fast with Caching">
+<meta name="twitter:description" content="Caching strategies, Redis, CDNs, cache invalidation. How top apps serve millions of users fast.">
+<title>Ch 09 — Making Things Fast with Caching</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
+    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
+    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
+    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
+    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
+    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
+    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
+    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
+    <a href="ch-09.html" class="sidebar-link active" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status">&#9654;</span></a>
+    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
+    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
+    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
+    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
+    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
+    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
+    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
+    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-progress-text">0 / 17 completed</span>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+  </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
+    <div class="cp-bar"><div class="cp-fill"></div></div>
+    <span class="cp-label">0/17 completed</span>
+  </div>
+
+  <header class="page-header">
+    <div class="eyebrow">Ch 09 / 17</div>
+    <h1>Making Things Fast with Caching</h1>
+    <p class="subtitle">Why waiting 200ms for a database query is too slow — and what to do about it</p>
+    <div class="meta"><span>~12 min read</span></div>
+  </header>
+
+  <div class="chapter-content">
+
+    <section class="topic-section">
+      <h2>Cache Layers</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>Caching stores a copy of data somewhere fast so you don't fetch from the original slow source every time. Think of it like your kitchen pantry: instead of driving to the grocery store (database) for salt, you keep a jar in your cupboard (cache).</p>
+          <p><strong>Browser Cache</strong> — HTTP headers like <code>Cache-Control: max-age=3600</code> keep traffic off your servers. First line of defense.</p>
+          <p><strong>Application Cache (Redis / Memcached)</strong> — In-memory key-value store for query results, session data, rate limit counters.</p>
+          <p><strong>Database Cache</strong> — MySQL buffer pool, Postgres shared buffers. Databases cache in memory too.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-3)"/></marker>
+              <marker id="arr-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-4)"/></marker>
+              <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-5)"/></marker>
+            </defs>
+            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">Multi-Level Cache Architecture</text>
+            <text x="100" y="55" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Client</text>
+            <rect x="40" y="65" width="120" height="40" rx="6" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="100" y="90" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">User / App</text>
+            <line x1="160" y1="85" x2="200" y2="85" style="stroke:var(--dg-line);stroke-width:2;marker-end:url(#arr-g)"/>
+            <rect x="205" y="50" width="150" height="70" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="280" y="73" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">L1: In-Memory</text>
+            <text x="280" y="92" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">App server RAM</text>
+            <text x="280" y="108" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">~1-10µs</text>
+            <line x1="280" y1="120" x2="280" y2="145" style="stroke:var(--dg-3);stroke-width:2;marker-end:url(#arr-g)"/>
+            <text x="295" y="136" style="fill:var(--dg-3);font-size:14;font-weight:600">HIT ?</text>
+            <rect x="205" y="150" width="150" height="70" rx="8" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
+            <text x="280" y="173" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">L2: Redis</text>
+            <text x="280" y="192" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Distributed cache</text>
+            <text x="280" y="208" text-anchor="middle" style="fill:var(--dg-4);font-size:14;font-weight:600">~1-5ms</text>
+            <line x1="280" y1="220" x2="280" y2="245" style="stroke:var(--dg-4);stroke-width:2;marker-end:url(#arr-a)"/>
+            <text x="295" y="236" style="fill:var(--dg-4);font-size:14;font-weight:600">MISS ? fall through</text>
+            <rect x="205" y="250" width="150" height="70" rx="8" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2"/>
+            <text x="280" y="273" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">Database</text>
+            <text x="280" y="292" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">PostgreSQL / MySQL</text>
+            <text x="280" y="308" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600">~50-500ms</text>
+            <line x1="280" y1="320" x2="280" y2="345" style="stroke:var(--dg-5);stroke-width:1.5;stroke-dasharray:4 3"/>
+            <rect x="205" y="345" width="150" height="40" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="280" y="365" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-weight:600">Disk / SSD</text>
+            <rect x="440" y="65" width="240" height="110" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="560" y="88" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Cache Hit Ratio</text>
+            <text x="560" y="108" text-anchor="middle" style="fill:var(--dg-3);font-size:28;font-weight:700">90%+</text>
+            <text x="560" y="128" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Target hit rate for</text>
+            <text x="560" y="143" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">healthy cache performance</text>
+            <rect x="440" y="195" width="240" height="140" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="560" y="218" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Cache Types</text>
+            <rect x="455" y="233" width="210" height="22" rx="4" style="fill:var(--green-dim)"/>
+            <text x="560" y="249" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">Browser cache (Cache-Control)</text>
+            <rect x="455" y="260" width="210" height="22" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="560" y="276" text-anchor="middle" style="fill:var(--dg-4);font-size:14;font-weight:600">CDN (Cloudflare, Fastly)</text>
+            <rect x="455" y="287" width="210" height="22" rx="4" style="fill:var(--indigo-dim)"/>
+            <text x="560" y="303" text-anchor="middle" style="fill:var(--dg-2);font-size:14;font-weight:600">App cache (Redis, Memcached)</text>
+            <rect x="455" y="314" width="210" height="22" rx="4" style="fill:var(--red-dim)"/>
+            <text x="560" y="330" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600">Database buffer pool</text>
+          </svg>
+          <div class="cap">Cache hierarchy: L1 in-memory (fastest) ? L2 Redis ? Database (slowest). Each miss falls through to the next layer</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>CDNs — Content Delivery Networks</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>A CDN is a network of servers distributed around the world. When someone in Tokyo visits a site hosted in New York, a CDN serves cached static assets from the nearest edge server, cutting load times from seconds to milliseconds.</p>
+          <p>CDNs cache static assets (images, CSS, JS, fonts) and increasingly API responses. They also provide DDoS protection by absorbing traffic across thousands of edge servers.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-cdn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">Global CDN — Serving Content from the Edge</text>
+            <ellipse cx="360" cy="215" rx="280" ry="150" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1.5"/>
+            <ellipse cx="360" cy="215" rx="180" ry="95" style="fill:none;stroke:var(--border);stroke-width:0.5;stroke-dasharray:4 3"/>
+            <rect x="310" y="185" width="100" height="40" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-5);stroke-width:2"/>
+            <text x="360" y="210" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Origin</text>
+            <text x="360" y="222" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">New York</text>
+            <circle cx="140" cy="105" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="140" y="109" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">LA</text>
+            <circle cx="580" cy="100" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="580" y="104" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">LDN</text>
+            <circle cx="520" cy="290" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="520" y="294" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">BOM</text>
+            <circle cx="200" cy="310" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="200" y="314" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">SGP</text>
+            <circle cx="620" cy="210" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="620" y="214" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">FRA</text>
+            <circle cx="90" cy="190" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="90" y="194" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">SEA</text>
+            <circle cx="460" cy="130" r="12" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="460" y="134" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">DUB</text>
+            <line x1="360" y1="185" x2="152" y2="115" style="stroke:var(--dg-3);stroke-width:1;stroke-dasharray:3 2;marker-end:url(#arr-cdn)"/>
+            <line x1="360" y1="185" x2="568" y2="110" style="stroke:var(--dg-3);stroke-width:1;stroke-dasharray:3 2;marker-end:url(#arr-cdn)"/>
+            <line x1="360" y1="185" x2="508" y2="280" style="stroke:var(--dg-3);stroke-width:1;stroke-dasharray:3 2;marker-end:url(#arr-cdn)"/>
+            <line x1="360" y1="185" x2="212" y2="300" style="stroke:var(--dg-3);stroke-width:1;stroke-dasharray:3 2;marker-end:url(#arr-cdn)"/>
+            <line x1="360" y1="185" x2="608" y2="202" style="stroke:var(--dg-3);stroke-width:1;stroke-dasharray:3 2;marker-end:url(#arr-cdn)"/>
+            <line x1="360" y1="185" x2="102" y2="182" style="stroke:var(--dg-3);stroke-width:1;stroke-dasharray:3 2;marker-end:url(#arr-cdn)"/>
+            <rect x="130" y="55" width="140" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="200" y="74" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Tokyo user ? LA edge</text>
+            <line x1="200" y1="85" x2="140" y2="98" style="stroke:var(--dg-1);stroke-width:1;marker-end:url(#arr-cdn)"/>
+            <rect x="490" y="55" width="140" height="30" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="560" y="74" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Berlin user ? FRA edge</text>
+            <line x1="560" y1="85" x2="600" y2="198" style="stroke:var(--dg-1);stroke-width:1;marker-end:url(#arr-cdn)"/>
+            <rect x="60" y="340" width="280" height="40" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="200" y="358" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Edge servers cache static assets</text>
+            <text x="200" y="372" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">and serve from nearest location</text>
+            <rect x="380" y="340" width="280" height="40" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="520" y="358" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Origin server holds the source</text>
+            <text x="520" y="372" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Edge pulls only when cache misses</text>
+          </svg>
+          <div class="cap">CDN edge servers around the world cache content and serve users from the nearest location, reducing latency</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Cache Invalidation Strategies</h2>
+      <div class="topic-grid">
+        <div class="topic-text" style="grid-column: 1 / -1;">
+          <p>Four strategies for keeping cache and database in sync, each with different trade-offs between consistency, latency, and complexity.</p>
+        </div>
+        <div class="topic-diagram" style="grid-column: 1 / -1;">
+          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="s3-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="s3-arr-dash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-4)"/></marker>
+            </defs>
+            <rect x="20" y="40" width="320" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)" stroke-width="1.5"/>
+            <text x="180" y="60" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Time-To-Live</text>
+            <rect x="40" y="75" width="120" height="24" rx="4" fill="var(--green-dim)"/>
+            <text x="100" y="91" text-anchor="middle" style="fill:var(--dg-text);font-size:10">Cache: data</text>
+            <line x1="160" y1="87" x2="215" y2="87" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <rect x="220" y="75" width="100" height="24" rx="4" fill="var(--red-dim)"/>
+            <text x="270" y="91" text-anchor="middle" style="fill:var(--dg-text);font-size:10">TTL expired</text>
+            <text x="180" y="120" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Simplest approach. Set it and forget it.</text>
+            <text x="180" y="132" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Risk: stale data until TTL expires</text>
+            <rect x="380" y="40" width="320" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-1)" stroke-width="1.5"/>
+            <text x="540" y="60" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Write-Through</text>
+            <rect x="400" y="75" width="80" height="24" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="440" y="91" text-anchor="middle" style="fill:var(--dg-text);font-size:10">Write</text>
+            <line x1="480" y1="87" x2="505" y2="87" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <rect x="510" y="75" width="80" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="550" y="91" text-anchor="middle" style="fill:var(--dg-text);font-size:10">Cache</text>
+            <line x1="590" y1="87" x2="615" y2="87" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <rect x="620" y="75" width="60" height="24" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="650" y="91" text-anchor="middle" style="fill:var(--dg-text);font-size:10">DB</text>
+            <text x="540" y="120" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Write updates cache first, then DB</text>
+            <text x="540" y="132" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Pros: cache always fresh. Cons: write latency doubles.</text>
+            <rect x="20" y="160" width="320" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-4)" stroke-width="1.5"/>
+            <text x="180" y="180" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Write-Behind</text>
+            <rect x="40" y="195" width="80" height="24" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="80" y="211" text-anchor="middle" style="fill:var(--dg-text);font-size:10">Write</text>
+            <line x1="120" y1="207" x2="145" y2="207" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <rect x="150" y="195" width="80" height="24" rx="4" fill="var(--amber-dim)"/>
+            <text x="190" y="211" text-anchor="middle" style="fill:var(--dg-text);font-size:10">Cache</text>
+            <line x1="190" y1="219" x2="190" y2="240" style="stroke:var(--dg-4);stroke-width:1.5;stroke-dasharray:4 3;marker-end:url(#s3-arr-dash)"/>
+            <rect x="150" y="240" width="80" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="190" y="254" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">DB (async)</text>
+            <text x="180" y="252" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Fast writes, risk of data loss on crash</text>
+            <rect x="380" y="160" width="320" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--dg-2)" stroke-width="1.5"/>
+            <text x="540" y="180" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">Cache-Aside</text>
+            <rect x="395" y="195" width="60" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="425" y="209" text-anchor="middle" style="fill:var(--dg-text);font-size:10">App</text>
+            <line x1="455" y1="205" x2="475" y2="205" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <rect x="480" y="195" width="60" height="20" rx="4" fill="var(--indigo-dim)"/>
+            <text x="510" y="209" text-anchor="middle" style="fill:var(--dg-text);font-size:10">Cache?</text>
+            <line x1="510" y1="215" x2="510" y2="220" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <rect x="480" y="225" width="60" height="20" rx="4" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="510" y="239" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">DB (miss)</text>
+            <line x1="480" y1="235" x2="480" y2="215" style="stroke:var(--dg-line);stroke-width:1.5;marker-end:url(#s3-arr)"/>
+            <text x="475" y="228" text-anchor="end" style="fill:var(--dg-text-dim);font-size:9">fill cache</text>
+            <text x="540" y="250" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Most common pattern. App manages cache.</text>
+            <rect x="100" y="275" width="520" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="291" text-anchor="middle" style="fill:var(--dg-text);font-size:11">Choose your strategy based on read/write ratio and consistency needs</text>
+          </svg>
+          <div class="cap">Four cache invalidation strategies: TTL, Write-Through, Write-Behind, and Cache-Aside</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Cache Invalidation is Hard</h2>
+      <div class="topic-grid">
+        <div class="topic-text" style="grid-column: 1 / -1;">
+          <p>Phil Karlton famously said: "There are only two hard things in computer science: cache invalidation and naming things." Once you cache data, the original can change. You need a strategy to remove or update stale data.</p>
+        </div>
+        <div class="topic-diagram" style="grid-column: 1 / -1;">
+          <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-i" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr-i2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-1)"/></marker>
+            </defs>
+            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">Cache Invalidation Strategies</text>
+            <rect x="10" y="45" width="230" height="340" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="125" y="70" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:600">TTL Expiration</text>
+            <rect x="25" y="85" width="200" height="45" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
+            <text x="125" y="105" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace">cache.set(key, val)</text>
+            <text x="125" y="120" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">TTL: 60 seconds</text>
+            <line x1="125" y1="130" x2="125" y2="150" style="stroke:var(--dg-4);stroke-width:1.5;marker-end:url(#arr-i)"/>
+            <rect x="50" y="150" width="150" height="55" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="125" y="170" text-anchor="middle" style="fill:var(--dg-4);font-size:14;font-weight:700">&#9201; 60s</text>
+            <text x="125" y="190" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Timer counting down</text>
+            <line x1="125" y1="205" x2="125" y2="225" style="stroke:var(--dg-5);stroke-width:1.5;stroke-dasharray:4 3;marker-end:url(#arr-i)"/>
+            <rect x="25" y="225" width="200" height="55" rx="6" style="fill:var(--red-dim)"/>
+            <text x="125" y="245" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Cache expires</text>
+            <text x="125" y="263" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Entry removed after TTL</text>
+            <rect x="25" y="295" width="200" height="70" rx="6" style="fill:var(--cyan-dim)"/>
+            <text x="125" y="313" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Next request &#8594; cache miss</text>
+            <text x="125" y="330" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Fetches fresh data from DB</text>
+            <text x="125" y="347" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Re-caches with new TTL</text>
+            <rect x="245" y="45" width="230" height="340" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="360" y="70" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600">Write-Through</text>
+            <rect x="260" y="85" width="200" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
+            <text x="360" y="105" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">app.write(data)</text>
+            <line x1="360" y1="125" x2="360" y2="145" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="360" y1="145" x2="290" y2="145" style="stroke:var(--dg-1);stroke-width:1.5;marker-end:url(#arr-i2)"/>
+            <text x="325" y="140" style="fill:var(--dg-1);font-size:12;font-weight:600">Write cache</text>
+            <rect x="260" y="150" width="60" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1"/>
+            <text x="290" y="175" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Cache</text>
+            <line x1="360" y1="145" x2="430" y2="145" style="stroke:var(--dg-5);stroke-width:1.5;marker-end:url(#arr-i)"/>
+            <text x="395" y="140" style="fill:var(--dg-5);font-size:12;font-weight:600">Write DB</text>
+            <rect x="430" y="150" width="60" height="40" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1"/>
+            <text x="460" y="175" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">DB</text>
+            <line x1="460" y1="190" x2="290" y2="190" style="stroke:var(--dg-3);stroke-width:1.5;stroke-dasharray:4 3;marker-end:url(#arr-i)"/>
+            <text x="375" y="186" style="fill:var(--dg-3);font-size:12;font-weight:600">Both succeed or fail</text>
+            <rect x="260" y="210" width="200" height="55" rx="6" style="fill:var(--green-dim)"/>
+            <text x="360" y="230" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">&#10003; Cache and DB always in sync</text>
+            <text x="360" y="248" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Write to cache first, then to DB</text>
+            <text x="360" y="260" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Higher write latency, consistent reads</text>
+            <rect x="480" y="45" width="230" height="340" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-3);stroke-width:1.5"/>
+            <text x="595" y="70" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600">Write-Behind</text>
+            <rect x="495" y="85" width="200" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
+            <text x="595" y="105" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-family:JetBrains Mono,monospace">app.write(data)</text>
+            <line x1="595" y1="125" x2="595" y2="145" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <rect x="530" y="150" width="130" height="40" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1"/>
+            <text x="595" y="175" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Write to Cache</text>
+            <line x1="595" y1="190" x2="595" y2="215" style="stroke:var(--dg-3);stroke-width:1.5;stroke-dasharray:4 3;marker-end:url(#arr-i)"/>
+            <rect x="530" y="215" width="130" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1"/>
+            <text x="595" y="235" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">Return OK to user</text>
+            <text x="595" y="250" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">~1ms response</text>
+            <line x1="595" y1="255" x2="595" y2="275" style="stroke:var(--dg-4);stroke-width:1.5;stroke-dasharray:4 3;marker-end:url(#arr-i)"/>
+            <rect x="530" y="275" width="130" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="595" y="293" text-anchor="middle" style="fill:var(--dg-1);font-size:14;font-weight:600">Async write to DB</text>
+            <text x="595" y="308" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">Background job</text>
+            <rect x="495" y="330" width="200" height="35" rx="6" style="fill:var(--green-dim)"/>
+            <text x="595" y="350" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">&#10003; Fast writes, eventual consistency</text>
+          </svg>
+          <div class="cap">Three classic approaches: TTL expiration, write-through (sync), and write-behind (async)</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Write Strategies</h2>
+      <div class="topic-grid">
+        <div class="topic-text" style="grid-column: 1 / -1;">
+          <p><strong>Write-Through:</strong> Write to cache and DB simultaneously. Cache stays fresh but write latency doubles.</p>
+          <p><strong>Write-Behind:</strong> Write to cache immediately, then async to DB. Fast writes with risk of data loss on crash.</p>
+          <p><strong>Write-Around:</strong> Bypass cache for writes. Good for write-once, read-rarely data.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Redis Example</h2>
+      <div class="topic-grid">
+        <div class="topic-text" style="grid-column: 1 / -1;">
+          <p>Google uses Redis extensively for trending topics, timelines, rate limit counters, and session storage. When you open Google's Explore page, the computation result is cached in Redis with a short TTL. The next 9,999 users read the cached result in under a millisecond instead of triggering a full recomputation.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="mark-complete-wrap">
+    <button class="btn-mark" data-ch="9">Mark Complete</button>
+  </div>
+
+  <nav class="chapter-nav">
+    <a href="ch-08.html" class="prev"><div class="dir">Previous</div><div class="title">Authentication &amp; Authorization</div></a>
+    <a href="ch-10.html" class="next"><div class="dir">Next</div><div class="title">Security Essentials</div></a>
+  </nav></div><footer class="site-footer">
+    <p>All bytes considered, you made it through. Now go build something.</p>
+  </footer>
+</div>
+
+<script src="../js/script.js"></script>
+</body>
+</html>

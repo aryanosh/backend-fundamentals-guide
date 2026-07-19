@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Docker, CI/CD pipelines, cloud deployment. How code goes from git push to production.">
+<meta property="og:title" content="Ch 16 — Deployment & DevOps">
+<meta property="og:description" content="Docker, CI/CD pipelines, cloud deployment. How code goes from git push to production.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ch 16 — Deployment & DevOps">
+<meta name="twitter:description" content="Docker, CI/CD pipelines, cloud deployment. How code goes from git push to production.">
+<title>Ch 16 — Deployment & DevOps</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
+    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
+    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
+    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
+    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
+    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
+    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
+    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
+    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
+    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
+    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
+    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
+    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
+    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
+    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
+    <a href="ch-16.html" class="sidebar-link active" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status">&#9654;</span></a>
+    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-progress-text">0 / 17 completed</span>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+  </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
+    <div class="cp-bar"><div class="cp-fill"></div></div>
+    <span class="cp-label">0/17 completed</span>
+  </div>
+
+  <header class="page-header">
+    <div class="eyebrow">Ch 16 / 17</div>
+    <h1>Deployment &amp; DevOps</h1>
+    <p class="subtitle">Getting your code from your laptop to the world</p>
+    <div class="meta"><span>~15 min read</span></div>
+  </header>
+  <div class="chapter-content">
+
+    <section class="topic-section">
+      <h2>Docker &amp; Containers</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>Docker packages your application and everything it needs into a lightweight container that runs identically everywhere. Containers share the host OS kernel, making them far more efficient than virtual machines.</p>
+          <ul>
+            <li><strong>Consistent environments</strong> — Works the same on your laptop, CI, and production</li>
+            <li><strong>Lightweight</strong> — Share host OS kernel, no guest OS overhead</li>
+            <li><strong>Fast startup</strong> — Containers start in seconds, scale instantly</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+            <text x="200" y="25" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:700">Containers</text>
+            <text x="540" y="25" text-anchor="middle" style="fill:var(--dg-5);font-size:13;font-weight:700">Virtual Machines</text>
+
+            <line x1="360" y1="38" x2="360" y2="320" style="stroke:var(--border);stroke-width:1;stroke-dasharray:4 3"/>
+
+            <rect x="40" y="50" width="100" height="28" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1"/>
+            <text x="90" y="69" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">App A</text>
+            <rect x="40" y="82" width="100" height="28" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1"/>
+            <text x="90" y="101" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">App B</text>
+            <rect x="40" y="114" width="100" height="28" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1"/>
+            <text x="90" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">App C</text>
+
+            <rect x="160" y="65" width="140" height="90" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="230" y="100" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Container</text>
+            <text x="230" y="118" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Runtime</text>
+            <text x="230" y="132" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9">Libraries</text>
+            <text x="230" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9">Config</text>
+
+            <rect x="40" y="170" width="260" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="170" y="195" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Host OS (Linux)</text>
+
+            <rect x="40" y="220" width="260" height="40" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:2"/>
+            <text x="170" y="245" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">Server Hardware</text>
+
+            <text x="170" y="295" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Shared OS, isolated processes</text>
+            <text x="170" y="310" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Lightweight, fast startup</text>
+
+            <rect x="420" y="50" width="100" height="28" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1"/>
+            <text x="470" y="69" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">App A</text>
+            <rect x="420" y="82" width="100" height="28" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1"/>
+            <text x="470" y="101" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">App B</text>
+            <rect x="420" y="114" width="100" height="28" rx="4" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:1"/>
+            <text x="470" y="133" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">App C</text>
+
+            <rect x="540" y="50" width="140" height="100" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2"/>
+            <rect x="550" y="55" width="120" height="25" rx="3" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="610" y="72" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family="Inter,sans-serif">Guest OS</text>
+            <rect x="550" y="85" width="120" height="25" rx="3" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="610" y="102" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family="Inter,sans-serif">Libraries</text>
+            <rect x="550" y="115" width="120" height="25" rx="3" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="610" y="132" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:9;font-family="Inter,sans-serif">Config</text>
+            <text x="610" y="145" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600">VM</text>
+
+            <rect x="420" y="170" width="260" height="40" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2"/>
+            <text x="550" y="195" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">Hypervisor</text>
+
+            <rect x="420" y="220" width="260" height="40" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:2"/>
+            <text x="550" y="245" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">Server Hardware</text>
+
+            <text x="550" y="295" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Each VM has full OS overhead</text>
+            <text x="550" y="310" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Heavy, slow to boot</text>
+          </svg>
+          <div class="cap">Containers share the host OS kernel; each VM runs its own full guest OS</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>CI/CD Pipelines</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>CI/CD stands for Continuous Integration and Continuous Deployment — the automated pipeline that runs on every code push. It builds, tests, and deploys your application without human intervention.</p>
+          <ul>
+            <li><strong>Every push triggers the pipeline</strong> — No forgotten steps, no manual errors</li>
+            <li><strong>Fail fast</strong> — Broken code stops before reaching production</li>
+            <li><strong>Instant rollback</strong> — Revert to the last known-good version with one click</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="a16" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <rect x="20" y="50" width="110" height="50" rx="8" style="fill:var(--dg-node);stroke:var(--dg-line);stroke-width:2"/>
+            <text x="75" y="72" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Code</text>
+            <text x="75" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">git push</text>
+
+            <line x1="130" y1="75" x2="160" y2="75" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#a16)"/>
+
+            <rect x="160" y="50" width="110" height="50" rx="8" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:2"/>
+            <text x="215" y="72" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Build</text>
+            <text x="215" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Compile + deps</text>
+
+            <line x1="270" y1="75" x2="300" y2="75" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#a16)"/>
+
+            <rect x="300" y="50" width="110" height="50" rx="8" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:2"/>
+            <text x="355" y="72" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">Test</text>
+            <text x="355" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Unit + integration</text>
+
+            <line x1="410" y1="75" x2="440" y2="75" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#a16)"/>
+
+            <rect x="440" y="50" width="110" height="50" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="495" y="72" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Stage</text>
+            <text x="495" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Staging deploy</text>
+
+            <line x1="550" y1="75" x2="580" y2="75" style="stroke:var(--dg-line);stroke-width:2" marker-end="url(#a16)"/>
+
+            <rect x="580" y="50" width="110" height="50" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2"/>
+            <text x="635" y="72" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">Deploy</text>
+            <text x="635" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Production</text>
+
+            <rect x="20" y="135" width="670" height="80" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="35" y="157" style="fill:var(--dg-text);font-size:11;font-weight:600">Pipeline stages</text>
+            <text x="35" y="177" style="fill:var(--dg-text-dim);font-size:14">1. Code is pushed to repository</text>
+            <text x="35" y="192" style="fill:var(--dg-text-dim);font-size:14">2. Build compiles code and installs dependencies</text>
+            <text x="355" y="177" style="fill:var(--dg-text-dim);font-size:14">3. Tests validate correctness</text>
+            <text x="355" y="192" style="fill:var(--dg-text-dim);font-size:14">4. Stage deploys to a pre-production environment</text>
+            <text x="355" y="207" style="fill:var(--dg-text-dim);font-size:14">5. Deploy ships to production (auto or manual gate)</text>
+
+            <rect x="100" y="240" width="520" height="85" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="360" y="260" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">CI/CD ensures every change is built, tested, and safely deployed</text>
+            <text x="360" y="278" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Manual approval gates can pause before production deploy</text>
+            <text x="360" y="296" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Rollback is one click — revert to the last known-good version</text>
+          </svg>
+          <div class="cap">The CI/CD pipeline: code flows through build, test, stage, and deploy automatically</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Deployment Strategies</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>Blue/green deployment runs two identical environments. Traffic switches between them for zero-downtime deploys with instant rollback if something goes wrong.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="a16b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <rect x="300" y="15" width="120" height="50" rx="25" style="fill:var(--dg-node);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="360" y="40" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:600">Load Balancer</text>
+            <text x="360" y="55" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Live traffic</text>
+
+            <line x1="360" y1="65" x2="360" y2="90" style="stroke:var(--dg-1);stroke-width:2"/>
+            <rect x="50" y="90" width="280" height="90" rx="8" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:2.5"/>
+            <text x="190" y="115" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:700">Blue (Active)</text>
+            <text x="190" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Version 2.0</text>
+            <text x="190" y="152" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Serving all users</text>
+            <text x="190" y="169" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">&#8592; Traffic &#8594;</text>
+
+            <line x1="360" y1="90" x2="360" y2="115" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:4 3"/>
+            <line x1="360" y1="115" x2="360" y2="135" style="stroke:var(--dg-3);stroke-width:2"/>
+            <polygon points="360,135 355,125 365,125" style="fill:var(--dg-3)"/>
+
+            <rect x="390" y="90" width="280" height="90" rx="8" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:2.5;stroke-dasharray:6 3"/>
+            <text x="530" y="115" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-weight:700">Green (Standby)</text>
+            <text x="530" y="135" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Version 2.1 (new)</text>
+            <text x="530" y="152" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Deployed, no traffic</text>
+            <text x="530" y="169" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Ready for switch</text>
+
+            <line x1="360" y1="90" x2="530" y2="90" style="stroke:var(--dg-1);stroke-width:1;stroke-dasharray:4 3"/>
+
+            <rect x="30" y="210" width="660" height="120" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="45" y="232" style="fill:var(--dg-text);font-size:11;font-weight:600">How it works</text>
+            <text x="45" y="252" style="fill:var(--dg-text-dim);font-size:9">1. Green environment is deployed with the new version — no traffic yet</text>
+            <text x="45" y="268" style="fill:var(--dg-text-dim);font-size:9">2. Run smoke tests against Green to verify it works</text>
+            <text x="45" y="284" style="fill:var(--dg-text-dim);font-size:9">3. Switch the load balancer from Blue to Green instantly</text>
+            <text x="45" y="300" style="fill:var(--dg-text-dim);font-size:9">4. Blue stays as rollback target — switch back if issues arise</text>
+            <text x="45" y="316" style="fill:var(--dg-3);font-size:9;font-weight:600">Result: zero-downtime deployments with instant rollback</text>
+          </svg>
+          <div class="cap">Blue/green deployment: two identical environments, traffic switches instantly</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Canary Deployments</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>Canary deployments gradually shift traffic from the old version to the new one. If error rates spike at any stage, the pipeline automatically rolls back before most users are affected.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 260" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="canaryArrow" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L5,10 L10,0 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+
+            <text x="360" y="25" text-anchor="middle" fill="var(--dg-1)" font-size="14" font-weight:700>Canary Deployment</text>
+
+            <!-- Stage 1 -->
+            <rect x="250" y="45" width="220" height="30" rx="6" fill="var(--bg-surface)" stroke="var(--dg-5)" stroke-width="1.5"/>
+            <text x="360" y="57" text-anchor="middle" fill="var(--dg-5)" font-size="11">Version 1 (stable) — 100% traffic</text>
+            <text x="360" y="68" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Version 2 (canary) — 0% traffic</text>
+
+            <line x1="360" y1="75" x2="360" y2="87" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#canaryArrow)"/>
+
+            <!-- Stage 2 -->
+            <rect x="250" y="90" width="220" height="30" rx="6" fill="var(--bg-surface)" stroke="var(--dg-4)" stroke-width="1.5"/>
+            <text x="360" y="102" text-anchor="middle" fill="var(--dg-4)" font-size="11">Version 1 — 95% traffic</text>
+            <text x="360" y="113" text-anchor="middle" fill="var(--dg-3)" font-size="10">Version 2 — 5% traffic (monitor)</text>
+
+            <text x="510" y="105" fill="var(--dg-4)" font-size="11">Monitor metrics</text>
+
+            <line x1="360" y1="120" x2="360" y2="132" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#canaryArrow)"/>
+
+            <!-- Stage 3 -->
+            <rect x="250" y="135" width="220" height="30" rx="6" fill="var(--bg-surface)" stroke="var(--dg-1)" stroke-width="1.5"/>
+            <text x="360" y="147" text-anchor="middle" fill="var(--dg-text)" font-size="11">Version 1 — 50% traffic</text>
+            <text x="360" y="158" text-anchor="middle" fill="var(--dg-3)" font-size="10">Version 2 — 50% traffic</text>
+
+            <text x="510" y="150" fill="var(--dg-text-dim)" font-size="11">Compare error rates</text>
+
+            <line x1="360" y1="165" x2="360" y2="177" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#canaryArrow)"/>
+
+            <!-- Stage 4 -->
+            <rect x="250" y="180" width="220" height="30" rx="6" fill="var(--green-dim)" stroke="var(--dg-3)" stroke-width="1.5"/>
+            <text x="360" y="192" text-anchor="middle" fill="var(--dg-text-dim)" font-size="10">Version 1 — 0% (rollback ready)</text>
+            <text x="360" y="203" text-anchor="middle" fill="var(--dg-3)" font-size="11">Version 2 — 100% traffic</text>
+
+            <text x="510" y="195" fill="var(--dg-5)" font-size="11">Auto-rollback if issues</text>
+
+            <!-- Bottom bar -->
+            <rect x="120" y="228" width="480" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="244" text-anchor="middle" fill="var(--dg-text-dim)" font-size="11">Canary: gradually shift traffic. If errors spike, rollback instantly.</text>
+          </svg>
+          <div class="cap">Canary deployments shift traffic gradually, monitoring for issues at each step</div>
+        </div>
+      </div>
+    </section>
+
+  </div>  </div>
+
+  <div class="mark-complete-wrap">
+    <button class="btn-mark" data-ch="16">Mark Complete</button>
+  </div>
+
+  <nav class="chapter-nav">
+    <a href="ch-15.html" class="prev"><div class="dir">Previous</div><div class="title">Testing Your Code</div></a>
+    <a href="ch-17.html" class="next"><div class="dir">Next</div><div class="title">The Learning Roadmap</div></a>
+  </nav></div><footer class="site-footer">
+    <p>All bytes considered, you made it through. Now go build something.</p>
+  </footer>
+</div>
+
+<script src="../js/script.js"></script>
+</body>
+</html>

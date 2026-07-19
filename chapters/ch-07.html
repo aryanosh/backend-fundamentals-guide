@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
+<meta property="og:title" content="Ch 07 — How Systems Talk to Each Other">
+<meta property="og:description" content="REST API design, JSON, URL conventions, pagination. How frontend and backend communicate.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ch 07 — How Systems Talk to Each Other">
+<meta name="twitter:description" content="REST API design, JSON, URL conventions, pagination.">
+<title>Ch 07 — How Systems Talk to Each Other</title>
+<link rel="stylesheet" href="..\css\style.css">
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="..\index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
+    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
+    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
+    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
+    <a href="ch-05.html" class="sidebar-link" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status"></span></a>
+    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
+    <a href="ch-07.html" class="sidebar-link active" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status">&#9654;</span></a>
+    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
+    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
+    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
+    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
+    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
+    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
+    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
+    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
+    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
+    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-progress-text">0 / 17 completed</span>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+  </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
+    <div class="cp-bar"><div class="cp-fill"></div></div>
+    <span class="cp-label">0/17 completed</span>
+  </div>
+
+  <header class="page-header">
+    <div class="eyebrow">Ch 07 / 17</div>
+    <h1>How Systems Talk to Each Other</h1>
+    <p class="subtitle">REST APIs, JSON, URL conventions, GraphQL, and the art of fetching just what you need</p>
+    <div class="meta"><span>~12 min read</span></div>
+  </header>
+
+  <div class="chapter-content">
+    <section class="topic-section">
+      <h2>REST: Resources + Methods</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>REST (Representational State Transfer) organizes APIs around resources (nouns) and HTTP methods (verbs). Each resource has a unique URL, and the HTTP method tells the server what action to take on that resource.</p>
+          <p>The three core principles that make REST predictable and scalable:</p>
+          <ul>
+            <li><strong>Resources are nouns</strong> — <code>/users</code>, <code>/tweets</code>, <code>/comments</code>. Never verbs like <code>/getUsers</code>. The URL identifies what the resource is.</li>
+            <li><strong>Methods are verbs</strong> — <code>GET</code> (read), <code>POST</code> (create), <code>PUT</code> (replace), <code>DELETE</code> (remove). The method says what to do with it.</li>
+            <li><strong>Stateless</strong> — each request is independent. The server does not remember past requests. Every request carries all the information needed to process it.</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+              <marker id="arr-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-4)"/></marker>
+            </defs>
+            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">REST: Resources + HTTP Methods = Predictable APIs</text>
+            <rect x="100" y="40" width="520" height="44" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="360" y="68" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-family:JetBrains Mono,monospace">
+              <tspan fill="var(--dg-3)" font-weight:700>GET</tspan>
+              <tspan fill="var(--dg-text-dim)"> /</tspan>
+              <tspan fill="var(--dg-1)">users</tspan>
+              <tspan fill="var(--dg-text-dim)">/</tspan>
+              <tspan fill="var(--dg-4)">123</tspan>
+            </text>
+            <text x="180" y="100" text-anchor="middle" style="fill:var(--dg-3);font-size:11;font-weight:600">Method (verb)</text>
+            <text x="360" y="100" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">Resource (noun, plural)</text>
+            <text x="540" y="100" text-anchor="middle" style="fill:var(--dg-4);font-size:11;font-weight:600">Identifier</text>
+            <line x1="180" y1="84" x2="180" y2="93" style="stroke:var(--dg-3);stroke-width:1"/>
+            <line x1="360" y1="84" x2="360" y2="93" style="stroke:var(--dg-1);stroke-width:1"/>
+            <line x1="540" y1="84" x2="540" y2="93" style="stroke:var(--dg-4);stroke-width:1"/>
+            <rect x="60" y="115" width="600" height="36" rx="6" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="160" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Method</text>
+            <text x="310" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Endpoint</text>
+            <text x="480" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:11;font-weight:600">Action</text>
+            <rect x="60" y="153" width="600" height="30" rx="4" style="fill:var(--green-dim)"/>
+            <text x="160" y="173" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">GET</text>
+            <text x="310" y="173" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users</text>
+            <text x="480" y="173" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">List users (read)</text>
+            <rect x="60" y="185" width="600" height="30" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="160" y="205" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">POST</text>
+            <text x="310" y="205" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users</text>
+            <text x="480" y="205" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Create user</text>
+            <rect x="60" y="217" width="600" height="30" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="160" y="237" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">GET</text>
+            <text x="310" y="237" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users/123</text>
+            <text x="480" y="237" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Get specific user</text>
+            <rect x="60" y="249" width="600" height="30" rx="4" style="fill:var(--indigo-dim)"/>
+            <text x="160" y="269" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">PUT</text>
+            <text x="310" y="269" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users/123</text>
+            <text x="480" y="269" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Replace user</text>
+            <rect x="60" y="281" width="600" height="30" rx="4" style="fill:var(--red-dim)"/>
+            <text x="160" y="301" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-family:JetBrains Mono,monospace;font-weight:700">DELETE</text>
+            <text x="310" y="301" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11;font-family:JetBrains Mono,monospace">/users/123</text>
+            <text x="480" y="301" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Delete user</text>
+            <rect x="160" y="330" width="400" height="50" rx="10" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="360" y="350" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Stateless Request Cycle</text>
+            <text x="360" y="368" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Each request is independent — server doesn't remember past requests</text>
+          </svg>
+          <div class="cap">REST organizes APIs around resources (nouns) and HTTP methods (verbs) with a stateless request cycle</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>The Request-Response Cycle</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>Every API interaction follows the same pattern: the client sends a request, the server processes it, and the server returns a response. This fundamental cycle powers every web and mobile application.</p>
+          <p>The request carries a URL, method, headers, and optionally a body. The server validates, applies business logic, queries data, and sends back a status code with a response body — all in milliseconds.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 240" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-rc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:600">The Request-Response Cycle</text>
+            <rect x="40" y="45" width="160" height="55" rx="8" fill="var(--dg-node)" stroke="var(--dg-1)" stroke-width="1.5"/>
+            <text x="120" y="70" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600">Client</text>
+            <text x="120" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Browser / Mobile App</text>
+            <line x1="200" y1="65" x2="245" y2="65" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-rc)"/>
+            <text x="222" y="58" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Request</text>
+            <rect x="250" y="45" width="190" height="55" rx="8" fill="var(--dg-node)" stroke="var(--dg-3)" stroke-width="1.5"/>
+            <text x="345" y="70" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600">Server</text>
+            <text x="345" y="88" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Process + Validate</text>
+            <line x1="345" y1="100" x2="345" y2="120" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-rc)"/>
+            <rect x="250" y="125" width="190" height="55" rx="8" fill="var(--dg-node)" stroke="var(--dg-2)" stroke-width="1.5"/>
+            <text x="345" y="150" text-anchor="middle" style="fill:var(--dg-2);font-size:13;font-weight:600">Database</text>
+            <text x="345" y="168" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Query + Return Data</text>
+            <line x1="345" y1="180" x2="345" y2="195" stroke="var(--dg-line)" stroke-width="1.5"/>
+            <line x1="345" y1="195" x2="120" y2="195" stroke="var(--dg-line)" stroke-width="1.5"/>
+            <line x1="120" y1="195" x2="120" y2="107" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-rc)"/>
+            <text x="235" y="190" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Response</text>
+            <rect x="470" y="45" width="210" height="175" rx="8" fill="var(--bg-surface)" stroke="var(--border)" stroke-width="1"/>
+            <text x="575" y="68" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">What's in each part?</text>
+            <rect x="485" y="80" width="180" height="22" rx="4" fill="var(--red-dim)"/>
+            <text x="575" y="96" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">URL — what resource</text>
+            <rect x="485" y="107" width="180" height="22" rx="4" fill="var(--cyan-dim)"/>
+            <text x="575" y="123" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Method — what action</text>
+            <rect x="485" y="134" width="180" height="22" rx="4" fill="var(--amber-dim)"/>
+            <text x="575" y="150" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Headers — metadata</text>
+            <rect x="485" y="161" width="180" height="22" rx="4" fill="var(--green-dim)"/>
+            <text x="575" y="177" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Body — the payload</text>
+            <rect x="485" y="193" width="180" height="22" rx="4" fill="var(--indigo-dim)"/>
+            <text x="575" y="209" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:10">Status Code — result</text>
+          </svg>
+          <div class="cap">Every API call is a three-step dance: Client → Server → Database → Response</div>
+        </div>
+      </div>
+    </section>
+    <section class="topic-section">
+      <h2>URL Structure Breakdown</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>A URL is more than just an address — it is a structured message that tells the server exactly what the client wants. Every part has a specific purpose in the HTTP protocol.</p>
+          <p>Understanding the anatomy of a URL helps you design consistent APIs and debug routing issues faster.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-url" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <rect x="20" y="10" width="680" height="100" rx="8" fill="var(--bg-surface)" stroke="var(--border)"/>
+            <rect x="35" y="25" width="80" height="30" rx="4" fill="var(--red-dim)"/>
+            <text x="75" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">https://</text>
+            <text x="75" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Scheme</text>
+            <rect x="120" y="25" width="160" height="30" rx="4" fill="var(--cyan-dim)"/>
+            <text x="200" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">api.example.com</text>
+            <text x="200" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Host</text>
+            <rect x="285" y="25" width="50" height="30" rx="4" fill="var(--amber-dim)"/>
+            <text x="310" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">:443</text>
+            <text x="310" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Port</text>
+            <rect x="340" y="25" width="100" height="30" rx="4" fill="var(--green-dim)"/>
+            <text x="390" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">/v2/users</text>
+            <text x="390" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Path</text>
+            <rect x="445" y="25" width="140" height="30" rx="4" fill="var(--indigo-dim)"/>
+            <text x="515" y="45" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12">?page=2&amp;limit=10</text>
+            <text x="515" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Query</text>
+            <rect x="590" y="25" width="80" height="30" rx="4" fill="var(--dg-text-dim)"/>
+            <text x="630" y="45" text-anchor="middle" style="fill:var(--bg-surface);font-size:12">#preview</text>
+            <text x="630" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Fragment</text>
+            <rect x="100" y="120" width="520" height="40" rx="6" fill="var(--cyan-dim)"/>
+            <text x="360" y="145" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:13">The URL tells the server where, what, and how to respond</text>
+          </svg>
+          <div class="cap">Every part of a URL has a specific purpose in the HTTP protocol</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>HTTP Headers</h2>
+      <div class="topic-grid">
+        <div class="topic-text" style="grid-column: 1 / -1;">
+          <p>Headers carry metadata about the request or response. They tell the server the format of the body, what format the client wants back, who the client is, and how to handle caching. Headers are key-value pairs sent before the body.</p>
+          <p>Key headers include <code>Authorization</code> (bearer token for authentication), <code>Content-Type</code> (format of the request body), <code>Accept</code> (desired response format), and <code>User-Agent</code> (client identity). Response headers include <code>Set-Cookie</code>, <code>Cache-Control</code>, and <code>Content-Encoding</code>.</p>
+        </div>
+      </div>
+    </section>
+    <section class="topic-section">
+      <h2>JSON Data</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>JSON (JavaScript Object Notation) is the universal format for API data. It is lightweight, human-readable, and supported by every programming language. A JSON response wraps data in a structured tree of key-value pairs.</p>
+          <p>JSON has six data types: objects (<code>{}</code>), arrays (<code>[]</code>), strings (<code>"hello"</code>), numbers (<code>42</code>), booleans (<code>true</code>/<code>false</code>), and null. Every API response is a combination of these building blocks.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 420" xmlns="http://www.w3.org/2000/svg">
+            <text x="360" y="25" text-anchor="middle" style="fill:var(--dg-text);font-size:14;font-weight:600">JSON Data Types — A Tree Breakdown</text>
+            <rect x="220" y="40" width="280" height="36" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="360" y="64" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:600">Root Object { }</text>
+            <line x1="265" y1="76" x2="265" y2="105" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="360" y1="76" x2="360" y2="105" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="455" y1="76" x2="455" y2="105" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <rect x="165" y="105" width="200" height="55" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
+            <text x="265" y="126" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-family:JetBrains Mono,monospace">"name": "Alice"</text>
+            <text x="265" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">String — wrapped in double quotes</text>
+            <rect x="390" y="105" width="200" height="55" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="490" y="126" text-anchor="middle" style="fill:var(--dg-1);font-size:12;font-family:JetBrains Mono,monospace">"age": 30</text>
+            <text x="490" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Number — no quotes needed</text>
+            <line x1="265" y1="160" x2="265" y2="185" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="490" y1="160" x2="490" y2="185" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="360" y1="76" x2="360" y2="185" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <rect x="165" y="185" width="200" height="55" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="265" y="206" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-family:JetBrains Mono,monospace">"active": true</text>
+            <text x="265" y="226" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Boolean — true or false only</text>
+            <rect x="390" y="185" width="200" height="55" rx="6" style="fill:var(--indigo-dim);stroke:var(--dg-2);stroke-width:1.5"/>
+            <text x="490" y="206" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-family:JetBrains Mono,monospace">"tags": ["a","b"]</text>
+            <text x="490" y="226" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Array — ordered list in [ ]</text>
+            <line x1="265" y1="240" x2="265" y2="265" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="490" y1="240" x2="490" y2="265" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <line x1="360" y1="76" x2="360" y2="265" style="stroke:var(--dg-line);stroke-width:1.5"/>
+            <rect x="165" y="265" width="200" height="55" rx="6" style="fill:var(--red-dim);stroke:var(--dg-5);stroke-width:1.5"/>
+            <text x="265" y="286" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-family:JetBrains Mono,monospace">"address": { ... }</text>
+            <text x="265" y="306" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Nested Object — values can be objects</text>
+            <rect x="390" y="265" width="200" height="55" rx="6" style="fill:var(--bg-surface);stroke:var(--dg-text-dim);stroke-width:1.5;stroke-dasharray:4 2"/>
+            <text x="490" y="286" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:12;font-family:JetBrains Mono,monospace">"nickname": null</text>
+            <text x="490" y="306" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Null — intentional absence</text>
+            <rect x="220" y="345" width="280" height="55" rx="10" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <text x="360" y="365" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Every API response is just these 6 types</text>
+            <text x="360" y="385" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Objects → Arrays → Strings → Numbers → Booleans → Null</text>
+          </svg>
+          <div class="cap">JSON's six data types form a tree structure — every API response is a combination of these building blocks</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Pagination: Offset vs Cursor</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>APIs split large result sets into pages to avoid sending gigabytes of data at once. Two main strategies exist for pagination, each with different trade-offs.</p>
+          <p>Offset pagination skips N items using <code>OFFSET</code> — simple but fragile when data changes. Cursor pagination uses an opaque token — stable for real-time data but slightly more complex to implement.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arr-pag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <rect x="20" y="30" width="320" height="220" rx="8" fill="var(--bg-surface)" stroke="var(--dg-5)"/>
+            <text x="180" y="55" text-anchor="middle" style="fill:var(--dg-5);font-size:13;font-weight:600">OFFSET</text>
+            <rect x="35" y="70" width="290" height="24" rx="4" fill="var(--red-dim)"/>
+            <text x="180" y="86" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Page 1: LIMIT 10 OFFSET 0</text>
+            <rect x="35" y="100" width="290" height="24" rx="4" fill="var(--amber-dim)"/>
+            <text x="180" y="116" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Page 2: LIMIT 10 OFFSET 10</text>
+            <rect x="35" y="130" width="290" height="24" rx="4" fill="var(--bg-surface)"/>
+            <text x="180" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Page 3: LIMIT 10 OFFSET 20</text>
+            <line x1="180" y1="160" x2="180" y2="168" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-pag)"/>
+            <rect x="80" y="170" width="200" height="40" rx="6" fill="var(--red-dim)"/>
+            <text x="180" y="188" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Problem: New insertions</text>
+            <text x="180" y="202" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">shift all offsets → duplicates</text>
+            <rect x="380" y="30" width="320" height="220" rx="8" fill="var(--bg-surface)" stroke="var(--dg-3)"/>
+            <text x="540" y="55" text-anchor="middle" style="fill:var(--dg-3);font-size:13;font-weight:600">CURSOR</text>
+            <rect x="395" y="70" width="290" height="24" rx="4" fill="var(--green-dim)"/>
+            <text x="540" y="86" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">WHERE id &gt; last_seen</text>
+            <rect x="395" y="100" width="290" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="540" y="116" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">LIMIT 10 — use cursor from</text>
+            <rect x="395" y="130" width="290" height="24" rx="4" fill="var(--bg-surface)"/>
+            <text x="540" y="146" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">last item of previous page</text>
+            <line x1="540" y1="160" x2="540" y2="168" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#arr-pag)"/>
+            <rect x="440" y="170" width="200" height="40" rx="6" fill="var(--green-dim)"/>
+            <text x="540" y="188" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Solution: Stable pages</text>
+            <text x="540" y="202" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">New items don't shift pages</text>
+            <rect x="100" y="260" width="520" height="24" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="276" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Use cursor pagination for real-time data. Offset is fine for static datasets.</text>
+          </svg>
+          <div class="cap">Use cursor pagination for real-time data. Offset is fine for static datasets.</div>
+        </div>
+      </div>
+    </section>
+    <section class="topic-section">
+      <h2>The Full Request Lifecycle</h2>
+      <div class="topic-grid">
+        <div class="topic-text" style="grid-column: 1 / -1;">
+          <p>From the moment a client sends a request to the moment it receives a response, a full lifecycle unfolds: DNS resolution, TCP connection, TLS handshake, request routing, authentication, business logic, database queries, response serialization, and transmission back to the client.</p>
+          <p>Each step adds measurable latency. Modern systems optimize every stage — connection pooling, caching, compression, and indexing — to deliver responses in under 200 milliseconds. The API contract decouples the client from the server, allowing each side to evolve independently.</p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="mark-complete-wrap">
+    <button class="btn-mark" data-ch="7">Mark Complete</button>
+  </div>
+
+  <nav class="chapter-nav">
+    <a href="ch-06.html" class="prev"><div class="dir">Previous</div><div class="title">Where Data Actually Lives</div></a>
+    <a href="ch-08.html" class="next"><div class="dir">Next</div><div class="title">Authentication &amp; Authorization</div></a>
+  </nav></div><footer class="site-footer">
+    <p>All bytes considered, you made it through. Now go build something.</p>
+  </footer>
+</div>
+
+<script src="..\js\script.js"></script>
+</body>
+</html>

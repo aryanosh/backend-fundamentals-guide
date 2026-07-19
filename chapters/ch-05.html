@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Stack vs heap memory, processes vs threads, blocking vs non-blocking I/O. Understand why your server slows down under load.">
+<meta property="og:title" content="Ch 05 — Memory, Threads &amp; Processes">
+<meta property="og:description" content="Stack vs heap memory, processes vs threads, blocking vs non-blocking I/O. Understand why your server slows down under load.">
+<meta property="og:type" content="article">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ch 05 — Memory, Threads &amp; Processes">
+<meta name="twitter:description" content="Stack vs heap memory, processes vs threads, blocking vs non-blocking I/O.">
+<title>Ch 05 — Memory, Threads &amp; Processes</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a href="../index.html" class="sidebar-brand"><span class="bolt">&#9889;</span> Backend Terminal</a>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="ch-01.html" class="sidebar-link" data-ch="1"><span class="num">01</span><span class="title">How Machines Find Each Other</span><span class="status"></span></a>
+    <a href="ch-02.html" class="sidebar-link" data-ch="2"><span class="num">02</span><span class="title">The Anatomy of a Request</span><span class="status"></span></a>
+    <a href="ch-03.html" class="sidebar-link" data-ch="3"><span class="num">03</span><span class="title">What a Server Actually Does</span><span class="status"></span></a>
+    <a href="ch-04.html" class="sidebar-link" data-ch="4"><span class="num">04</span><span class="title">How Data Flows Through a System</span><span class="status"></span></a>
+    <a href="ch-05.html" class="sidebar-link active" data-ch="5"><span class="num">05</span><span class="title">Memory, Threads &amp; Processes</span><span class="status">&#9654;</span></a>
+    <a href="ch-06.html" class="sidebar-link" data-ch="6"><span class="num">06</span><span class="title">Where Data Actually Lives</span><span class="status"></span></a>
+    <a href="ch-07.html" class="sidebar-link" data-ch="7"><span class="num">07</span><span class="title">How Systems Talk to Each Other</span><span class="status"></span></a>
+    <a href="ch-08.html" class="sidebar-link" data-ch="8"><span class="num">08</span><span class="title">Authentication &amp; Authorization</span><span class="status"></span></a>
+    <a href="ch-09.html" class="sidebar-link" data-ch="9"><span class="num">09</span><span class="title">Making Things Fast with Caching</span><span class="status"></span></a>
+    <a href="ch-10.html" class="sidebar-link" data-ch="10"><span class="num">10</span><span class="title">Security Essentials</span><span class="status"></span></a>
+    <a href="ch-11.html" class="sidebar-link" data-ch="11"><span class="num">11</span><span class="title">Architecture Patterns</span><span class="status"></span></a>
+    <a href="ch-12.html" class="sidebar-link" data-ch="12"><span class="num">12</span><span class="title">Networking Essentials</span><span class="status"></span></a>
+    <a href="ch-13.html" class="sidebar-link" data-ch="13"><span class="num">13</span><span class="title">Working with Linux</span><span class="status"></span></a>
+    <a href="ch-14.html" class="sidebar-link" data-ch="14"><span class="num">14</span><span class="title">Version Control with Git</span><span class="status"></span></a>
+    <a href="ch-15.html" class="sidebar-link" data-ch="15"><span class="num">15</span><span class="title">Testing Your Code</span><span class="status"></span></a>
+    <a href="ch-16.html" class="sidebar-link" data-ch="16"><span class="num">16</span><span class="title">Deployment &amp; DevOps</span><span class="status"></span></a>
+    <a href="ch-17.html" class="sidebar-link" data-ch="17"><span class="num">17</span><span class="title">The Learning Roadmap</span><span class="status"></span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <span class="sidebar-progress-text">0 / 17 completed</span>
+    <div class="sidebar-progress-bar"><div class="sidebar-progress-fill"></div></div>
+  </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">&#9776;</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="main-content" id="mainContent"><div class="chapter-container"><div class="chapter-progress">
+    <div class="cp-bar"><div class="cp-fill"></div></div>
+    <span class="cp-label">0/17 completed</span>
+  </div>
+
+  <header class="page-header">
+    <div class="eyebrow">Ch 05 / 17</div>
+    <h1>Memory, Threads &amp; Processes</h1>
+    <p class="subtitle">How computers juggle millions of things at once — and why your phone doesn't explode</p>
+    <div class="meta"><span>~12 min read</span></div>
+  </header>
+
+  <div class="chapter-content">
+
+    <section class="topic-section">
+      <h2>Stack vs Heap Memory</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>When your program runs, memory is divided into two main regions: the <strong>stack</strong> and the <strong>heap</strong>. The stack is fast and ordered (LIFO), but small and fixed-size; the heap is large and flexible, but slower to allocate.</p>
+          <ul>
+            <li><strong>Stack</strong>: local variables with fixed sizes, per-thread, fast allocation — automatically freed when the function returns</li>
+            <li><strong>Heap</strong>: dynamic data, shared across threads, slower allocation — must be garbage-collected or explicitly freed</li>
+            <li><strong>Pointers</strong> live on the stack; the actual data they point to lives on the heap</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <text x="200" y="24" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:700">STACK</text>
+            <text x="520" y="24" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:700">HEAP</text>
+            <rect x="30" y="35" width="340" height="240" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:1.5"/>
+            <rect x="380" y="35" width="310" height="240" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
+            <rect x="45" y="45" width="310" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="200" y="68" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">main() — program entry</text>
+            <rect x="45" y="90" width="310" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="200" y="113" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">handleRequest() — local vars</text>
+            <rect x="45" y="135" width="310" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="200" y="158" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">fetchUser() — params, temp ptr</text>
+            <rect x="45" y="180" width="310" height="36" rx="4" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1"/>
+            <text x="200" y="203" text-anchor="middle" style="fill:var(--dg-1);font-size:11;font-weight:600">parseResponse() — local string</text>
+            <line x1="200" y1="225" x2="200" y2="248" style="stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:4 3" marker-end="url(#s1)"/>
+            <text x="200" y="262" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">LIFO: last in, first out</text>
+            <rect x="400" y="50" width="130" height="50" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="465" y="68" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">User Object</text>
+            <text x="465" y="86" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">name, email, avatar</text>
+            <rect x="555" y="50" width="120" height="50" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="615" y="68" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Tweet[]</text>
+            <text x="615" y="86" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">dynamic array</text>
+            <rect x="400" y="120" width="120" height="50" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="460" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Session</text>
+            <text x="460" y="156" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">auth token, expiry</text>
+            <rect x="555" y="120" width="120" height="50" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="615" y="138" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Buffer</text>
+            <text x="615" y="156" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">file content</text>
+            <rect x="400" y="190" width="200" height="50" rx="6" style="fill:var(--amber-dim);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="500" y="208" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Response JSON string</text>
+            <text x="500" y="226" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">serialized payload</text>
+            <line x1="200" y1="280" x2="200" y2="300" style="stroke:var(--dg-line);stroke-width:1"/>
+            <line x1="500" y1="280" x2="500" y2="300" style="stroke:var(--dg-line);stroke-width:1"/>
+            <text x="200" y="315" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Ordered, fixed size, per-thread</text>
+            <text x="500" y="315" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Unordered, dynamic, shared</text>
+          </svg>
+          <div class="cap">Stack frames grow and shrink with function calls (LIFO). Heap blocks persist until freed — shared across threads.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Processes vs Threads</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>A <strong>process</strong> is a program in execution with its own isolated memory space, file handles, and network connections. A <strong>thread</strong> is a unit of execution within a process — all threads share the same memory space, enabling fast communication but risking race conditions.</p>
+          <ul>
+            <li><strong>Processes</strong>: isolated, crash-safe, must use IPC to share data — higher overhead to create and manage</li>
+            <li><strong>Threads</strong>: shared memory, lightweight, prone to race conditions — synchronized with mutexes (mutual exclusion locks)</li>
+            <li><strong>Mutexes</strong>: allow only one thread at a time into a critical section, preventing data corruption</li>
+          </ul>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+            <rect x="30" y="20" width="490" height="220" rx="10" style="fill:var(--bg-surface);stroke:var(--dg-1);stroke-width:2"/>
+            <text x="275" y="44" text-anchor="middle" style="fill:var(--dg-1);font-size:14;font-weight:700">OPERATING SYSTEM</text>
+            <rect x="60" y="60" width="430" height="160" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-4);stroke-width:1.5"/>
+            <text x="275" y="80" text-anchor="middle" style="fill:var(--dg-4);font-size:13;font-weight:700">PROCESS (Google Server)</text>
+            <text x="275" y="94" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Own memory space, file handles, network connections</text>
+            <rect x="80" y="110" width="390" height="40" rx="6" style="fill:var(--green-dim);stroke:var(--dg-3);stroke-width:1.5"/>
+            <text x="275" y="128" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">HEAP — Shared Memory (cache, sessions, global state)</text>
+            <text x="275" y="142" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">All threads read/write the same heap</text>
+            <rect x="80" y="165" width="115" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="137" y="183" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Thread 1</text>
+            <text x="137" y="197" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Own stack</text>
+            <rect x="210" y="165" width="115" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="267" y="183" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Thread 2</text>
+            <text x="267" y="197" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Own stack</text>
+            <rect x="340" y="165" width="115" height="40" rx="6" style="fill:var(--cyan-dim);stroke:var(--dg-1);stroke-width:1.5"/>
+            <text x="397" y="183" text-anchor="middle" style="fill:var(--dg-text);font-size:12;font-weight:600">Thread 3</text>
+            <text x="397" y="197" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Own stack</text>
+            <line x1="137" y1="165" x2="137" y2="150" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:3 2"/>
+            <line x1="267" y1="165" x2="267" y2="150" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:3 2"/>
+            <line x1="397" y1="165" x2="397" y2="150" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:3 2"/>
+            <rect x="560" y="20" width="130" height="130" rx="8" style="fill:var(--bg-surface);stroke:var(--dg-5);stroke-width:1.5"/>
+            <text x="625" y="44" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">Process B</text>
+            <text x="625" y="60" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Isolated</text>
+            <text x="625" y="80" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Can't see</text>
+            <text x="625" y="96" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Process A's</text>
+            <text x="625" y="112" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">memory</text>
+            <text x="625" y="132" text-anchor="middle" style="fill:var(--dg-5);font-size:14">(IPC required)</text>
+            <line x1="490" y1="80" x2="555" y2="80" style="stroke:var(--dg-line);stroke-width:1.5;stroke-dasharray:5 3" marker-end="url(#s1)"/>
+            <rect x="570" y="170" width="120" height="30" rx="4" style="fill:var(--red-dim)"/>
+            <text x="630" y="189" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Mutex lock</text>
+            <text x="630" y="210" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">&#9654; Only one thread</text>
+            <text x="630" y="224" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">   enters at a time</text>
+            <rect x="570" y="245" width="120" height="30" rx="4" style="fill:var(--green-dim)"/>
+            <text x="630" y="264" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">&#9654; Race conditions</text>
+            <text x="630" y="278" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">   without sync</text>
+          </svg>
+          <div class="cap">A process contains a shared heap and multiple threads, each with its own stack. Threads share memory; processes are isolated.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>The Event Loop</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p>The <strong>event loop</strong> is the heart of asynchronous runtimes like Node.js. A single thread cycles through phases — timers, I/O polling, checks, and close callbacks — processing events as they arrive without blocking on any single operation.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 290" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="s3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <circle cx="360" cy="130" r="100" fill="var(--bg-surface)" stroke="var(--dg-1)" stroke-width="2"/>
+            <rect x="320" y="6" width="80" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--dg-5)" stroke-width="1"/>
+            <text x="360" y="24" text-anchor="middle" style="fill:var(--dg-5);font-size:12;font-weight:600">Timers</text>
+            <rect x="465" y="116" width="80" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--dg-3)" stroke-width="1"/>
+            <text x="505" y="134" text-anchor="middle" style="fill:var(--dg-3);font-size:12;font-weight:600">I/O Poll</text>
+            <rect x="320" y="226" width="80" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--dg-4)" stroke-width="1"/>
+            <text x="360" y="244" text-anchor="middle" style="fill:var(--dg-4);font-size:12;font-weight:600">Check</text>
+            <rect x="175" y="116" width="80" height="28" rx="4" fill="var(--bg-surface)" stroke="var(--dg-2)" stroke-width="1"/>
+            <text x="215" y="134" text-anchor="middle" style="fill:var(--dg-2);font-size:12;font-weight:600">Close</text>
+            <path d="M 360,34 C 420,34 465,80 465,130" fill="none" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#s3)"/>
+            <path d="M 505,144 C 505,200 440,226 360,226" fill="none" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#s3)"/>
+            <path d="M 360,254 C 300,254 255,200 255,130" fill="none" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#s3)"/>
+            <path d="M 215,116 C 215,60 290,34 360,34" fill="none" stroke="var(--dg-line)" stroke-width="1.5" marker-end="url(#s3)"/>
+            <text x="360" y="125" text-anchor="middle" style="fill:var(--dg-1);font-size:13;font-weight:700">Single Thread</text>
+            <text x="360" y="145" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:11">Handles 1000s of connections</text>
+            <rect x="200" y="260" width="320" height="26" rx="4" fill="var(--cyan-dim)"/>
+            <text x="360" y="278" text-anchor="middle" style="fill:var(--dg-text);font-size:11">Event loop never blocks — it switches between tasks</text>
+          </svg>
+          <div class="cap">The event loop processes one phase at a time, never blocking</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <h2>Blocking vs Non-Blocking I/O</h2>
+      <div class="topic-grid">
+        <div class="topic-text">
+          <p><strong>Blocking I/O</strong> wastes thread time waiting for operations to complete — one thread per connection, most threads idle. <strong>Non-blocking I/O</strong> uses an event loop with callbacks, letting a single thread handle thousands of concurrent connections without ever waiting.</p>
+        </div>
+        <div class="topic-diagram">
+          <svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="s2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="var(--dg-line)"/></marker>
+            </defs>
+            <text x="360" y="22" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:700">Blocking I/O — One thread per request</text>
+            <rect x="30" y="35" width="660" height="90" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <rect x="45" y="48" width="80" height="24" rx="4" style="fill:var(--green-dim)"/>
+            <text x="85" y="64" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">Request A</text>
+            <rect x="45" y="78" width="80" height="24" rx="4" style="fill:var(--green-dim)"/>
+            <text x="85" y="94" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">Request B</text>
+            <rect x="45" y="108" width="80" height="24" rx="4" style="fill:var(--green-dim)"/>
+            <text x="85" y="124" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">Request C</text>
+            <rect x="140" y="48" width="130" height="24" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="205" y="64" text-anchor="middle" style="fill:var(--dg-1);font-size:14">Process A</text>
+            <rect x="140" y="78" width="130" height="24" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="205" y="94" text-anchor="middle" style="fill:var(--dg-1);font-size:14">Process B</text>
+            <rect x="140" y="108" width="130" height="24" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="205" y="124" text-anchor="middle" style="fill:var(--dg-1);font-size:14">Process C</text>
+            <rect x="285" y="48" width="120" height="24" rx="4" style="fill:var(--red-dim)"/>
+            <text x="345" y="64" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600">BLOCKED (DB)</text>
+            <rect x="285" y="78" width="120" height="24" rx="4" style="fill:var(--red-dim)"/>
+            <text x="345" y="94" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600">BLOCKED (DB)</text>
+            <rect x="285" y="108" width="120" height="24" rx="4" style="fill:var(--red-dim)"/>
+            <text x="345" y="124" text-anchor="middle" style="fill:var(--dg-5);font-size:14;font-weight:600">BLOCKED (DB)</text>
+            <rect x="420" y="48" width="100" height="24" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="470" y="64" text-anchor="middle" style="fill:var(--dg-4);font-size:14">Response A</text>
+            <rect x="420" y="78" width="100" height="24" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="470" y="94" text-anchor="middle" style="fill:var(--dg-4);font-size:14">Response B</text>
+            <rect x="420" y="108" width="100" height="24" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="470" y="124" text-anchor="middle" style="fill:var(--dg-4);font-size:14">Response C</text>
+            <rect x="535" y="48" width="140" height="68" rx="4" style="fill:var(--bg-surface);stroke:var(--dg-5);stroke-width:1"/>
+            <text x="605" y="68" text-anchor="middle" style="fill:var(--dg-5);font-size:11;font-weight:600">Wasted!</text>
+            <text x="605" y="84" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Threads can't</text>
+            <text x="605" y="98" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">do other work</text>
+            <line x1="30" y1="145" x2="690" y2="145" style="stroke:var(--border);stroke-width:1;stroke-dasharray:4 3"/>
+            <text x="360" y="162" text-anchor="middle" style="fill:var(--dg-text);font-size:13;font-weight:700">Non-Blocking I/O — Event loop</text>
+            <rect x="30" y="175" width="660" height="80" rx="8" style="fill:var(--bg-surface);stroke:var(--border);stroke-width:1"/>
+            <rect x="45" y="182" width="130" height="24" rx="4" style="fill:var(--green-dim)"/>
+            <text x="110" y="198" text-anchor="middle" style="fill:var(--dg-3);font-size:14;font-weight:600">Single Thread</text>
+            <rect x="185" y="182" width="110" height="24" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="240" y="198" text-anchor="middle" style="fill:var(--dg-1);font-size:14">Start Req A</text>
+            <rect x="300" y="182" width="110" height="24" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="355" y="198" text-anchor="middle" style="fill:var(--dg-1);font-size:14">Start Req B</text>
+            <rect x="415" y="182" width="110" height="24" rx="4" style="fill:var(--cyan-dim)"/>
+            <text x="470" y="198" text-anchor="middle" style="fill:var(--dg-1);font-size:14">Start Req C</text>
+            <rect x="530" y="182" width="110" height="24" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="585" y="198" text-anchor="middle" style="fill:var(--dg-4);font-size:14">Process C cb</text>
+            <rect x="185" y="215" width="110" height="24" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="240" y="231" text-anchor="middle" style="fill:var(--dg-4);font-size:14">Process A cb</text>
+            <rect x="300" y="215" width="110" height="24" rx="4" style="fill:var(--amber-dim)"/>
+            <text x="355" y="231" text-anchor="middle" style="fill:var(--dg-4);font-size:14">Process B cb</text>
+            <text x="550" y="243" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">Thread never waits</text>
+            <text x="550" y="258" text-anchor="middle" style="fill:var(--dg-text-dim);font-size:14">&#9654; handles 1000s of requests</text>
+            <line x1="45" y1="215" x2="185" y2="215" style="stroke:var(--dg-line);stroke-width:1;stroke-dasharray:2 2"/>
+            <line x1="295" y1="194" x2="300" y2="215" style="stroke:var(--dg-line);stroke-width:1"/>
+            <line x1="525" y1="194" x2="530" y2="215" style="stroke:var(--dg-line);stroke-width:1"/>
+            <line x1="410" y1="194" x2="415" y2="215" style="stroke:var(--dg-line);stroke-width:1"/>
+          </svg>
+          <div class="cap">Blocking wastes thread time waiting. Non-blocking uses callbacks to continue work while I/O completes.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="mark-complete-wrap">
+    <button class="btn-mark" data-ch="5">Mark Complete</button>
+  </div>
+
+  <nav class="chapter-nav">
+    <a href="ch-04.html" class="prev"><div class="dir">Previous</div><div class="title">How Data Flows Through a System</div></a>
+    <a href="ch-06.html" class="next"><div class="dir">Next</div><div class="title">Where Data Actually Lives</div></a>
+  </nav></div><footer class="site-footer">
+    <p>All bytes considered, you made it through. Now go build something.</p>
+  </footer>
+</div>
+
+<script src="../js/script.js"></script>
+</body>
+</html>
