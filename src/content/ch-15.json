@@ -1,0 +1,72 @@
+{
+  "id": 15,
+  "title": "Testing — Code You Can Trust",
+  "subtitle": "Unit, integration, and end-to-end tests — the testing pyramid explained",
+  "group": "devops",
+  "sections": [
+    {
+      "title": "The Testing Pyramid",
+      "text": "<p>The <strong>testing pyramid</strong> is a framework for organizing tests by scope and speed. Tests at the bottom are fast and numerous; tests at the top are slow and few.</p><ul><li><strong>Unit Tests (Base)</strong> — Test individual functions, classes, or methods in isolation. Mock external dependencies. Run in milliseconds. Thousands of them.</li><li><strong>Integration Tests (Middle)</strong> — Test how components work together (database queries, API calls, file system). Slower but catch real bugs.</li><li><strong>End-to-End Tests (Top)</strong> — Test the entire system from the user's perspective. Browser automation (Playwright, Cypress, Selenium). Slow and brittle but validate critical user journeys.</li></ul><p>The shape of the pyramid represents quantity: write lots of unit tests, some integration tests, and a few E2E tests.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 180, "y": 20, "w": 140, "h": 30, "label": "E2E Tests (few)", "color": "#FF3D8A" },
+            { "x": 130, "y": 60, "w": 240, "h": 40, "label": "Integration Tests (some)", "color": "#8B5CF6" },
+            { "x": 60, "y": 120, "w": 380, "h": 60, "label": "Unit Tests (many, fast)", "color": "#00E5FF" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "Slow, brittle, high confidence" },
+            { "target": 1, "text": "Component interactions" },
+            { "target": 2, "text": "Fast, reliable, thousands of them" }
+          ]
+        }
+      },
+      "caption": "The testing pyramid: many unit tests, some integration tests, few E2E tests",
+      "code": "// Unit test — test in isolation\nfunction calculateTotal(items) {\n  return items.reduce((sum, item) => sum + item.price * item.qty, 0);\n}\n\ntest('calculates total correctly', () => {\n  const items = [\n    { price: 10, qty: 2 },\n    { price: 5, qty: 3 }\n  ];\n  expect(calculateTotal(items)).toBe(35);\n});\n\ntest('returns 0 for empty cart', () => {\n  expect(calculateTotal([])).toBe(0);\n});",
+      "codeLang": "javascript"
+    },
+    {
+      "title": "Writing Testable Code",
+      "text": "<p>Code that's easy to test is well-designed code. Follow these principles:</p><ul><li><strong>Dependency Injection</strong> — Pass dependencies (database, API client) as parameters instead of hard-coding them. This lets you inject mocks in tests.</li><li><strong>Pure Functions</strong> — Functions that return the same output for the same input and have no side effects. Trivially testable.</li><li><strong>Single Responsibility</strong> — Each function does one thing. Simple functions are easy to test.</li><li><strong>Interface Segregation</strong> — Don't make functions depend on things they don't use. Smaller interfaces = easier mocking.</li></ul><p>If a function is hard to test, it's a sign that the design needs improvement.</p>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 2,
+          "items": [
+            { "heading": "Dependency Injection", "body": "Pass deps as params → mock them in tests. Never import directly.", "color": "#00E5FF" },
+            { "heading": "Pure Functions", "body": "Same input = same output. No side effects. Trivially testable.", "color": "#00F593" },
+            { "heading": "Mocks & Stubs", "body": "Replace real deps with test doubles. Mock external APIs, databases.", "color": "#8B5CF6" },
+            { "heading": "Coverage", "body": "Measure line/branch coverage. 80% is good, 100% isn't always necessary.", "color": "#FFB300" }
+          ]
+        }
+      },
+      "caption": "Testable code principles — DI, pure functions, and proper mocking",
+      "code": "// HARD to test — hardcoded dependency\nfunction getUser(id) {\n  const db = new Database('prod');\n  return db.query('SELECT * FROM users WHERE id = $1', [id]);\n}\n\n// EASY to test — injected dependency\nfunction getUser(id, db) {\n  return db.query('SELECT * FROM users WHERE id = $1', [id]);\n}\n\n// Test with mock\ntest('getUser queries database', async () => {\n  const mockDb = { query: jest.fn().mockResolvedValue({ name: 'Alice' }) };\n  const user = await getUser(1, mockDb);\n  expect(mockDb.query).toHaveBeenCalledWith(\n    'SELECT * FROM users WHERE id = $1', [1]\n  );\n});",
+      "codeLang": "javascript"
+    },
+    {
+      "title": "CI/CD Test Pipeline",
+      "text": "<p>In a professional environment, tests run automatically on every push via <strong>Continuous Integration (CI)</strong>. GitHub Actions, GitLab CI, and CircleCI are popular tools.</p><p>A typical test pipeline:</p><ol><li>Developer pushes code to a branch</li><li>CI server picks up the change</li><li>Installs dependencies (<code>npm install</code>)</li><li>Runs linters (<code>npm run lint</code>)</li><li>Runs unit tests (<code>npm test</code>)</li><li>Runs integration tests (with test database)</li><li>Builds the application</li><li>If all steps pass: deploy or merge</li></ol><p>This catches bugs before they reach production. A red CI should block merging until fixed.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Push Code", "desc": "Developer pushes to branch", "color": "#00E5FF" },
+            { "label": "CI Triggers", "desc": "GitHub Actions detects push", "color": "#8B5CF6" },
+            { "label": "Install", "desc": "npm install / pip install", "color": "#FF3D8A" },
+            { "label": "Lint + Test", "desc": "npm run lint && npm test", "color": "#FFB300" },
+            { "label": "Build", "desc": "npm run build", "color": "#8B5CF6" },
+            { "label": "Deploy", "desc": "If all pass → production", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "CI pipeline: every push triggers automated checks before code is merged",
+      "code": "# GitHub Actions workflow (.github/workflows/ci.yml)\nname: CI\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '20'\n      - run: npm ci\n      - run: npm run lint\n      - run: npm test\n      - run: npm run build",
+      "codeLang": "yaml",
+      "callout": "CI should be fast (<10 minutes). If tests are slow, they'll be skipped. Pre-commit hooks can catch simple issues before CI even runs.",
+      "calloutType": "tip",
+      "calloutTitle": "Fast Feedback"
+    }
+  ]
+}

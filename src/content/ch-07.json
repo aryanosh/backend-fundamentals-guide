@@ -1,0 +1,81 @@
+{
+  "id": 7,
+  "title": "APIs — How Programs Talk",
+  "subtitle": "REST, JSON, endpoint design, and the rules of program-to-program communication",
+  "group": "core",
+  "sections": [
+    {
+      "title": "What is an API?",
+      "text": "<p>An <strong>API</strong> (Application Programming Interface) is a set of rules that allows one program to talk to another. In web development, this usually means <strong>REST APIs</strong> — HTTP endpoints that accept requests and return structured data (usually JSON).</p><p>A well-designed API is intuitive, consistent, and predictable. If you know how one endpoint works, you should be able to guess how another works. This is called <strong>API ergonomics</strong>.</p><p>REST APIs use HTTP methods as verbs: <code>GET /users</code> lists users, <code>POST /users</code> creates one, <code>GET /users/1</code> retrieves one, <code>PUT /users/1</code> replaces one, <code>PATCH /users/1</code> updates one, <code>DELETE /users/1</code> removes one. Resources are nouns; methods are verbs.</p>",
+      "diagram": {
+        "type": "svg",
+        "config": {
+          "svg": "<svg viewBox=\"0 0 500 180\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"10\" y=\"10\" width=\"480\" height=\"160\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"20\" y=\"32\" fill=\"#00E5FF\" font-size=\"11\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">REST API Endpoints</text><rect x=\"20\" y=\"44\" width=\"100\" height=\"24\" rx=\"2\" fill=\"#00F593\" opacity=\"0.15\"/><text x=\"24\" y=\"60\" fill=\"#00F593\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">GET</text><text x=\"64\" y=\"60\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">/users</text><rect x=\"180\" y=\"44\" width=\"100\" height=\"24\" rx=\"2\" fill=\"#00E5FF\" opacity=\"0.15\"/><text x=\"184\" y=\"60\" fill=\"#00E5FF\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">POST</text><text x=\"226\" y=\"60\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">/users</text><rect x=\"20\" y=\"78\" width=\"100\" height=\"24\" rx=\"2\" fill=\"#FFB300\" opacity=\"0.15\"/><text x=\"24\" y=\"94\" fill=\"#FFB300\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">GET</text><text x=\"64\" y=\"94\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">/users/:id</text><rect x=\"180\" y=\"78\" width=\"100\" height=\"24\" rx=\"2\" fill=\"#FF3D8A\" opacity=\"0.15\"/><text x=\"184\" y=\"94\" fill=\"#FF3D8A\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">PUT</text><text x=\"218\" y=\"94\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">/users/:id</text><rect x=\"20\" y=\"112\" width=\"100\" height=\"24\" rx=\"2\" fill=\"#8B5CF6\" opacity=\"0.15\"/><text x=\"24\" y=\"128\" fill=\"#8B5CF6\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">PATCH</text><text x=\"72\" y=\"128\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">/users/:id</text><rect x=\"180\" y=\"112\" width=\"100\" height=\"24\" rx=\"2\" fill=\"#FF3D8A\" opacity=\"0.15\"/><text x=\"184\" y=\"128\" fill=\"#FF3D8A\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">DELETE</text><text x=\"240\" y=\"128\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">/users/:id</text><text x=\"20\" y=\"160\" fill=\"#5A5878\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">Resources = nouns (/users, /orders, /products)</text><text x=\"300\" y=\"160\" fill=\"#5A5878\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">Methods = verbs (GET, POST, PUT, DELETE)</text></svg>",
+          "caption": "REST API endpoints: resources as nouns, HTTP methods as verbs"
+        }
+      },
+      "caption": "REST APIs use nouns for resources and HTTP methods for actions",
+      "code": "# A RESTful API for users\nGET    /users          # List all users\nPOST   /users          # Create a user\nGET    /users/1        # Get user with id=1\nPUT    /users/1        # Replace user with id=1\nPATCH  /users/1        # Update user with id=1\nDELETE /users/1        # Delete user with id=1\n\n# Response format\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n  \"id\": 1,\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}",
+      "codeLang": "http"
+    },
+    {
+      "title": "REST vs GraphQL",
+      "text": "<p><strong>REST</strong> — Resources are endpoints (multiple URLs). The server decides what data is returned. Over-fetching (getting too much data) and under-fetching (not enough, requiring multiple requests) are common problems.</p><p><strong>GraphQL</strong> — Single endpoint. The client specifies exactly what data it needs in the query. No over-fetching, no under-fetching. But it requires a schema, resolver functions, and careful handling of N+1 queries.</p><p>REST is simpler and works well for most APIs. GraphQL shines when clients have diverse data needs (different mobile/desktop screens need different fields).</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "REST",
+            "items": [
+              "Multiple endpoints (nouns)",
+              "Server decides response shape",
+              "Over-fetching: get more than needed",
+              "Under-fetching: need multiple requests",
+              "Caching built-in (HTTP caching)",
+              "Simpler to implement and debug"
+            ]
+          },
+          "right": {
+            "header": "GraphQL",
+            "items": [
+              "Single endpoint (/graphql)",
+              "Client specifies exactly what it wants",
+              "No over-fetching — precise fields",
+              "One request can get nested data",
+              "Caching is harder (POST requests)",
+              "Requires resolver functions + schema"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "REST vs GraphQL: different approaches to the same problem",
+      "code": "# REST: multiple endpoints\nGET /users/1\nGET /users/1/posts\n\n# GraphQL: single endpoint, precise query\nquery {\n  user(id: 1) {\n    name\n    email\n    posts {\n      title\n    }\n  }\n}",
+      "codeLang": "graphql",
+      "callout": "Start with REST. It's simpler, well-understood, and works for 90% of applications. Move to GraphQL when you have multiple clients with divergent data needs.",
+      "calloutType": "tip",
+      "calloutTitle": "When to Use GraphQL"
+    },
+    {
+      "title": "API Design Best Practices",
+      "text": "<p>Good API design makes the difference between a joy to use and a nightmare. Follow these principles:</p><ul><li><strong>Consistent naming</strong> — Use plural nouns: <code>/users</code> not <code>/user</code> or <code>/getUsers</code></li><li><strong>Proper status codes</strong> — 201 for creation, 204 for deletion, 400 for bad input, 404 for not found</li><li><strong>Versioning</strong> — Prefix URLs: <code>/v1/users</code>. Never break existing clients.</li><li><strong>Pagination</strong> — Always paginate list endpoints. Use cursor-based for large sets.</li><li><strong>Error format</strong> — Return consistent error objects: <code>{ \"error\": \"message\", \"code\": \"VALIDATION_ERROR\" }</code></li></ul>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 3,
+          "items": [
+            { "heading": "Naming", "body": "Plural nouns. /users, /orders. No verbs in URLs.", "color": "#00E5FF" },
+            { "heading": "Status Codes", "body": "201 created, 204 deleted, 400 bad request, 404 not found, 500 server error.", "color": "#00F593" },
+            { "heading": "Pagination", "body": "?offset=0&limit=20 or cursor-based for large datasets.", "color": "#8B5CF6" },
+            { "heading": "Error Format", "body": "Consistent { error, code } objects, never raw strings.", "color": "#FF3D8A" },
+            { "heading": "Versioning", "body": "/v1/users, /v2/users. Never remove old endpoints abruptly.", "color": "#FFB300" },
+            { "heading": "Security", "body": "HTTPS always. Rate limit. Validate + sanitize all input.", "color": "#8B5CF6" }
+          ]
+        }
+      },
+      "caption": "Six principles of good API design — consistency is king",
+      "code": "// Consistent error format\nHTTP/1.1 400 Bad Request\n{\n  \"error\": {\n    \"code\": \"VALIDATION_ERROR\",\n    \"message\": \"Email is required\",\n    \"field\": \"email\"\n  }\n}\n\n// Paginated response\nGET /v1/users?page=2&limit=20\n{\n  \"data\": [...],\n  \"meta\": {\n    \"page\": 2,\n    \"total\": 156,\n    \"hasMore\": true\n  }\n}",
+      "codeLang": "http / json"
+    }
+  ]
+}

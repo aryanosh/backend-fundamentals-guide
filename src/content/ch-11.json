@@ -1,0 +1,88 @@
+{
+  "id": 11,
+  "title": "Architecture Patterns",
+  "subtitle": "Monolith, microservices, MVC, and event-driven architectures",
+  "group": "scale",
+  "sections": [
+    {
+      "title": "Monolith vs Microservices",
+      "text": "<p><strong>Monolithic architecture</strong> — All code lives in a single deployable unit. A monolith is simpler to develop, test, and deploy. Everything runs in one process, so there's no network overhead between components. Great for startups and small teams.</p><p><strong>Microservices</strong> — Each component is a separate service with its own API, database, and deployment pipeline. Services communicate over the network (HTTP/REST, gRPC, message queues). Scales independently but introduces complexity: network latency, data consistency, service discovery, monitoring, and distributed debugging.</p><p>The rule: start with a monolith, extract services as needed. Premature microservices are the #1 architecture mistake.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "Monolith",
+            "items": [
+              "Single deployable unit",
+              "Shared database",
+              "Simple testing (integration test)",
+              "Low operational complexity",
+              "Harder to scale individual parts",
+              "Great for teams of 1-10"
+            ]
+          },
+          "right": {
+            "header": "Microservices",
+            "items": [
+              "Many independently deployable services",
+              "Database per service",
+              "Complex testing (contract tests)",
+              "High operational complexity",
+              "Each service scales independently",
+              "Requires mature DevOps culture"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "Monolith vs Microservices — different tradeoffs for different team sizes",
+      "callout": "Start with a monolith. Extract to microservices when you have clear bounded contexts AND the team size to maintain them. Premature microservices add complexity without benefit.",
+      "calloutType": "warn",
+      "calloutTitle": "Start Simple"
+    },
+    {
+      "title": "MVC — Model-View-Controller",
+      "text": "<p><strong>MVC</strong> is the most widely used architectural pattern in web frameworks (Rails, Django, Laravel, ASP.NET).</p><ul><li><strong>Model</strong> — Handles data and business rules. Represents the database schema and includes validation, relationships, and queries.</li><li><strong>View</strong> — Renders the user interface. Templates (HTML, JSON, XML) that present data to the user.</li><li><strong>Controller</strong> — Receives input, coordinates between Model and View, and returns the response.</li></ul><p>MVC enforces separation of concerns. Controllers should be thin — just enough code to call the right model and render the right view.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 40, "y": 20, "w": 120, "h": 50, "label": "Browser Request", "color": "#00E5FF" },
+            { "x": 180, "y": 20, "w": 120, "h": 50, "label": "Controller", "color": "#FF3D8A" },
+            { "x": 40, "y": 110, "w": 120, "h": 50, "label": "Model", "color": "#8B5CF6" },
+            { "x": 180, "y": 110, "w": 120, "h": 50, "label": "View", "color": "#00F593" },
+            { "x": 40, "y": 200, "w": 120, "h": 50, "label": "Database", "color": "#FFB300" }
+          ],
+          "annotations": [
+            { "target": 1, "text": "Routes request, calls Model + View" },
+            { "target": 2, "text": "Business logic + data access" },
+            { "target": 3, "text": "Renders HTML/JSON response" }
+          ]
+        }
+      },
+      "caption": "MVC: Controller coordinates between Model (data) and View (presentation)",
+      "code": "# MVC pattern in Python (Flask)\n\n# Model — data layer\nclass User(db.Model):\n    id = db.Column(db.Integer, primary_key=True)\n    name = db.Column(db.String(100))\n\n# Controller — handles request\n@app.route('/users/<int:id>')\ndef get_user(id):\n    user = User.query.get_or_404(id)\n    return render_template('user.html', user=user)\n\n# View — template (user.html)\n# <h1>{{ user.name }}</h1>",
+      "codeLang": "python"
+    },
+    {
+      "title": "Event-Driven Architecture",
+      "text": "<p>In an <strong>event-driven architecture</strong>, components communicate by emitting and consuming events (messages). When something happens (order placed, email sent, payment received), the component publishes an event. Other components subscribe to relevant events and react.</p><p>This decouples producers from consumers. The order service doesn't need to know about the email service — it just publishes an <code>order.placed</code> event. The email service picks it up and sends a confirmation.</p><p>Message queues (RabbitMQ, Kafka, AWS SQS) are the backbone of event-driven systems. Kafka excels at high-throughput event streaming with persistence. RabbitMQ is better for complex routing and RPC-style messaging.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Order Placed", "desc": "Order service publishes event", "color": "#00E5FF" },
+            { "label": "Message Queue", "desc": "Kafka/RabbitMQ receives event", "color": "#8B5CF6" },
+            { "label": "Email Service", "desc": "Subscribes → sends confirmation", "color": "#FF3D8A" },
+            { "label": "Inventory Service", "desc": "Subscribes → updates stock", "color": "#FFB300" },
+            { "label": "Analytics Service", "desc": "Subscribes → logs metrics", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "Event-driven: one event (order.placed) triggers multiple independent services",
+      "detail": "Event-driven architecture shines when you have services that need to react to the same events in different ways. The key advantage is temporal decoupling — services don't need to be running at the same time. If the email service is down, the order event stays in the queue. When it comes back up, it processes the backlog. This improves resilience and allows each service to scale independently based on its own load.",
+      "code": "# Publishing an event (Node.js + Kafka)\nconst { Kafka } = require('kafkajs');\n\nconst kafka = new Kafka({ brokers: ['localhost:9092'] });\nconst producer = kafka.producer();\n\nawait producer.connect();\nawait producer.send({\n  topic: 'orders',\n  messages: [\n    { value: JSON.stringify({ orderId: 123, userId: 456 }) }\n  ]\n});\n\n# Consuming events\nconst consumer = kafka.consumer({ groupId: 'email-group' });\nawait consumer.subscribe({ topic: 'orders' });\nawait consumer.run({\n  eachMessage: async ({ message }) => {\n    const order = JSON.parse(message.value);\n    await sendConfirmationEmail(order);\n  }\n});",
+      "codeLang": "javascript"
+    }
+  ]
+}

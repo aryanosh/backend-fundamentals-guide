@@ -1,0 +1,80 @@
+{
+  "id": 6,
+  "title": "Databases — Where Data Lives",
+  "subtitle": "SQL, tables, joins, transactions, and when to use NoSQL",
+  "group": "core",
+  "sections": [
+    {
+      "title": "Tables, Rows & Relationships",
+      "text": "<p>Relational databases store data in <strong>tables</strong> — like spreadsheets with rows and columns. A <code>users</code> table might have columns for <code>id</code>, <code>name</code>, <code>email</code>, and <code>created_at</code>. Each row represents one user.</p><p>Tables are connected through <strong>foreign keys</strong>. An <code>orders</code> table references <code>user_id</code> to link each order to a user. This creates relationships: one user has many orders (one-to-many).</p><p><strong>Indexes</strong> speed up lookups. Without an index, finding a user by email requires scanning every row. With an index on the <code>email</code> column, the database uses a B-tree structure to find the row in O(log n) time.</p>",
+      "diagram": {
+        "type": "svg",
+        "config": {
+          "svg": "<svg viewBox=\"0 0 500 220\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"20\" y=\"10\" width=\"200\" height=\"200\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"30\" y=\"30\" fill=\"#00E5FF\" font-size=\"11\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">users</text><rect x=\"30\" y=\"38\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"40\" y=\"53\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">id (PK)</text><rect x=\"30\" y=\"60\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"40\" y=\"75\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">name VARCHAR(100)</text><rect x=\"30\" y=\"82\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"40\" y=\"97\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">email VARCHAR(255)</text><rect x=\"30\" y=\"104\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"40\" y=\"119\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">created_at TIMESTAMP</text><rect x=\"280\" y=\"10\" width=\"200\" height=\"200\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"290\" y=\"30\" fill=\"#FF3D8A\" font-size=\"11\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">orders</text><rect x=\"290\" y=\"38\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"300\" y=\"53\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">id (PK)</text><rect x=\"290\" y=\"60\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"300\" y=\"75\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">user_id (FK → users)</text><rect x=\"290\" y=\"82\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"300\" y=\"97\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">total DECIMAL(10,2)</text><rect x=\"290\" y=\"104\" width=\"180\" height=\"20\" rx=\"2\" fill=\"#181B2B\" stroke=\"#202338\"/><text x=\"300\" y=\"119\" fill=\"#8A88A0\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">status VARCHAR(20)</text><line x1=\"220\" y1=\"40\" x2=\"280\" y2=\"40\" stroke=\"#FF3D8A\" stroke-width=\"1\" stroke-dasharray=\"4,2\"/><text x=\"250\" y=\"34\" fill=\"#FF3D8A\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">FK</text></svg>",
+          "caption": "users and orders tables connected by a foreign key — one user has many orders"
+        }
+      },
+      "caption": "Tables connected by foreign keys form the backbone of relational databases",
+      "code": "CREATE TABLE users (\n  id SERIAL PRIMARY KEY,\n  name VARCHAR(100) NOT NULL,\n  email VARCHAR(255) UNIQUE NOT NULL,\n  created_at TIMESTAMP DEFAULT NOW()\n);\n\nCREATE TABLE orders (\n  id SERIAL PRIMARY KEY,\n  user_id INTEGER REFERENCES users(id),\n  total DECIMAL(10,2) NOT NULL,\n  status VARCHAR(20) DEFAULT 'pending'\n);\n\nCREATE INDEX idx_users_email ON users(email);",
+      "codeLang": "sql"
+    },
+    {
+      "title": "Joins & Transactions",
+      "text": "<p><strong>Joins</strong> let you query across related tables in a single statement. An <code>INNER JOIN</code> returns only rows with matching keys in both tables. A <code>LEFT JOIN</code> returns all rows from the left table, filling nulls where no match exists on the right.</p><p><strong>Transactions</strong> group multiple operations into a single atomic unit. Either all operations succeed (commit) or none do (rollback). This is critical for operations like transferring money between accounts — if the debit succeeds but the credit fails, the transaction rolls back both.</p>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 2,
+          "items": [
+            { "heading": "INNER JOIN", "body": "Rows that match in both tables. Most common join type.", "color": "#00E5FF" },
+            { "heading": "LEFT JOIN", "body": "All rows from left table + matching right rows. Nulls for no match.", "color": "#8B5CF6" },
+            { "heading": "ACID Transactions", "body": "Atomic, Consistent, Isolated, Durable — the four guarantees.", "color": "#00F593" },
+            { "heading": "N+1 Problem", "body": "Querying N rows + 1 query per row = N+1 queries. Use eager loading instead.", "color": "#FF3D8A" }
+          ]
+        }
+      },
+      "caption": "Key SQL concepts: joins combine tables, transactions ensure data integrity",
+      "code": "-- Get users with their orders (INNER JOIN)\nSELECT u.name, o.total, o.status\nFROM users u\nJOIN orders o ON o.user_id = u.id\nWHERE u.id = 1;\n\n-- Transaction: transfer money\nBEGIN;\nUPDATE accounts SET balance = balance - 100 WHERE id = 1;\nUPDATE accounts SET balance = balance + 100 WHERE id = 2;\nCOMMIT;\n-- If anything fails before COMMIT, ROLLBACK undoes everything",
+      "codeLang": "sql",
+      "callout": "Always use transactions for operations that must succeed or fail together. Money transfers, order creation, and account registration all need atomicity.",
+      "calloutType": "warn",
+      "calloutTitle": "Transaction Safety"
+    },
+    {
+      "title": "SQL vs NoSQL",
+      "text": "<p><strong>SQL databases</strong> (PostgreSQL, MySQL, SQLite) use structured schemas, enforce relationships with foreign keys, and guarantee ACID compliance. They excel at complex queries, joins, and data integrity.</p><p><strong>NoSQL databases</strong> (MongoDB, Redis, Cassandra) trade ACID guarantees for flexibility and scale. MongoDB stores documents (JSON-like), Redis is a key-value store, Cassandra uses wide columns. NoSQL is great for rapid prototyping, hierarchical data, and horizontal scaling.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "SQL",
+            "items": [
+              "Fixed schema — columns defined upfront",
+              "ACID compliant — strong consistency",
+              "Powerful JOINs and aggregations",
+              "Normalized data (avoid duplication)",
+              "Vertical scale first, horizontal possible",
+              "Best for: finance, e-commerce, ERP"
+            ]
+          },
+          "right": {
+            "header": "NoSQL",
+            "items": [
+              "Flexible schema — add fields anytime",
+              "BASE — eventual consistency",
+              "No JOINs (denormalized data)",
+              "Nested documents (embedded data)",
+              "Horizontal scaling by design",
+              "Best for: real-time, IoT, content management"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "SQL for consistency and relationships, NoSQL for flexibility and scale",
+      "detail": "You don't have to choose one. Many production systems use both — PostgreSQL for transactional data and Redis for caching, or MongoDB for content and Kafka for event streams. This is called polyglot persistence. The right tool depends on your access patterns, consistency requirements, and scale needs.",
+      "code": "-- SQL: structured, relational\nINSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');\nSELECT * FROM users WHERE email = 'alice@example.com';\n\n// NoSQL (MongoDB): flexible, document-based\ndb.users.insertOne({ name: 'Alice', email: 'alice@example.com', tags: ['dev', 'admin'] });\ndb.users.find({ email: 'alice@example.com' });",
+      "codeLang": "sql / javascript"
+    }
+  ]
+}

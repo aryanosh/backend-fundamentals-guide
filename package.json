@@ -1,0 +1,26 @@
+{
+  "name": "backend-fundamentals-guide",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A free 17-chapter interactive guide to how the backend actually works.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "extract-content": "node scripts/extract-content.mjs"
+  },
+  "dependencies": {
+    "framer-motion": "^12.42.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
+  }
+}

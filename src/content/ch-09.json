@@ -1,0 +1,90 @@
+{
+  "id": 9,
+  "title": "Caching — Making Things Fast",
+  "subtitle": "Browser cache, CDN, application cache, database cache, and Redis",
+  "group": "core",
+  "sections": [
+    {
+      "title": "The Cache Layers",
+      "text": "<p>Every request that doesn't hit a cache is a wasted opportunity. Caching happens at multiple layers simultaneously:</p><ol><li><strong>Browser Cache</strong> — The browser stores static assets (images, CSS, JS) locally based on <code>Cache-Control</code> headers. A <code>max-age=31536000</code> means cache for a year.</li><li><strong>CDN Cache</strong> — Content Delivery Networks (Cloudflare, Fastly, Akamai) cache responses at edge locations close to the user. Your server handles far fewer requests.</li><li><strong>Application Cache</strong> — Your server caches computed results (database queries, rendered templates) in memory or Redis. Avoids recomputing expensive operations.</li><li><strong>Database Cache</strong> — PostgreSQL and MySQL have internal buffer caches for frequently accessed data pages.</li></ol>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 40, "y": 20, "w": 100, "h": 40, "label": "User Browser", "color": "#00E5FF" },
+            { "x": 200, "y": 20, "w": 100, "h": 40, "label": "CDN Edge", "color": "#8B5CF6" },
+            { "x": 360, "y": 20, "w": 100, "h": 40, "label": "App Server", "color": "#FF3D8A" },
+            { "x": 200, "y": 100, "w": 100, "h": 40, "label": "Redis Cache", "color": "#FFB300" },
+            { "x": 360, "y": 100, "w": 100, "h": 40, "label": "Database", "color": "#00F593" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "max-age headers" },
+            { "target": 1, "text": "Global edge network" },
+            { "target": 3, "text": "In-memory cache" },
+            { "target": 4, "text": "Buffer cache" }
+          ]
+        }
+      },
+      "caption": "Four layers of caching: browser → CDN → app → database",
+      "code": "# Cache-Control headers\nCache-Control: public, max-age=31536000, immutable\nCache-Control: private, max-age=3600\nCache-Control: no-cache, no-store, must-revalidate\n\n# ETag for conditional requests\nETag: \"33a64df551425fcc55e4d42a148795d9f25f89d4\"\nIf-None-Match: \"33a64df5...\"  → 304 Not Modified",
+      "codeLang": "http"
+    },
+    {
+      "title": "Cache Invalidation",
+      "text": "<p>There are only two hard things in computer science: cache invalidation and naming things. Invalidating a cache means ensuring stale data isn't served to users.</p><p>Common strategies:</p><ul><li><strong>TTL (Time To Live)</strong> — Set an expiration time. Simple but can serve stale data until the TTL expires.</li><li><strong>Write-through</strong> — Update the cache whenever the database is updated. Always fresh but more complex.</li><li><strong>Cache-aside</strong> — Application checks cache first, falls back to database on miss, and updates the cache. Most common pattern.</li><li><strong>Event-driven</strong> — When data changes, publish an event (via Redis pub/sub or message queue) that invalidates related cache keys.</li></ul>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "Cached Request",
+            "items": [
+              "User requests resource",
+              "CDN/browser has it → instant response",
+              "Zero server load",
+              "Latency: ~10ms (edge)",
+              "Cache hit = fast, cheap"
+            ]
+          },
+          "right": {
+            "header": "Uncached Request",
+            "items": [
+              "User requests resource",
+              "No cache → goes to origin server",
+              "Server computes + queries DB",
+              "Latency: ~200-500ms",
+              "Cache miss = slow, expensive"
+            ]
+          },
+          "vsLabel": "HIT/MISS"
+        }
+      },
+      "caption": "Cache hit = fast response with no server load. Cache miss = full server processing.",
+      "code": "// Cache-aside pattern with Redis\nasync function getUser(id) {\n  const cacheKey = `user:${id}`;\n  \n  // 1. Try cache\n  const cached = await redis.get(cacheKey);\n  if (cached) return JSON.parse(cached);\n  \n  // 2. Cache miss → query database\n  const user = await db.findUserById(id);\n  \n  // 3. Update cache\n  await redis.setex(cacheKey, 3600, JSON.stringify(user));\n  \n  return user;\n}\n\n// Invalidate on update\nasync function updateUser(id, data) {\n  await db.updateUser(id, data);\n  await redis.del(`user:${id}`);  // invalidate cache\n}",
+      "codeLang": "javascript",
+      "callout": "The cache-aside pattern is the most common: check cache first, fall back to database on miss, update cache on read. Invalidate cache on writes.",
+      "calloutType": "tip",
+      "calloutTitle": "Cache-Aside Pattern"
+    },
+    {
+      "title": "Redis — The Swiss Army Knife of Caching",
+      "text": "<p><strong>Redis</strong> is an in-memory data store that's incredibly fast (sub-millisecond latency). It's used for caching, session storage, rate limiting, real-time leaderboards, message queues, and more.</p><p>Key features: data structures (strings, hashes, lists, sets, sorted sets), TTL with automatic eviction, pub/sub messaging, persistence (optional), and Lua scripting for atomic operations.</p><p>Redis is single-threaded (for commands), which makes it predictable. Don't run slow commands like <code>KEYS *</code> in production — use <code>SCAN</code> instead.</p>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 2,
+          "items": [
+            { "heading": "Strings", "body": "Cache values, counters, flags. SET/GET/DEL/INCR.", "color": "#00E5FF" },
+            { "heading": "Hashes", "body": "Object-like: HSET user:1 name Alice. Perfect for cached DB rows.", "color": "#8B5CF6" },
+            { "heading": "Lists", "body": "Ordered collections. LPUSH/RPUSH for queues, BRPOP for blocking reads.", "color": "#FF3D8A" },
+            { "heading": "Sorted Sets", "body": "Ranked by score. ZADD/ZRANGE for leaderboards, rate limiting.", "color": "#00F593" },
+            { "heading": "Pub/Sub", "body": "Real-time messaging. PUBLISH channel message. SUBSCRIBE channel.", "color": "#FFB300" },
+            { "heading": "TTL", "body": "EXPIRE key seconds. Keys auto-delete. Perfect for time-bounded caches.", "color": "#8B5CF6" }
+          ]
+        }
+      },
+      "caption": "Redis data structures — each designed for specific use cases",
+      "code": "> SET user:1 '{\"name\":\"Alice\"}' EX 3600\nOK\n> GET user:1\n\"{\\\"name\\\":\\\"Alice\\\"}\"\n> INCR page:views:homepage\n(integer) 42\n> LPUSH queue:tasks 'send-email'\n(integer) 1\n> BRPOP queue:tasks 0\n1) \"queue:tasks\"\n2) \"send-email\"",
+      "codeLang": "redis"
+    }
+  ]
+}

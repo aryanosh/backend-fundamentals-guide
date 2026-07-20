@@ -1,0 +1,70 @@
+{
+  "id": 1,
+  "title": "How The Internet Actually Works",
+  "subtitle": "DNS, TCP/IP, ports, and the handshake that starts everything",
+  "group": "foundation",
+  "sections": [
+    {
+      "title": "DNS — The Phonebook of the Internet",
+      "text": "<p>Every device on the internet needs a unique address — an <strong>IP address</strong> — just like a street address for mail. But humans can't remember strings of numbers like <code>104.244.42.65</code>. That's where <strong>DNS</strong> (Domain Name System) acts as the internet's phonebook, translating names like <code>google.com</code> into IP addresses in milliseconds.</p><p>When you type a domain, your OS first checks its local cache. If not found, it queries the configured DNS resolver which walks a hierarchy: Root → TLD (.com) → Authoritative Nameserver (google.com). Each level returns the next server's address until the final IP is reached. This process completes in 10-50ms for cached results.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Type google.com", "color": "#00E5FF" },
+            { "label": "Local Cache Check", "desc": "Browser + OS cache checked first", "color": "#8B5CF6" },
+            { "label": "DNS Resolver", "desc": "Queries root → .com → authoritative", "color": "#FF3D8A" },
+            { "label": "Get IP", "desc": "Returns 142.250.80.46 in ~20ms", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "DNS resolution translates human-readable domains into machine-readable IP addresses in milliseconds",
+      "detail": "The DNS hierarchy has 13 root server clusters (letters A-M). They don't store domain records — they only know where TLD servers are. TLD servers point to authoritative nameservers that have the actual DNS records (A, AAAA, CNAME, MX, TXT, etc.). DNS results are cached at every level: your browser (60s), OS (configurable), resolver (TTL-dependent), and each nameserver. This is why changing DNS records takes time to propagate.",
+      "code": "$ nslookup google.com\n$ dig google.com +short\n\n// Node.js example\nconst dns = require('dns');\ndns.resolve4('google.com', (err, addresses) => {\n  console.log(addresses);\n});",
+      "codeLang": "bash / javascript",
+      "callout": "DNS resolves domain names to IPs in 10-50ms cached, 50-200ms uncached. The entire system handles trillions of queries per day.",
+      "calloutType": "info",
+      "calloutTitle": "DNS by the Numbers"
+    },
+    {
+      "title": "Ports: The Apartment Number",
+      "text": "<p>If an IP address is a building's street address, a <strong>port</strong> is the apartment number. The standard port for web traffic is port 80 (HTTP) and port 443 (HTTPS). Together, an IP and port form a <strong>socket</strong> — the complete destination for your data.</p><p>Ports 0-1023 are well-known ports requiring root/admin privileges to bind. Ports 1024-49151 are registered ports assigned by IANA. Ports 49152-65535 are dynamic/private for temporary use. A socket is uniquely identified by the tuple (src_ip, src_port, dst_ip, dst_port, protocol).</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 40, "y": 40, "w": 200, "h": 60, "label": "IP: 104.244.42.65", "color": "#00E5FF" },
+            { "x": 260, "y": 40, "w": 200, "h": 60, "label": "Port: 443 (HTTPS)", "color": "#FF3D8A" },
+            { "x": 150, "y": 140, "w": 200, "h": 60, "label": "Socket: IP + Port", "color": "#8B5CF6" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "Building address" },
+            { "target": 1, "text": "Apartment number" },
+            { "target": 2, "text": "Complete destination" }
+          ]
+        }
+      },
+      "caption": "IP = building address, Port = apartment number. Together they form a socket.",
+      "code": "$ netstat -tlnp\n$ ss -tlnp\n\n// Node.js server on port 443\nconst net = require('net');\nconst server = net.createServer();\nserver.listen(443, () => {\n  console.log('Listening on port 443');\n});",
+      "codeLang": "bash / javascript"
+    },
+    {
+      "title": "TCP Three-Way Handshake",
+      "text": "<p>TCP is like a phone call — before you start talking, you make sure the other person is ready. The <strong>three-way handshake</strong> establishes a reliable connection with three messages exchanged in under 100ms.</p><ol><li><strong>SYN</strong> — Client sends a SYN packet with a random sequence number. \"Can we talk?\"</li><li><strong>SYN-ACK</strong> — Server acknowledges and sends its own sequence number. \"Yes, I'm ready.\"</li><li><strong>ACK</strong> — Client confirms. \"Connection established!\"</li></ol><p>After this, data transfer begins with sequence numbers ensuring ordered delivery. HTTP/2 and HTTP/3 optimize this with connection multiplexing and 0-RTT handshakes.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "SYN", "desc": "Client sends seq=1000", "color": "#00E5FF" },
+            { "label": "SYN-ACK", "desc": "Server ACKs with seq=5000", "color": "#8B5CF6" },
+            { "label": "ACK", "desc": "Connection established", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "SYN → SYN-ACK → ACK: Three messages establish a reliable TCP connection",
+      "detail": "The TCP three-way handshake establishes a reliable connection before any data is sent. SYN (synchronize) initiates the connection with a random sequence number. SYN-ACK acknowledges receipt and sends the server's own sequence number. ACK confirms both sides are ready. After this, data transfer begins with sequence numbers ensuring ordered delivery.",
+      "code": "// Go example — handshake happens automatically\npackage main\nimport \"net\"\nfunc main() {\n  conn, _ := net.Dial(\"tcp\", \"google.com:80\")\n  // SYN-ACK happens here\n  conn.Write([]byte(\"GET / HTTP/1.1\\r\\nHost: google.com\\r\\n\\r\\n\"))\n}",
+      "codeLang": "go"
+    }
+  ]
+}

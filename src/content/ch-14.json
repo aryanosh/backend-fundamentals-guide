@@ -1,0 +1,76 @@
+{
+  "id": 14,
+  "title": "Version Control with Git",
+  "subtitle": "Commits, branches, merges, remotes, and how teams collaborate on code",
+  "group": "scale",
+  "sections": [
+    {
+      "title": "How Git Stores Data",
+      "text": "<p>Git is a <strong>snapshot-based</strong> version control system. Every commit is a snapshot of your entire project at that point in time. Git doesn't store changes (diffs) — it stores full snapshots but compresses identical files with references.</p><p><strong>The three trees:</strong></p><ul><li><strong>Working Directory</strong> — The files you're editing on disk</li><li><strong>Staging Area (Index)</strong> — Files you've marked for the next commit</li><li><strong>Repository (.git)</strong> — The committed snapshots</li></ul><p>Every commit has a unique SHA-1 hash (like <code>a1b2c3d4...</code>) that identifies it. The commit includes the author, timestamp, message, and a pointer to its parent commit(s). This chain of commits forms the project history.</p>",
+      "diagram": {
+        "type": "timeline",
+        "config": {
+          "events": [
+            { "title": "Commit A (root)", "desc": "Initial commit", "color": "#00E5FF", "status": "done" },
+            { "title": "Commit B", "desc": "Added feature X", "color": "#00E5FF", "status": "done" },
+            { "title": "Commit C", "desc": "Fixed bug in X", "color": "#00E5FF", "status": "done" },
+            { "title": "Commit D", "desc": "Added feature Y", "color": "#8B5CF6", "status": "active" },
+            { "title": "Commit E", "desc": "(working directory)", "color": "#5A5878", "status": "locked" }
+          ]
+        }
+      },
+      "caption": "Git stores a chain of snapshots — each commit is a full picture of the project",
+      "code": "# The three-tree workflow\n$ git add file.txt          # Working → Staging\n$ git commit -m \"message\"   # Staging → Repository\n$ git status                 # See current state\n$ git log --oneline          # View commit history\n\n# Every commit is a snapshot\n$ git show a1b2c3d4          # View a specific commit\n$ git diff HEAD~1            # Compare with parent",
+      "codeLang": "bash"
+    },
+    {
+      "title": "Branching & Merging",
+      "text": "<p><strong>Branches</strong> are lightweight pointers to specific commits. Creating a branch is instant — it's just a 41-byte file with a commit hash. This makes branching cheap and encourages frequent branching.</p><p>Common branching strategies:</p><ul><li><strong>Git Flow</strong> — <code>main</code> (production), <code>develop</code> (integration), feature branches. Complex but structured.</li><li><strong>GitHub Flow</strong> — Everything branches from <code>main</code>. Feature branch → PR → merge to main. Deploy from main. Simpler.</li><li><strong>Trunk-based</strong> — Short-lived feature branches merged to main multiple times daily. Continuous integration.</li></ul><p>Merging combines changes from one branch into another. <strong>Fast-forward</strong> merges happen when there's no divergence. <strong>Three-way merges</strong> create a merge commit when branches have diverged.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 40, "y": 20, "w": 120, "h": 30, "label": "main", "color": "#00E5FF" },
+            { "x": 40, "y": 80, "w": 120, "h": 30, "label": "feature/login", "color": "#FF3D8A" },
+            { "x": 200, "y": 20, "w": 120, "h": 30, "label": "A → B → C", "color": "#8B5CF6" },
+            { "x": 200, "y": 80, "w": 120, "h": 30, "label": "D → E → F", "color": "#FFB300" },
+            { "x": 200, "y": 140, "w": 120, "h": 30, "label": "A → B → C → F", "color": "#00F593" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "Production branch" },
+            { "target": 1, "text": "Feature branch" },
+            { "target": 4, "text": "After merge: main includes feature" }
+          ]
+        }
+      },
+      "caption": "Feature branches isolate work-in-progress from the main codebase",
+      "code": "# Branching workflow\n$ git checkout -b feature/login   # create + switch\n$ git add . && git commit -m \"add login form\"\n$ git push -u origin feature/login\n\n# Merge back to main\n$ git checkout main\n$ git merge feature/login\n$ git branch -d feature/login     # delete local branch\n\n# Resolve conflicts\n$ git merge feature/login\n# CONFLICT in file.txt → edit file.txt, then:\n$ git add file.txt && git commit",
+      "codeLang": "bash",
+      "callout": "GitHub Flow is the simplest and most popular: feature branch → PR → review → merge to main → deploy. Works for most teams.",
+      "calloutType": "tip",
+      "calloutTitle": "Keep It Simple"
+    },
+    {
+      "title": "Working with Remotes (GitHub)",
+      "text": "<p><strong>Remotes</strong> are copies of your repository hosted elsewhere — GitHub, GitLab, Bitbucket, or your own server. <code>origin</code> is the default name for your primary remote.</p><p>Team collaboration workflow:</p><ol><li><code>git clone</code> — Copy the repository to your machine</li><li><code>git checkout -b feature</code> — Create a feature branch</li><li><code>git push -u origin feature</code> — Push your branch to GitHub</li><li>Open a <strong>Pull Request (PR)</strong> — Propose your changes</li><li>Team reviews, comments, requests changes</li><li>Merge the PR — Changes land in main</li><li><code>git pull</code> — Everyone gets the latest code</li></ol><p>Write good commit messages: short summary (50 chars), blank line, detailed body. This helps your team understand why changes were made.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "git clone", "desc": "Copy remote repo locally", "color": "#00E5FF" },
+            { "label": "Create Branch", "desc": "git checkout -b feature", "color": "#8B5CF6" },
+            { "label": "Commit", "desc": "git commit -m \"msg\"", "color": "#FF3D8A" },
+            { "label": "Push + PR", "desc": "git push → Open Pull Request", "color": "#FFB300" },
+            { "label": "Review + Merge", "desc": "Team reviews → merge to main", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "The standard Pull Request workflow — branch, commit, push, review, merge",
+      "code": "# Starting work\n$ git clone git@github.com:user/repo.git\n$ cd repo\n$ git checkout -b my-feature\n\n# Daily workflow\n$ git add -A\n$ git commit -m \"Add user authentication\n\n- Implemented JWT-based login\n- Added password hashing with bcrypt\n- Created middleware for protected routes\"\n$ git push -u origin my-feature\n# Then open a PR on GitHub\n\n# Staying updated\n$ git checkout main\n$ git pull origin main   # get latest\n$ git checkout my-feature\n$ git rebase main        # replay your changes on latest main",
+      "codeLang": "bash",
+      "callout": "Good commit message format: subject line (50 chars max), blank line, body (72 chars per line). Explain WHAT and WHY, not HOW.",
+      "calloutType": "tip",
+      "calloutTitle": "Commit Messages"
+    }
+  ]
+}

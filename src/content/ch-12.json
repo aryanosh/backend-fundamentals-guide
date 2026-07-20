@@ -1,0 +1,96 @@
+{
+  "id": 12,
+  "title": "Networking Essentials",
+  "subtitle": "OSI model, WebSockets, load balancers, and how data moves across networks",
+  "group": "scale",
+  "sections": [
+    {
+      "title": "The OSI Model",
+      "text": "<p>The <strong>OSI (Open Systems Interconnection) model</strong> is a conceptual framework that describes how data travels across a network. It has 7 layers, each with a specific job:</p><ol><li><strong>Physical</strong> — Raw bits over wire/radio. Cables, antennas, signal encoding.</li><li><strong>Data Link</strong> — Frames between directly connected nodes. Ethernet, Wi-Fi, MAC addresses.</li><li><strong>Network</strong> — Routing between networks. IP addresses, routing protocols. <strong>This is where the Internet lives.</strong></li><li><strong>Transport</strong> — Reliable delivery between applications. TCP, UDP, ports.</li><li><strong>Session</strong> — Manages connections. TLS handshake, authentication.</li><li><strong>Presentation</strong> — Data encoding/translation. SSL/TLS encryption, JSON parsing.</li><li><strong>Application</strong> — User-facing protocols. HTTP, DNS, FTP, SMTP.</li></ol>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 180, "y": 10, "w": 140, "h": 30, "label": "7. Application", "color": "#00E5FF" },
+            { "x": 180, "y": 44, "w": 140, "h": 30, "label": "6. Presentation", "color": "#8B5CF6" },
+            { "x": 180, "y": 78, "w": 140, "h": 30, "label": "5. Session", "color": "#FF3D8A" },
+            { "x": 180, "y": 112, "w": 140, "h": 30, "label": "4. Transport", "color": "#FFB300" },
+            { "x": 180, "y": 146, "w": 140, "h": 30, "label": "3. Network", "color": "#00F593" },
+            { "x": 180, "y": 180, "w": 140, "h": 30, "label": "2. Data Link", "color": "#FF3D8A" },
+            { "x": 180, "y": 214, "w": 140, "h": 30, "label": "1. Physical", "color": "#8B5CF6" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "HTTP, DNS, SMTP" },
+            { "target": 1, "text": "Encryption, encoding" },
+            { "target": 2, "text": "TLS, session management" },
+            { "target": 3, "text": "TCP, UDP, ports" },
+            { "target": 4, "text": "IP routing" },
+            { "target": 5, "text": "Ethernet, MAC" },
+            { "target": 6, "text": "Cables, radio signals" }
+          ]
+        }
+      },
+      "caption": "The 7-layer OSI model — data moves from application to physical and back",
+      "detail": "The OSI model is a teaching tool, not a strict implementation guide. The Internet uses TCP/IP (a 4-layer model: Link → Internet → Transport → Application). But understanding OSI helps diagnose network issues. If you can't reach a website: layer 7 (is the server running?), layer 4 (is the port open?), layer 3 (is the IP reachable?), layer 1 (is the cable plugged in?).",
+      "code": "# Diagnose network issues by OSI layer\n\n# Layer 3 - is the host reachable?\n$ ping google.com\n\n# Layer 4 - is the port open?\n$ nc -zv google.com 80\n\n# Layer 7 - is the web server responding?\n$ curl -I https://google.com",
+      "codeLang": "bash"
+    },
+    {
+      "title": "HTTP vs WebSockets",
+      "text": "<p><strong>HTTP</strong> is request-response: the client asks, the server answers. The connection closes after each request (in HTTP/1.1 with keep-alive, it stays open briefly, but the pattern is still request-response). This is perfect for APIs and web pages.</p><p><strong>WebSockets</strong> are full-duplex — both client and server can send data at any time, over a single persistent connection. This is ideal for real-time applications: chat, live notifications, gaming, collaborative editing, streaming data.</p><p>The WebSocket handshake starts as HTTP (<code>Upgrade: websocket</code>), then switches to the WebSocket protocol. This allows WebSockets to work through standard HTTP proxies and firewalls.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "HTTP",
+            "items": [
+              "Request-response pattern",
+              "Client initiates every exchange",
+              "Connection closes after response",
+              "Stateless — no persistent connection",
+              "Higher overhead per request (headers)",
+              "Best for: REST APIs, web pages"
+            ]
+          },
+          "right": {
+            "header": "WebSocket",
+            "items": [
+              "Full-duplex — both sides can send",
+              "Server can push data to client",
+              "Persistent connection stays open",
+              "Stateful connection maintained",
+              "Low overhead per message (frames)",
+              "Best for: chat, gaming, live data"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "HTTP for request-response, WebSockets for real-time bidirectional communication",
+      "code": "// WebSocket server (Node.js + ws)\nconst WebSocket = require('ws');\nconst wss = new WebSocket.Server({ port: 8080 });\n\nwss.on('connection', (ws) => {\n  ws.on('message', (data) => {\n    // Broadcast to all connected clients\n    wss.clients.forEach(client => {\n      if (client.readyState === WebSocket.OPEN) {\n        client.send(data);\n      }\n    });\n  });\n});\n\n// WebSocket client (browser)\nconst ws = new WebSocket('ws://localhost:8080');\nws.onmessage = (event) => {\n  console.log('Received:', event.data);\n};\nws.send('Hello server!');",
+      "codeLang": "javascript"
+    },
+    {
+      "title": "Load Balancers",
+      "text": "<p><strong>Load balancers</strong> distribute incoming traffic across multiple backend servers. They're essential for scaling, high availability, and zero-downtime deployments.</p><p>Common algorithms:</p><ul><li><strong>Round Robin</strong> — Requests go to each server in turn. Simple but doesn't account for server load.</li><li><strong>Least Connections</strong> — Send to the server with the fewest active connections.</li><li><strong>IP Hash</strong> — Hash the client IP to determine the server. Ensures a client talks to the same server (sticky sessions).</li><li><strong>Weighted</strong> — More powerful servers get more traffic.</li></ul><p>Load balancers also perform health checks — if a server fails, they stop sending traffic to it until it recovers.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Client Request", "desc": "User hits example.com", "color": "#00E5FF" },
+            { "label": "Load Balancer", "desc": "Routes to healthy server", "color": "#8B5CF6" },
+            { "label": "Server A", "desc": "Handles request", "color": "#00F593" },
+            { "label": "Server B", "desc": "Idle / handling other request", "color": "#FFB300" },
+            { "label": "Server C", "desc": "Health check failed (removed)", "color": "#FF3D8A" }
+          ]
+        }
+      },
+      "caption": "Load balancer distributes traffic across healthy servers, routing around failures",
+      "code": "# Nginx load balancing config\nupstream backend {\n  least_conn;  # least connections algorithm\n  server app1.example.com weight=3;\n  server app2.example.com weight=2;\n  server app3.example.com;  # weight=1 default\n}\n\nserver {\n  listen 80;\n  location / {\n    proxy_pass http://backend;\n    proxy_set_header Host $host;\n  }\n}",
+      "codeLang": "nginx",
+      "callout": "Load balancers are the first line of defense for scaling. They handle SSL termination, health checks, and can prevent the thundering herd problem during server restarts.",
+      "calloutType": "info",
+      "calloutTitle": "Scaling 101"
+    }
+  ]
+}

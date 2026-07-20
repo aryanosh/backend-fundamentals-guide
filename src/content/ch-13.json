@@ -1,0 +1,67 @@
+{
+  "id": 13,
+  "title": "Linux & The Command Line",
+  "subtitle": "Essential commands, the file system, processes, and SSH — every dev's second home",
+  "group": "scale",
+  "sections": [
+    {
+      "title": "The File System",
+      "text": "<p>Linux organizes everything as files. The root is <code>/</code>, and everything branches from there. Key directories:</p><ul><li><code>/bin</code> — Essential system binaries (ls, cp, mv)</li><li><code>/etc</code> — Configuration files (nginx.conf, ssh/sshd_config)</li><li><code>/var</code> — Variable data (logs, databases, mail)</li><li><code>/tmp</code> — Temporary files (cleared on reboot)</li><li><code>/home</code> — User home directories</li><li><code>/usr</code> — User-installed programs and libraries</li></ul><p>Understanding the file system hierarchy helps you find configuration files, logs, and installed programs without guessing.</p>",
+      "diagram": {
+        "type": "svg",
+        "config": {
+          "svg": "<svg viewBox=\"0 0 500 260\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"220\" y=\"10\" width=\"60\" height=\"36\" rx=\"4\" fill=\"#11131F\" stroke=\"#00E5FF\" stroke-width=\"1.5\"/><text x=\"250\" y=\"33\" fill=\"#00E5FF\" font-size=\"11\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\" text-anchor=\"middle\">/</text><rect x=\"60\" y=\"60\" width=\"140\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"130\" y=\"80\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/bin  ls, cp, mv</text><rect x=\"220\" y=\"60\" width=\"140\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"290\" y=\"80\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/etc  config files</text><rect x=\"380\" y=\"60\" width=\"100\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"430\" y=\"80\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/var  logs</text><rect x=\"60\" y=\"110\" width=\"140\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"130\" y=\"130\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/tmp  temporary</text><rect x=\"220\" y=\"110\" width=\"140\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"290\" y=\"130\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/home  user dirs</text><rect x=\"380\" y=\"110\" width=\"100\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"430\" y=\"130\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/usr  programs</text><rect x=\"60\" y=\"160\" width=\"140\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"130\" y=\"180\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/proc  process info</text><rect x=\"220\" y=\"160\" width=\"140\" height=\"30\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"290\" y=\"180\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">/dev  device files</text><line x1=\"250\" y1=\"46\" x2=\"130\" y2=\"60\" stroke=\"#202338\" stroke-width=\"1\"/><line x1=\"250\" y1=\"46\" x2=\"290\" y2=\"60\" stroke=\"#202338\" stroke-width=\"1\"/><line x1=\"250\" y1=\"46\" x2=\"430\" y2=\"60\" stroke=\"#202338\" stroke-width=\"1\"/><line x1=\"130\" y1=\"90\" x2=\"130\" y2=\"110\" stroke=\"#202338\" stroke-width=\"1\"/><line x1=\"290\" y1=\"90\" x2=\"290\" y2=\"110\" stroke=\"#202338\" stroke-width=\"1\"/><line x1=\"430\" y1=\"90\" x2=\"430\" y2=\"110\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"250\" y=\"230\" fill=\"#5A5878\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\" text-anchor=\"middle\">Everything is a file. Configuration files, logs, processes, devices — all accessible via the file system.</text></svg>",
+          "caption": "Linux file system hierarchy — everything starts from root (/)"
+        }
+      },
+      "caption": "The Linux file system: everything branches from root (/)",
+      "code": "# Essential navigation\n$ pwd              # print working directory\n$ ls -la           # list all files with details\n$ cd /var/log      # change directory\n$ mkdir project    # create directory\n$ rm -rf temp/     # remove directory recursively\n\n# File operations\n$ cp file.txt backup/\n$ mv file.txt newname.txt\n$ cat file.txt     # view file contents\n$ less file.txt    # scroll through file\n$ tail -f log.txt  # follow log file (live)",
+      "codeLang": "bash",
+      "callout": "Learn these commands by heart: ls, cd, cat, grep, ps, top, find, chmod, ssh, curl. They cover 90% of daily terminal work.",
+      "calloutType": "tip",
+      "calloutTitle": "Essential Commands"
+    },
+    {
+      "title": "Process Management",
+      "text": "<p>Every running program is a <strong>process</strong>. Linux provides tools to inspect and control processes:</p><ul><li><code>ps aux</code> — List all running processes with user, CPU, memory usage</li><li><code>top</code> / <code>htop</code> — Interactive process viewer (real-time)</li><li><code>kill -9 PID</code> — Force-kill a process by ID</li><li><code>systemctl start/stop/status nginx</code> — Manage system services</li></ul><p>Processes run with specific permissions. The <code>root</code> user (UID 0) has full access. Regular users can only access their own files and processes. This is the <strong>principle of least privilege</strong>.</p>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 2,
+          "items": [
+            { "heading": "ps aux", "body": "Snapshot of all running processes with CPU/memory usage.", "color": "#00E5FF" },
+            { "heading": "top/htop", "body": "Real-time process monitor. Press q to quit.", "color": "#8B5CF6" },
+            { "heading": "kill", "body": "Send signals: SIGTERM (15) = graceful, SIGKILL (9) = force.", "color": "#FF3D8A" },
+            { "heading": "systemctl", "body": "Manage services: start, stop, restart, enable, status.", "color": "#00F593" },
+            { "heading": "Permissions", "body": "chmod 755 = rwxr-xr-x. Owner: rwx, group: rx, others: rx.", "color": "#FFB300" },
+            { "heading": "chown", "body": "Change file owner: chown user:group file.txt.", "color": "#8B5CF6" }
+          ]
+        }
+      },
+      "caption": "Process management tools every developer should know",
+      "code": "$ ps aux | grep nginx\n$ top -o %MEM       # sort by memory usage\n$ kill -15 1234     # graceful shutdown (SIGTERM)\n$ kill -9 1234      # force kill (SIGKILL)\n\n# File permissions\n$ chmod 755 script.sh    # rwxr-xr-x\n$ chmod +x script.sh     # make executable\n$ chown deploy:app config.yml\n\n# Check logs\n$ journalctl -u nginx -f  # follow nginx logs",
+      "codeLang": "bash"
+    },
+    {
+      "title": "SSH — Secure Shell",
+      "text": "<p><strong>SSH</strong> lets you securely connect to a remote server's command line. It's how you manage production servers, run commands, and deploy code.</p><p>Key concepts:</p><ul><li><strong>SSH keys</strong> — Public/private key pairs replace passwords. Your public key goes on the server's <code>~/.ssh/authorized_keys</code>. Your private key stays on your machine — never share it.</li><li><strong>Port forwarding</strong> — Forward local ports through SSH: <code>ssh -L 3000:localhost:3000 server</code> lets you access a remote service locally.</li><li><strong>SCP/RSYNC</strong> — Copy files over SSH: <code>scp file.txt user@server:/path/</code>.</li></ul>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "ssh user@server", "desc": "Initiate SSH connection", "color": "#00E5FF" },
+            { "label": "Key Exchange", "desc": "Public key auth or password", "color": "#8B5CF6" },
+            { "label": "Encrypted Tunnel", "desc": "All traffic is encrypted", "color": "#00F593" },
+            { "label": "Remote Shell", "desc": "You control the server", "color": "#FFB300" }
+          ]
+        }
+      },
+      "caption": "SSH creates an encrypted tunnel to a remote server's command line",
+      "code": "# Generate SSH key pair\n$ ssh-keygen -t ed25519 -C \"your@email.com\"\n\n# Copy public key to server\n$ ssh-copy-id user@server-ip\n\n# Connect\n$ ssh user@server-ip\n\n# Copy files\n$ scp deploy.tar.gz user@server:/var/www/\n\n# Port forwarding (access remote DB locally)\n$ ssh -L 5432:localhost:5432 user@server\n# Now connect to localhost:5432 to reach the server's PostgreSQL",
+      "codeLang": "bash",
+      "callout": "Use ed25519 keys (they're shorter and more secure than RSA). Never share your private key. Use ssh-agent to avoid typing passphrases repeatedly.",
+      "calloutType": "tip",
+      "calloutTitle": "SSH Best Practices"
+    }
+  ]
+}

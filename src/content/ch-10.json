@@ -1,0 +1,74 @@
+{
+  "id": 10,
+  "title": "Security Basics Every Dev Must Know",
+  "subtitle": "SQL injection, XSS, CSRF, rate limiting, and OWASP Top 10",
+  "group": "core",
+  "sections": [
+    {
+      "title": "SQL Injection",
+      "text": "<p><strong>SQL injection</strong> occurs when user input is directly concatenated into SQL queries. An attacker can input <code>'; DROP TABLE users; --</code> to delete tables, or <code>' OR '1'='1</code> to bypass authentication.</p><p>The fix is simple: <strong>parameterized queries</strong> (prepared statements). Never interpolate user input directly into SQL strings. ORMs like Prisma, Sequelize, and TypeORM handle this automatically, but raw queries still need care.</p><p>Always validate and sanitize inputs. A good rule: trust nothing from the client.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 40, "y": 30, "w": 160, "h": 50, "label": "User Input", "color": "#FF3D8A" },
+            { "x": 260, "y": 30, "w": 160, "h": 50, "label": "SQL Query Builder", "color": "#8B5CF6" },
+            { "x": 150, "y": 130, "w": 160, "h": 50, "label": "Database", "color": "#00F593" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "'; DROP TABLE users; --" },
+            { "target": 1, "text": "Parameterized query: $1, $2" },
+            { "target": 2, "text": "Input treated as data, not code" }
+          ]
+        }
+      },
+      "caption": "Parameterized queries treat user input as data, never as executable SQL",
+      "code": "-- VULNERABLE: direct concatenation\nconst query = `SELECT * FROM users WHERE email = '${email}'`;\n\n-- Input: ' OR '1'='1\n-- Result: SELECT * FROM users WHERE email = '' OR '1'='1'\n-- Returns ALL users!\n\n-- SAFE: parameterized query\nconst query = 'SELECT * FROM users WHERE email = $1';\nconst result = await db.query(query, [email]);\n\n-- Input: ' OR '1'='1\n-- Result: looks for a user with literal email: \"' OR '1'='1\"",
+      "codeLang": "javascript",
+      "callout": "SQL injection is the #1 web application vulnerability. Always use parameterized queries. ORMs help but raw SQL still needs preparation.",
+      "calloutType": "warn",
+      "calloutTitle": "Number One Threat"
+    },
+    {
+      "title": "XSS, CSRF & Common Attacks",
+      "text": "<p><strong>XSS (Cross-Site Scripting)</strong> — Attacker injects JavaScript into a page viewed by other users. Stored XSS (saved in database, executed on load) and Reflected XSS (in URL, executed once). Prevent by escaping all user-generated content.</p><p><strong>CSRF (Cross-Site Request Forgery)</strong> — Attacker tricks a logged-in user into performing an action (like changing their email) without consent. Prevent with anti-CSRF tokens or SameSite cookies.</p><p><strong>Rate Limiting</strong> — Limit requests per IP to prevent brute force attacks, DDoS, and API abuse. Implement using token bucket or sliding window algorithm. Redis is commonly used for distributed rate limiting.</p>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 3,
+          "items": [
+            { "heading": "XSS", "body": "Injected scripts. Prevent: escape output, CSP headers, sanitize HTML.", "color": "#FF3D8A" },
+            { "heading": "CSRF", "body": "Cross-site request forgery. Prevent: CSRF tokens, SameSite cookies.", "color": "#FFB300" },
+            { "heading": "Rate Limiting", "body": "Limit requests/IP. Token bucket algorithm. Use Redis for distributed limits.", "color": "#8B5CF6" },
+            { "heading": "Clickjacking", "body": "Framing attacks. Prevent: X-Frame-Options: DENY header.", "color": "#00E5FF" },
+            { "heading": "Brute Force", "body": "Repeated login attempts. Prevent: rate limit + account lockout + CAPTCHA.", "color": "#00F593" },
+            { "heading": "Dependency Vulns", "body": "Vulnerable packages. Prevent: npm audit, Dependabot, lock files.", "color": "#FF3D8A" }
+          ]
+        }
+      },
+      "caption": "Six common security threats and how to prevent them",
+      "code": "# Security headers (set on every response)\nX-Frame-Options: DENY\nX-Content-Type-Options: nosniff\nContent-Security-Policy: default-src 'self'\nReferrer-Policy: strict-origin-when-cross-origin\nStrict-Transport-Security: max-age=63072000\n\n# Rate limiting middleware\nconst rateLimit = require('express-rate-limit');\n\nconst limiter = rateLimit({\n  windowMs: 15 * 60 * 1000,  // 15 minutes\n  max: 100,                    // 100 requests per window\n  message: { error: 'Too many requests' }\n});\n\napp.use('/api/', limiter);",
+      "codeLang": "http / javascript"
+    },
+    {
+      "title": "OWASP Top 10 & Security Mindset",
+      "text": "<p>The <strong>OWASP Top 10</strong> is the standard awareness document for web application security. The current top risks include:</p><ol><li>Broken Access Control — Users accessing data they shouldn't</li><li>Cryptographic Failures — Weak encryption, exposed secrets</li><li>Injection — SQL, NoSQL, OS command injection</li><li>Insecure Design — Missing security in architecture</li><li>Security Misconfiguration — Default passwords, verbose errors</li></ol><p>Security isn't a feature — it's a mindset. Never trust input. Principle of least privilege. Encrypt everything in transit (HTTPS/TLS). Hash passwords. Keep dependencies updated. Log suspicious activity.</p>",
+      "diagram": {
+        "type": "timeline",
+        "config": {
+          "events": [
+            { "title": "Access Control", "desc": "Users access unauthorized data", "color": "#FF3D8A", "status": "active" },
+            { "title": "Crypto Failures", "desc": "Weak TLS, exposed secrets", "color": "#FFB300", "status": "locked" },
+            { "title": "Injection", "desc": "SQL, NoSQL, OS command attacks", "color": "#8B5CF6", "status": "locked" },
+            { "title": "Insecure Design", "desc": "Missing threat modeling", "color": "#00E5FF", "status": "locked" },
+            { "title": "Misconfiguration", "desc": "Defaults left unchanged", "color": "#00F593", "status": "locked" }
+          ]
+        }
+      },
+      "caption": "OWASP Top 10 — the most critical web application security risks",
+      "callout": "Subscribe to GitHub Dependabot alerts. Run npm audit / pip audit regularly. Use a secrets scanner (git-secrets, truffleHog). Enable 2FA on all accounts.",
+      "calloutType": "tip",
+      "calloutTitle": "Practical Security Habits"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "id": 8,
+  "title": "Authentication & Authorization",
+  "subtitle": "Login flows, JWT, sessions vs tokens, and OAuth explained",
+  "group": "core",
+  "sections": [
+    {
+      "title": "The Login Flow",
+      "text": "<p>The most common auth flow works like this:</p><ol><li>User submits email + password to <code>POST /login</code></li><li>Server hashes the password and compares it against the stored hash</li><li>If it matches, the server creates a <strong>session</strong> or <strong>token</strong> that proves authentication</li><li>The client stores this credential (cookie or localStorage) and sends it with every subsequent request</li><li>The server verifies the credential on each protected request</li></ol><p>This is called <strong>cookie-based</strong> (server stores session) or <strong>token-based</strong> (client stores JWT) authentication.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "POST /login", "desc": "Client sends email + password", "color": "#00E5FF" },
+            { "label": "Hash Password", "desc": "Compare against stored hash", "color": "#8B5CF6" },
+            { "label": "Create Token", "desc": "JWT or session ID generated", "color": "#FF3D8A" },
+            { "label": "Return Credential", "desc": "Cookie/Token sent to client", "color": "#FFB300" },
+            { "label": "Authenticated!", "desc": "Client includes credential in every request", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "The five-step login flow: credentials in, credential out",
+      "code": "// Login endpoint (simplified)\napp.post('/login', async (req, res) => {\n  const { email, password } = req.body;\n  \n  const user = await db.findUserByEmail(email);\n  if (!user) return res.status(401).end();\n  \n  const match = await bcrypt.compare(password, user.hash);\n  if (!match) return res.status(401).end();\n  \n  const token = jwt.sign(\n    { userId: user.id, role: user.role },\n    process.env.JWT_SECRET,\n    { expiresIn: '24h' }\n  );\n  \n  res.json({ token });\n});",
+      "codeLang": "javascript"
+    },
+    {
+      "title": "Password Hashing",
+      "text": "<p>Never store passwords in plain text. <strong>Hash</strong> them using a one-way function designed for passwords. Regular hashing algorithms like SHA-256 are too fast — an attacker can try billions of guesses per second. Use <strong>bcrypt</strong>, <strong>argon2</strong>, or <strong>scrypt</strong> — algorithms designed to be slow and memory-hard.</p><p>Each password should have a unique <strong>salt</strong> (random data added before hashing). This prevents rainbow table attacks — even if two users have the same password, their hashes will be different.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "User Password", "desc": "Client sends 'hunter2'", "color": "#FF3D8A" },
+            { "label": "Generate Salt", "desc": "Unique random bytes: a3f8...", "color": "#8B5CF6" },
+            { "label": "Hash", "desc": "bcrypt(salt + password) → 60 char hash", "color": "#00E5FF" },
+            { "label": "Store", "desc": "Save hash + salt in database", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "Password hashing: salt + slow hash function = secure storage",
+      "code": "const bcrypt = require('bcrypt');\n\n// Register — hash the password\nconst saltRounds = 12;\nconst hash = await bcrypt.hash(password, saltRounds);\nawait db.createUser({ email, hash });\n\n// Login — compare against stored hash\nconst user = await db.findUserByEmail(email);\nconst match = await bcrypt.compare(password, user.hash);\n\n// The salt is stored INSIDE the hash string\n// $2b$12$<22 char salt><31 char hash>",
+      "codeLang": "javascript",
+      "callout": "Use bcrypt with cost factor 12. Higher = slower = more secure. Argon2 is even better but less widely available. Never use MD5 or SHA-256 for passwords.",
+      "calloutType": "warn",
+      "calloutTitle": "Choose the Right Algorithm"
+    },
+    {
+      "title": "Sessions vs JWT Tokens",
+      "text": "<p><strong>Sessions (cookie-based)</strong> — Server stores session data in memory or a database. Client only holds a session ID cookie. Easy to revoke (just delete the session). But requires server-side storage and doesn't work well across multiple servers without a shared session store (like Redis).</p><p><strong>JWT (JSON Web Token)</strong> — All user info is encoded in a signed token that the client stores. The server can verify the token without any database lookup. Stateless and scalable. But tokens are harder to revoke (you need a blocklist) and can grow large.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "Sessions",
+            "items": [
+              "Server stores session data",
+              "Client holds session ID cookie only",
+              "Easy to revoke (delete session)",
+              "Requires shared store for multi-server",
+              "Smaller payload per request",
+              "Cookie-based (httpOnly, secure)"
+            ]
+          },
+          "right": {
+            "header": "JWT (Tokens)",
+            "items": [
+              "All data encoded in the token",
+              "Client stores JWT in localStorage",
+              "Hard to revoke (need blocklist)",
+              "Stateless — no server storage needed",
+              "Can grow large with many claims",
+              "Must verify signature on every request"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "Sessions are server-side and revocable; JWT is stateless and scalable",
+      "detail": "Many modern applications use both: JWT for API authentication (mobile apps, SPAs) and sessions for web apps where server-side revocation is important. The choice depends on your architecture. If you have a single server or sticky sessions, sessions are simpler. If you have many stateless microservices, JWT is more natural. OAuth 2.0 combines both — the authorization server issues tokens that resource servers verify.",
+      "code": "// JWT structure\n// header.payload.signature\n\nconst header = {\n  \"alg\": \"HS256\",\n  \"typ\": \"JWT\"\n};\n\nconst payload = {\n  \"sub\": \"1234567890\",\n  \"name\": \"Alice\",\n  \"role\": \"admin\",\n  \"iat\": 1516239022,\n  \"exp\": 1516325422\n};\n\n// Verify\njwt.verify(token, process.env.JWT_SECRET);",
+      "codeLang": "javascript"
+    }
+  ]
+}

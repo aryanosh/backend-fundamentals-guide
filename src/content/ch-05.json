@@ -1,0 +1,111 @@
+{
+  "id": 5,
+  "title": "Memory, Threads & Processes",
+  "subtitle": "Stack vs heap, processes vs threads, and blocking vs non-blocking",
+  "group": "foundation",
+  "sections": [
+    {
+      "title": "Stack vs Heap Memory",
+      "text": "<p>Your program's memory is divided into two main regions: the <strong>stack</strong> and the <strong>heap</strong>.</p><p><strong>Stack</strong> — Fast, thread-local memory that stores function call frames, local variables, and return addresses. Each function call pushes a frame onto the stack. When the function returns, the frame is popped. Stack memory is automatically managed and extremely fast, but limited in size (~1-8 MB per thread).</p><p><strong>Heap</strong> — Shared memory where dynamically allocated objects live. You control when memory is allocated and freed. Heap allocation is slower but you can store large amounts of data. In languages like C, you manually manage heap with <code>malloc</code>/<code>free</code>. In garbage-collected languages like JavaScript and Go, the runtime handles it.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "Stack",
+            "items": [
+              "Fast allocation (just move pointer)",
+              "Automatic cleanup on function return",
+              "Limited size (~1-8 MB per thread)",
+              "Thread-local — each thread has its own",
+              "Stores: local vars, return addresses",
+              "LIFO order (last in, first out)"
+            ]
+          },
+          "right": {
+            "header": "Heap",
+            "items": [
+              "Slower allocation (find free block)",
+              "Manual or GC-based cleanup",
+              "Large capacity (system RAM limit)",
+              "Shared across all threads",
+              "Stores: objects, dynamic data",
+              "Arbitrary allocation order"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "Stack vs heap: two fundamentally different memory regions with different tradeoffs",
+      "code": "# Stack overflow (recursion without base case)\ndef recurse():\n    recurse()\n\n# Heap allocation in C\nint* ptr = malloc(100 * sizeof(int));\n// use ptr...\nfree(ptr);  // manual cleanup",
+      "codeLang": "python / c"
+    },
+    {
+      "title": "Processes vs Threads",
+      "text": "<p>A <strong>process</strong> is an independent program with its own memory space, file handles, and execution state. Processes are isolated from each other — one crashing doesn't affect others. Communication between processes (IPC) requires explicit mechanisms like pipes, sockets, or shared memory.</p><p>A <strong>thread</strong> is a lightweight unit of execution within a process. Threads in the same process share memory, making communication trivial but introducing synchronization problems. Threads are cheaper to create than processes but require careful handling of shared state.</p><p>Modern web servers use a thread pool (one thread per request) or an event loop (single thread, async I/O) approach. Node.js famously uses the latter — a single thread handles thousands of concurrent connections via asynchronous I/O.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "Process",
+            "items": [
+              "Independent memory space",
+              "Isolated — crash-safe between processes",
+              "IPC requires pipes/sockets/shared memory",
+              "Heavyweight creation (fork + exec)",
+              "OS-level scheduling overhead"
+            ]
+          },
+          "right": {
+            "header": "Thread",
+            "items": [
+              "Shared memory within process",
+              "Thread crash = entire process crash",
+              "Direct memory access (but race conditions!)",
+              "Lightweight creation",
+              "Kernel or user-level scheduling"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "Processes are isolated and heavyweight; threads are shared and lightweight",
+      "detail": "The choice between processes and threads depends on your workload. CPU-bound work benefits from multiple processes (to avoid GIL in Python) or threads (in languages with true parallelism like Go). I/O-bound work benefits from async/await or event loops regardless of thread count. The key insight: threads share memory (which is dangerous but efficient), processes don't (which is safe but slower).",
+      "callout": "Node.js uses a single-threaded event loop + worker pool for async I/O. Go uses goroutines (lightweight threads). Python uses threads but they're limited by the GIL for CPU work.",
+      "calloutType": "info",
+      "calloutTitle": "Language Approaches"
+    },
+    {
+      "title": "Blocking vs Non-Blocking",
+      "text": "<p><strong>Blocking</strong> — When your code waits for an operation to complete before continuing. If you call <code>readFileSync</code>, the thread sits idle until the file is read. This wastes CPU time and reduces throughput.</p><p><strong>Non-blocking</strong> — The operation is initiated, your code continues executing, and you're notified when the result is ready (via callback, promise, or event). This allows a single thread to handle thousands of concurrent operations.</p><p>Most modern frameworks are non-blocking. Express + Node.js with async/await, Python with asyncio, Java with virtual threads (Project Loom), and Go goroutines all use non-blocking I/O under the hood.</p>",
+      "diagram": {
+        "type": "comparison",
+        "config": {
+          "left": {
+            "header": "Blocking",
+            "items": [
+              "Thread waits for I/O to complete",
+              "Wastes CPU cycles",
+              "Need many threads for concurrency",
+              "Simple to reason about",
+              "Example: readFileSync in Node"
+            ]
+          },
+          "right": {
+            "header": "Non-Blocking",
+            "items": [
+              "Thread continues while I/O runs",
+              "Efficient CPU utilization",
+              "Single thread handles many connections",
+              "Harder to reason about (callbacks)",
+              "Example: async/await in Node/Python"
+            ]
+          },
+          "vsLabel": "VS"
+        }
+      },
+      "caption": "Non-blocking I/O allows a single thread to handle thousands of concurrent connections",
+      "code": "// Blocking — thread waits\nconst data = fs.readFileSync('file.txt');\nconsole.log(data);  // only runs after read\n\n// Non-blocking — thread continues\nfs.readFile('file.txt', (err, data) => {\n  console.log(data);  // runs when ready\n});\nconsole.log('This runs immediately');",
+      "codeLang": "javascript"
+    }
+  ]
+}

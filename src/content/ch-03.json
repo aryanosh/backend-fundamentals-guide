@@ -1,0 +1,56 @@
+{
+  "id": 3,
+  "title": "What a Server Actually Does",
+  "subtitle": "Listen, receive, route, process, respond — the server loop explained",
+  "group": "foundation",
+  "sections": [
+    {
+      "title": "The Server Loop",
+      "text": "<p>At its core, every server runs a simple infinite loop: <strong>listen → accept → read → process → write → close</strong>. This is the fundamental pattern regardless of framework or language.</p><ol><li><strong>Listen</strong> — Bind to a port and wait for incoming connections</li><li><strong>Accept</strong> — Accept a new TCP connection from a client</li><li><strong>Read</strong> — Read the HTTP request from the connection</li><li><strong>Process</strong> — Route the request to the appropriate handler logic</li><li><strong>Write</strong> — Send the HTTP response back to the client</li><li><strong>Close</strong> — Close the connection (or keep it alive for reuse)</li></ol>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Listen", "desc": "Bind to port 80/443", "color": "#00E5FF" },
+            { "label": "Accept", "desc": "Accept TCP connection", "color": "#8B5CF6" },
+            { "label": "Read", "desc": "Parse HTTP request", "color": "#FF3D8A" },
+            { "label": "Process", "desc": "Route + business logic", "color": "#FFB300" },
+            { "label": "Write", "desc": "Send HTTP response", "color": "#00F593" },
+            { "label": "Close", "desc": "Cleanup connection", "color": "#00E5FF" }
+          ]
+        }
+      },
+      "caption": "The six-step server loop that handles every request",
+      "code": "const http = require('http');\n\nconst server = http.createServer((req, res) => {\n  // 1. Read the request\n  console.log(`${req.method} ${req.url}`);\n  \n  // 2. Process — route + logic\n  if (req.url === '/') {\n    res.writeHead(200, { 'Content-Type': 'text/plain' });\n    // 3. Write the response\n    res.end('Hello World');\n  }\n});\n\n// Listen on port 3000\nserver.listen(3000);",
+      "codeLang": "javascript",
+      "callout": "Every web framework — Express, Django, Flask, Spring, Gin — is just a wrapper around this same listen-accept-read-process-write-close loop.",
+      "calloutType": "info",
+      "calloutTitle": "Frameworks Are Wrappers"
+    },
+    {
+      "title": "The Middleware Pipeline",
+      "text": "<p>Most web frameworks implement a <strong>middleware pipeline</strong> — a chain of functions that process the request in sequence before the final handler runs. Each middleware can:</p><ul><li>Modify the request (add headers, parse body, check auth)</li><li>Short-circuit the chain (return a response early for auth failures)</li><li>Modify the response (add CORS headers, compress output)</li></ul><p>Middleware is how servers handle cross-cutting concerns like logging, authentication, rate limiting, and CORS without cluttering the business logic.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 10, "y": 30, "w": 90, "h": 40, "label": "Request In", "color": "#00E5FF" },
+            { "x": 110, "y": 30, "w": 70, "h": 40, "label": "Logger", "color": "#8B5CF6" },
+            { "x": 190, "y": 30, "w": 70, "h": 40, "label": "Auth", "color": "#FF3D8A" },
+            { "x": 270, "y": 30, "w": 70, "h": 40, "label": "CORS", "color": "#FFB300" },
+            { "x": 350, "y": 30, "w": 90, "h": 40, "label": "Handler", "color": "#00F593" },
+            { "x": 190, "y": 120, "w": 70, "h": 40, "label": "Response Out", "color": "#00E5FF" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "Incoming HTTP request" },
+            { "target": 4, "text": "Final handler runs business logic" },
+            { "target": 5, "text": "Response flows back through pipeline" }
+          ]
+        }
+      },
+      "caption": "Request flows through middleware chain before reaching the handler",
+      "code": "const express = require('express');\nconst app = express();\n\n// Middleware 1: Logger\napp.use((req, res, next) => {\n  console.log(`${req.method} ${req.url}`);\n  next();\n});\n\n// Middleware 2: Auth check\napp.use((req, res, next) => {\n  if (!req.headers.authorization) {\n    return res.status(401).json({ error: 'Unauthorized' });\n  }\n  next();\n});\n\n// Route handler\napp.get('/api/data', (req, res) => {\n  res.json({ data: 'protected' });\n});",
+      "codeLang": "javascript"
+    }
+  ]
+}

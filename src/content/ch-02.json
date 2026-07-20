@@ -1,0 +1,64 @@
+{
+  "id": 2,
+  "title": "HTTP Requests & Responses",
+  "subtitle": "Methods, status codes, headers, and the anatomy of every web transaction",
+  "group": "foundation",
+  "sections": [
+    {
+      "title": "Anatomy of an HTTP Request",
+      "text": "<p>Every time your browser loads a page, it sends an <strong>HTTP request</strong>. A request has four parts: <strong>Method</strong> (what to do), <strong>URL</strong> (where to do it), <strong>Headers</strong> (metadata), and optionally a <strong>Body</strong> (data).</p><p>The most common methods are <code>GET</code> (retrieve data), <code>POST</code> (create data), <code>PUT</code> (replace data), <code>PATCH</code> (update data), and <code>DELETE</code> (remove data). Each has specific semantics about safety and idempotency.</p><p>Headers carry critical metadata: <code>Content-Type</code> tells the server how the body is formatted, <code>Authorization</code> carries credentials, <code>User-Agent</code> identifies the client, and <code>Accept</code> specifies what formats the client understands.</p>",
+      "diagram": {
+        "type": "svg",
+        "config": {
+          "svg": "<svg viewBox=\"0 0 500 200\" xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"10\" y=\"10\" width=\"480\" height=\"180\" rx=\"4\" fill=\"#11131F\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"20\" y=\"35\" fill=\"#00E5FF\" font-size=\"11\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">GET /api/users HTTP/1.1</text><text x=\"20\" y=\"55\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">Host: example.com</text><text x=\"20\" y=\"70\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">Authorization: Bearer &lt;token&gt;</text><text x=\"20\" y=\"85\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">Accept: application/json</text><text x=\"20\" y=\"100\" fill=\"#8A88A0\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">User-Agent: Mozilla/5.0 ...</text><line x1=\"20\" y1=\"112\" x2=\"470\" y2=\"112\" stroke=\"#202338\" stroke-width=\"1\"/><text x=\"20\" y=\"130\" fill=\"#5A5878\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\">(body — empty for GET)</text><text x=\"20\" y=\"160\" fill=\"#FF3D8A\" font-size=\"10\" font-family=\"JetBrains Mono,monospace\" font-weight=\"600\">Method   URL          Protocol</text><text x=\"20\" y=\"175\" fill=\"#8B5CF6\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">Headers → metadata about the request</text><text x=\"20\" y=\"190\" fill=\"#00F593\" font-size=\"9\" font-family=\"JetBrains Mono,monospace\">Body → data payload (POST/PUT/PATCH)</text></svg>",
+          "caption": "An HTTP request: method, URL, headers, and optional body"
+        }
+      },
+      "caption": "Every HTTP request has four parts: method, URL, headers, and body",
+      "code": "fetch('https://api.example.com/users', {\n  method: 'POST',\n  headers: {\n    'Content-Type': 'application/json',\n    'Authorization': 'Bearer token123'\n  },\n  body: JSON.stringify({ name: 'Alice' })\n})",
+      "codeLang": "javascript"
+    },
+    {
+      "title": "HTTP Status Codes",
+      "text": "<p>Every HTTP response includes a <strong>status code</strong> — a three-digit number that tells the client what happened. Codes are grouped into five classes:</p><ul><li><strong>1xx (Informational)</strong> — Request received, continuing. Rarely seen in practice.</li><li><strong>2xx (Success)</strong> — The request succeeded. <code>200 OK</code>, <code>201 Created</code>, <code>204 No Content</code>.</li><li><strong>3xx (Redirection)</strong> — Further action needed. <code>301 Moved Permanently</code>, <code>302 Found</code>, <code>304 Not Modified</code>.</li><li><strong>4xx (Client Error)</strong> — The request was bad. <code>400 Bad Request</code>, <code>401 Unauthorized</code>, <code>403 Forbidden</code>, <code>404 Not Found</code>, <code>429 Too Many Requests</code>.</li><li><strong>5xx (Server Error)</strong> — The server failed. <code>500 Internal Server Error</code>, <code>502 Bad Gateway</code>, <code>503 Service Unavailable</code>.</li></ul>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 5,
+          "items": [
+            { "heading": "1xx", "body": "Informational\nRarely seen", "color": "#8B5CF6" },
+            { "heading": "2xx", "body": "Success\n200 OK, 201 Created", "color": "#00F593" },
+            { "heading": "3xx", "body": "Redirection\n301, 302, 304", "color": "#00E5FF" },
+            { "heading": "4xx", "body": "Client Error\n400, 401, 404", "color": "#FFB300" },
+            { "heading": "5xx", "body": "Server Error\n500, 502, 503", "color": "#FF3D8A" }
+          ]
+        }
+      },
+      "caption": "HTTP status codes grouped by class — 2xx success, 4xx client error, 5xx server error",
+      "callout": "Always use the correct status codes. Returning 200 for errors breaks API conventions. 201 for creation, 204 for deletion, 401 for auth, 403 for permissions.",
+      "calloutType": "tip",
+      "calloutTitle": "Status Code Best Practices"
+    },
+    {
+      "title": "The Full Request-Response Cycle",
+      "text": "<p>Here's what happens when you press Enter after typing a URL:</p><ol><li>Browser checks its local DNS cache — if missing, queries the DNS resolver</li><li>TCP three-way handshake establishes a connection to the server's IP on port 443 (HTTPS)</li><li>TLS handshake negotiates encryption keys (2 round trips for TLS 1.3)</li><li>Browser sends the HTTP request (method, URL, headers, optional body)</li><li>Server processes the request — routes it, executes logic, queries databases</li><li>Server sends back an HTTP response (status code, headers, body)</li><li>Browser parses the response, renders HTML, fetches additional resources</li></ol><p>This entire cycle typically completes in 200-500ms. HTTP/2 reduces overhead with multiplexed streams, and HTTP/3 (QUIC) eliminates head-of-line blocking.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "DNS Lookup", "desc": "Resolve domain to IP (~20ms)", "color": "#00E5FF" },
+            { "label": "TCP Handshake", "desc": "SYN-SYN/ACK-ACK (1 RTT)", "color": "#8B5CF6" },
+            { "label": "TLS Negotiation", "desc": "Encryption key exchange (1-2 RTTs)", "color": "#FFB300" },
+            { "label": "Send Request", "desc": "HTTP request to server", "color": "#FF3D8A" },
+            { "label": "Server Processes", "desc": "Route → Logic → Database", "color": "#00F593" },
+            { "label": "Response", "desc": "Status + headers + body", "color": "#00E5FF" }
+          ]
+        }
+      },
+      "caption": "The full request-response cycle: 6 steps happening in under 500ms",
+      "detail": "Modern browsers optimize this cycle aggressively. They maintain connection pools (keep-alive), pre-fetch DNS records via pre-connect hints, and use HTTP/2 multiplexing to send multiple requests over a single connection. TLS 1.3 reduced the handshake to 1 round trip (or 0-RTT for returning visitors). HTTP/3 goes even further by using QUIC over UDP, eliminating TCP head-of-line blocking entirely.",
+      "code": "# See the cycle in action:\n$ curl -v https://example.com\n\n# Measure timing details:\n$ curl -w \"@%{time_connect} %{time_starttransfer} %{time_total}\\n\" -o /dev/null -s https://example.com",
+      "codeLang": "bash"
+    }
+  ]
+}

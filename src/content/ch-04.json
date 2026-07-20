@@ -1,0 +1,56 @@
+{
+  "id": 4,
+  "title": "How Data Flows Through Your Application",
+  "subtitle": "Controller → Service → Repository → Database — the layered architecture",
+  "group": "foundation",
+  "sections": [
+    {
+      "title": "The Layered Architecture",
+      "text": "<p>Professional backend applications use a <strong>layered architecture</strong> to separate concerns. The most common pattern is a three-layer model: <strong>Controller → Service → Repository</strong>. Each layer has a specific responsibility:</p><ul><li><strong>Controller</strong> — Handles HTTP request/response. Parses input, validates format, returns status codes. No business logic.</li><li><strong>Service</strong> — Contains business rules, orchestrates operations, enforces policies.</li><li><strong>Repository</strong> — Abstracts data access. Talks to databases, APIs, or files. Only one layer touches the database.</li></ul><p>This separation makes your code testable, maintainable, and swappable. You can switch databases without touching business logic.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 180, "y": 10, "w": 120, "h": 50, "label": "HTTP Request", "color": "#00E5FF" },
+            { "x": 40, "y": 80, "w": 120, "h": 50, "label": "Controller", "color": "#FF3D8A" },
+            { "x": 190, "y": 80, "w": 120, "h": 50, "label": "Service", "color": "#FFB300" },
+            { "x": 340, "y": 80, "w": 120, "h": 50, "label": "Repository", "color": "#8B5CF6" },
+            { "x": 190, "y": 160, "w": 120, "h": 50, "label": "Database", "color": "#00F593" }
+          ],
+          "annotations": [
+            { "target": 1, "text": "Validates input, routes request" },
+            { "target": 2, "text": "Business rules & orchestration" },
+            { "target": 3, "text": "Data access abstraction" },
+            { "target": 4, "text": "Persistent storage (SQL, NoSQL)" }
+          ]
+        }
+      },
+      "caption": "Request flows through Controller → Service → Repository → Database and back",
+      "code": "// Controller — handles HTTP concerns\nrouter.get('/users/:id', async (req, res) => {\n  const id = parseInt(req.params.id);\n  const user = await userService.getUserById(id);\n  res.json(user);\n});\n\n// Service — business logic\nclass UserService {\n  async getUserById(id) {\n    const user = await userRepo.findById(id);\n    if (!user) throw new NotFoundError('User not found');\n    return user;\n  }\n}\n\n// Repository — data access\nclass UserRepository {\n  async findById(id) {\n    return db.query('SELECT * FROM users WHERE id = $1', [id]);\n  }\n}",
+      "codeLang": "javascript",
+      "callout": "Keep each layer focused on one job. A controller that queries the database directly is a maintainability nightmare. Layer separation is worth the extra files.",
+      "calloutType": "tip",
+      "calloutTitle": "Single Responsibility"
+    },
+    {
+      "title": "The Food Delivery Example",
+      "text": "<p>Let's trace a complete flow through the layers using a real example: a food delivery app submitting an order.</p><ol><li><strong>Controller</strong> receives <code>POST /orders</code> with the cart items, validates the JSON format, and passes the parsed order to the service.</li><li><strong>Service</strong> calculates the total, checks inventory, applies discounts, verifies the payment, and calls the repository.</li><li><strong>Repository</strong> inserts the order into the database, creates order-item records, and returns the created order ID.</li><li>The response flows back through each layer: repository returns data, service formats it, controller sends the 201 response.</li></ol>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "POST /orders", "desc": "Controller receives order request", "color": "#00E5FF" },
+            { "label": "Validate + Parse", "desc": "Controller checks JSON format", "color": "#8B5CF6" },
+            { "label": "Business Logic", "desc": "Service: calc total, check stock", "color": "#FF3D8A" },
+            { "label": "Save to DB", "desc": "Repository: INSERT into orders", "color": "#FFB300" },
+            { "label": "201 Created", "desc": "Controller returns order ID", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "An order submission flows through all three layers before returning the response",
+      "detail": "This layered approach shines as your application grows. When you need to add audit logging, you add it in the service layer — not scattered across controllers. When you migrate from PostgreSQL to MongoDB, you only change the repository layer. The controller and service never know the database changed. This is the power of dependency inversion and separation of concerns.",
+      "code": "// Testing layers independently\nconst { test } = require('node:test');\n\n// Test service logic without database\ntest('getUserById throws when not found', async () => {\n  const mockRepo = { findById: async () => null };\n  const service = new UserService(mockRepo);\n  await assert.rejects(\n    () => service.getUserById(1),\n    { message: 'User not found' }\n  );\n});",
+      "codeLang": "javascript"
+    }
+  ]
+}

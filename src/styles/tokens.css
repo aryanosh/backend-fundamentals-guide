@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
+  --font-display: 'Rajdhani', 'JetBrains Mono', sans-serif;
+
+  --bg: #0A0C14;
+  --bg-panel: #11131F;
+  --bg-surface: #181B2B;
+  --bg-code: #0D0F1A;
+  --bg-hover: #1E2140;
+
+  --text: #EAE8E0;
+  --text-muted: #8A88A0;
+  --text-dim: #5A5878;
+
+  --accent-cyan: #00E5FF;
+  --accent-pink: #FF3D8A;
+  --accent-green: #00F593;
+  --accent-amber: #FFB300;
+  --accent-violet: #8B5CF6;
+
+  --glow-cyan: rgba(0,229,255,0.15);
+  --glow-pink: rgba(255,61,138,0.12);
+  --glow-green: rgba(0,245,147,0.12);
+  --glow-amber: rgba(255,179,0,0.12);
+  --glow-violet: rgba(139,92,246,0.12);
+
+  --border: #202338;
+  --border-strong: #2D3150;
+  --border-accent: #00E5FF;
+
+  --scanline: rgba(255,255,255,0.015);
+
+  --complete: #00F593;
+  --complete-dim: rgba(0,245,147,0.2);
+  --locked: #3A3D58;
+  --available: #00E5FF;
+}

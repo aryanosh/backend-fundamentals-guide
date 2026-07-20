@@ -1,0 +1,72 @@
+{
+  "id": 16,
+  "title": "DevOps Basics",
+  "subtitle": "Docker, CI/CD pipelines, cloud deployment, and infrastructure as code",
+  "group": "devops",
+  "sections": [
+    {
+      "title": "Docker — Containers Explained",
+      "text": "<p><strong>Docker</strong> packages your application with all its dependencies into a <strong>container</strong> — a lightweight, portable, self-sufficient unit. A container includes the code, runtime, system tools, and libraries. It runs the same way on your laptop, your teammate's machine, and in production.</p><p>Key concepts:</p><ul><li><strong>Image</strong> — A read-only template with instructions for creating a container. Built from a <code>Dockerfile</code>.</li><li><strong>Container</strong> — A running instance of an image. Each container is isolated but shares the host OS kernel (unlike VMs which include a full OS).</li><li><strong>Dockerfile</strong> — A recipe that describes how to build the image (base OS, install deps, copy code, run command).</li><li><strong>Docker Compose</strong> — Define and run multi-container applications (app + database + cache).</li></ul>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Dockerfile", "desc": "FROM node:20\nCOPY . .\nRUN npm install\nCMD node app.js", "color": "#00E5FF" },
+            { "label": "docker build", "desc": "Build image from Dockerfile", "color": "#8B5CF6" },
+            { "label": "Image Registry", "desc": "Push to Docker Hub / ECR", "color": "#FF3D8A" },
+            { "label": "docker run", "desc": "Start container from image", "color": "#FFB300" },
+            { "label": "Running Container", "desc": "Isolated process with its own FS", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "Docker build pipeline: Dockerfile → build → registry → run",
+      "code": "# Dockerfile\nFROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --production\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"app.js\"]\n\n# Build and run\n$ docker build -t my-app .\n$ docker run -p 3000:3000 my-app\n\n# Docker Compose\nversion: '3'\nservices:\n  app:\n    build: .\n    ports:\n      - '3000:3000'\n    depends_on:\n      - db\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: secret",
+      "codeLang": "dockerfile / yaml",
+      "callout": "Containers are NOT virtual machines. They share the host OS kernel and start in milliseconds. VMs include a full OS and can take minutes to boot.",
+      "calloutType": "info",
+      "calloutTitle": "Containers vs VMs"
+    },
+    {
+      "title": "CI/CD Pipeline",
+      "text": "<p><strong>CI/CD</strong> (Continuous Integration / Continuous Deployment) automates the process from code commit to production deployment.</p><ul><li><strong>CI</strong> — Every push triggers automated builds and tests. Catch bugs early.</li><li><strong>CD</strong> — After CI passes, deploy automatically to staging/production. No manual steps.</li></ul><p>A complete pipeline: Code → Commit → CI (lint, test, build) → CD (deploy to staging, run smoke tests, deploy to production). This enables multiple deployments per day with confidence.</p>",
+      "diagram": {
+        "type": "timeline",
+        "config": {
+          "events": [
+            { "title": "Code Commit", "desc": "Developer pushes to main", "color": "#00E5FF", "status": "done" },
+            { "title": "CI Build", "desc": "Lint + Test + Build", "color": "#8B5CF6", "status": "done" },
+            { "title": "Deploy Staging", "desc": "Auto-deploy to staging env", "color": "#FF3D8A", "status": "active" },
+            { "title": "Smoke Tests", "desc": "Quick sanity checks", "color": "#FFB300", "status": "locked" },
+            { "title": "Deploy Production", "desc": "Rolling update to prod", "color": "#00F593", "status": "locked" }
+          ]
+        }
+      },
+      "caption": "CI/CD pipeline: from commit to production, all automated",
+      "code": "# Complete CI/CD with GitHub Actions\nname: Deploy\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test\n      - run: npm run build\n      \n      - name: Deploy to production\n        uses: appleboy/ssh-action@v1\n        with:\n          host: ${{ secrets.HOST }}\n          script: |\n            cd /var/www/app\n            git pull\n            docker compose up -d --build",
+      "codeLang": "yaml"
+    },
+    {
+      "title": "Cloud Deployment Options",
+      "text": "<p>Once your app is containerized, you can deploy it to any cloud provider. Each offers different levels of abstraction:</p><ul><li><strong>VPS (DigitalOcean, Linode, Hetzner)</strong> — A virtual machine you manage entirely. Full control, full responsibility. Install Docker, run containers. Cheapest option.</li><li><strong>PaaS (Heroku, Railway, Fly.io)</strong> — Just push your code, the platform handles servers, scaling, and networking. Less control, easy setup. Good for MVPs.</li><li><strong>Container Orchestration (AWS ECS, Google Cloud Run, Kubernetes)</strong> — Managed container platforms. Handle scaling, load balancing, and rollbacks automatically. Kubernetes is the industry standard but complex.</li><li><strong>Serverless (AWS Lambda, Cloudflare Workers)</strong> — Run functions without managing servers. Pay per execution. Great for event-driven workloads and APIs with variable traffic.</li></ul>",
+      "diagram": {
+        "type": "infoGrid",
+        "config": {
+          "columns": 2,
+          "items": [
+            { "heading": "VPS", "body": "Full control, full responsibility. DigitalOcean, Linode, Hetzner. Cheapest option.", "color": "#00E5FF" },
+            { "heading": "PaaS", "body": "Just push code. Heroku, Railway, Fly.io. Good for MVPs and small teams.", "color": "#8B5CF6" },
+            { "heading": "Orchestration", "body": "Kubernetes, ECS, Cloud Run. Auto-scaling, rollbacks, complex setup.", "color": "#FF3D8A" },
+            { "heading": "Serverless", "body": "Lambda, Cloudflare Workers. Pay per execution. Event-driven, variable traffic.", "color": "#00F593" }
+          ]
+        }
+      },
+      "caption": "Deployment options range from full-control VPS to fully managed serverless",
+      "detail": "Start with the simplest option that meets your needs. For most backend projects, a VPS with Docker Compose is the sweet spot: cheap, simple, and flexible. As your application grows, migrate to Kubernetes for orchestration or serverless for specific functions. The key is keeping deployment simple — if deploying is scary or error-prone, invest in CI/CD automation first.",
+      "code": "# Deploy with Docker Compose to a VPS\n$ ssh user@server\n$ git clone https://github.com/yourapp\n$ cd yourapp\n\n# docker-compose.yml — one command to start everything\ndocker compose up -d\n\n# Update production with zero downtime\ngit pull\ndocker compose build\ndocker compose up -d --no-deps app\n\n# View logs\ndocker compose logs -f app",
+      "codeLang": "bash",
+      "callout": "Don't start with Kubernetes. Start with Docker Compose on a single VPS. It handles 99% of use cases with 1% of the complexity.",
+      "calloutType": "tip",
+      "calloutTitle": "Start Simple"
+    }
+  ]
+}
