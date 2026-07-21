@@ -1,72 +1,87 @@
 {
   "id": 15,
-  "title": "Testing — Code You Can Trust",
-  "subtitle": "Unit, integration, and end-to-end tests — the testing pyramid explained",
-  "group": "devops",
+  "title": "Testing & Debugging",
+  "subtitle": "Unit tests, integration tests, TDD, logging, and finding bugs before users do",
+  "group": "scale",
   "sections": [
     {
       "title": "The Testing Pyramid",
-      "text": "<p>The <strong>testing pyramid</strong> is a framework for organizing tests by scope and speed. Tests at the bottom are fast and numerous; tests at the top are slow and few.</p><ul><li><strong>Unit Tests (Base)</strong> — Test individual functions, classes, or methods in isolation. Mock external dependencies. Run in milliseconds. Thousands of them.</li><li><strong>Integration Tests (Middle)</strong> — Test how components work together (database queries, API calls, file system). Slower but catch real bugs.</li><li><strong>End-to-End Tests (Top)</strong> — Test the entire system from the user's perspective. Browser automation (Playwright, Cypress, Selenium). Slow and brittle but validate critical user journeys.</li></ul><p>The shape of the pyramid represents quantity: write lots of unit tests, some integration tests, and a few E2E tests.</p>",
+      "text": "<p>Tests give you confidence to deploy. The <strong>testing pyramid</strong> is your guide — write many small fast tests, fewer medium ones, and a few big slow ones.</p><ul><li><strong>Unit Tests</strong> — Test a single function or class in isolation. Mock everything else. Run in milliseconds. Should be your most numerous.</li><li><strong>Integration Tests</strong> — Test how parts work together. Hit the real database, the real API. They're slower and harder to write, but catch things unit tests miss.</li><li><strong>End-to-End (E2E) Tests</strong> — Test the entire system. Spin up the server, open a browser, simulate real user actions, verify the UI. Slow and brittle — use sparingly for critical paths (login, checkout).</li></ul><p>Also: <strong>Contract tests</strong> (do APIs agree on the expected payload?) and <strong>Regression tests</strong> (did this fix break something that worked before?).</p>",
       "diagram": {
-        "type": "annotation",
+        "type": "comparison",
         "config": {
-          "elements": [
-            { "x": 180, "y": 20, "w": 140, "h": 30, "label": "E2E Tests (few)", "color": "#FF3D8A" },
-            { "x": 130, "y": 60, "w": 240, "h": 40, "label": "Integration Tests (some)", "color": "#8B5CF6" },
-            { "x": 60, "y": 120, "w": 380, "h": 60, "label": "Unit Tests (many, fast)", "color": "#00E5FF" }
-          ],
-          "annotations": [
-            { "target": 0, "text": "Slow, brittle, high confidence" },
-            { "target": 1, "text": "Component interactions" },
-            { "target": 2, "text": "Fast, reliable, thousands of them" }
+          "left": {
+            "header": "Unit Tests (Many)",
+            "items": [
+              "Test one function/class in isolation",
+              "Fast: milliseconds each",
+              "Mock external dependencies",
+              "Catch logic errors",
+              "Example: test calculateTax()"
+            ]
+          },
+          "right": {
+            "header": "Integration Tests (Some)",
+            "items": [
+              "Test components together",
+              "Medium speed",
+              "Real DB, real API calls",
+              "Catch wiring bugs",
+              "Example: test createUser + getUser"
+            ]
+          },
+          "vsLabel": "Levels",
+          "bottomLabel": "E2E Tests (Few) — slow, brittle, critical-path only"
+        }
+      },
+      "caption": "The testing pyramid: many unit tests, fewer integration tests, a few E2E tests",
+      "code": "# Unit test (Jest)\ntest('calculateTax returns correct amount', () => {\n  expect(calculateTax(100, 0.1)).toBe(10);\n  expect(calculateTax(0, 0.1)).toBe(0);\n  expect(calculateTax(100, 0)).toBe(0);\n});\n\n# Integration test (Supertest + Jest)\ndescribe('POST /users', () => {\n  it('creates a user and returns 201', async () => {\n    const res = await request(app)\n      .post('/users')\n      .send({ name: 'Alice', email: 'alice@test.com' });\n    expect(res.status).toBe(201);\n    expect(res.body.name).toBe('Alice');\n  });\n});",
+      "codeLang": "javascript",
+      "callout": "Follow the 80/20 rule: 80% unit tests, 15% integration, 5% E2E. This gives you fast feedback AND confidence that your app works end-to-end.",
+      "calloutType": "info",
+      "calloutTitle": "Test Distribution"
+    },
+    {
+      "title": "Test-Driven Development (TDD)",
+      "text": "<p>TDD is a discipline: <strong>Red → Green → Refactor</strong>.</p><ol><li><strong>Red</strong> — Write a test for the feature you WISH existed. It fails (red) because you haven't built anything yet.</li><li><strong>Green</strong> — Write the minimum code to make the test pass. Not elegant. Just make it pass.</li><li><strong>Refactor</strong> — Clean up the code. Remove duplication. Make it elegant. Tests ensure you didn't break anything.</li></ol><p>This guarantees <strong>100% test coverage</strong> of what's important — every feature has a test because the test was written first. It also forces you to write testable code. If something is hard to test, it's probably badly designed.</p><p>TDD isn't always the right call. For prototypes or exploratory code, it slows you down. Use it for core business logic, complex algorithms, and anything that MUST be correct.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "RED", "desc": "Write failing test", "color": "#FF3D8A" },
+            { "label": "GREEN", "desc": "Write minimum code to pass", "color": "#00F593" },
+            { "label": "REFACTOR", "desc": "Clean up, no new features", "color": "#00E5FF" },
+            { "label": "REPEAT", "desc": "Next feature", "color": "#8B5CF6" }
           ]
         }
       },
-      "caption": "The testing pyramid: many unit tests, some integration tests, few E2E tests",
-      "code": "// Unit test — test in isolation\nfunction calculateTotal(items) {\n  return items.reduce((sum, item) => sum + item.price * item.qty, 0);\n}\n\ntest('calculates total correctly', () => {\n  const items = [\n    { price: 10, qty: 2 },\n    { price: 5, qty: 3 }\n  ];\n  expect(calculateTotal(items)).toBe(35);\n});\n\ntest('returns 0 for empty cart', () => {\n  expect(calculateTotal([])).toBe(0);\n});",
+      "caption": "TDD cycle: Red (failing test) → Green (make it pass) → Refactor (clean up)",
+      "code": "# RED - write the test first\ntest('authenticateUser validates credentials', () => {\n  const result = authenticateUser('alice', 'wrong-password');\n  expect(result).toBeNull();\n});\n\n# GREEN - implement minimum code\nfunction authenticateUser(username, password) {\n  const user = findUser(username);\n  if (!user || user.password !== hash(password)) {\n    return null;\n  }\n  return user;\n}\n\n# REFACTOR - improve without changing behavior\nfunction authenticateUser(username, password) {\n  const user = findUser(username);\n  if (!user || !user.validatePassword(password)) return null;\n  return user;\n}",
       "codeLang": "javascript"
     },
     {
-      "title": "Writing Testable Code",
-      "text": "<p>Code that's easy to test is well-designed code. Follow these principles:</p><ul><li><strong>Dependency Injection</strong> — Pass dependencies (database, API client) as parameters instead of hard-coding them. This lets you inject mocks in tests.</li><li><strong>Pure Functions</strong> — Functions that return the same output for the same input and have no side effects. Trivially testable.</li><li><strong>Single Responsibility</strong> — Each function does one thing. Simple functions are easy to test.</li><li><strong>Interface Segregation</strong> — Don't make functions depend on things they don't use. Smaller interfaces = easier mocking.</li></ul><p>If a function is hard to test, it's a sign that the design needs improvement.</p>",
+      "title": "Debugging Strategies",
+      "text": "<p>Bugs are inevitable. Good debugging is systematic, not random.</p><ul><li><strong>Reproduce it</strong> — Can you make it happen consistently? Write down the exact steps.</li><li><strong>Read the error message</strong> — Stack traces tell you exactly where it crashed. Start there.</li><li><strong>Divide and conquer</strong> — Binary search through the code. Is the bug before or after line 50? Check. Before or after line 25? Check. Halve the problem each time.</li><li><strong>Log everything</strong> — <code>console.log</code> isn't elegant but it works. Better: structured logging with levels (info, warn, error) and request IDs so you can trace a single user's journey.</li><li><strong>Rubber duck debugging</strong> — Explain the problem to an inanimate object. Out loud. Nine times out of ten you'll spot the bug yourself.</li></ul>",
       "diagram": {
         "type": "infoGrid",
         "config": {
           "columns": 2,
           "items": [
-            { "heading": "Dependency Injection", "body": "Pass deps as params → mock them in tests. Never import directly.", "color": "#00E5FF" },
-            { "heading": "Pure Functions", "body": "Same input = same output. No side effects. Trivially testable.", "color": "#00F593" },
-            { "heading": "Mocks & Stubs", "body": "Replace real deps with test doubles. Mock external APIs, databases.", "color": "#8B5CF6" },
-            { "heading": "Coverage", "body": "Measure line/branch coverage. 80% is good, 100% isn't always necessary.", "color": "#FFB300" }
+            { "heading": "Reproduce", "body": "Make it happen consistently. Write the exact steps.", "color": "#00E5FF" },
+            { "heading": "Read Stack Traces", "body": "The error tells you where to start looking.", "color": "#8B5CF6" },
+            { "heading": "Binary Search", "body": "Halve the code each time. Is the bug before or after mid-point?", "color": "#FF3D8A" },
+            { "heading": "Log + Trace IDs", "body": "Add request IDs to logs. Trace a request across services.", "color": "#00F593" },
+            { "heading": "Check Recent Changes", "body": "git diff HEAD~1 — what changed? That's likely the culprit.", "color": "#FFB300" },
+            { "heading": "Rubber Duck", "body": "Explain out loud to a rubber duck. You'll see the bug.", "color": "#8B5CF6" }
           ]
         }
       },
-      "caption": "Testable code principles — DI, pure functions, and proper mocking",
-      "code": "// HARD to test — hardcoded dependency\nfunction getUser(id) {\n  const db = new Database('prod');\n  return db.query('SELECT * FROM users WHERE id = $1', [id]);\n}\n\n// EASY to test — injected dependency\nfunction getUser(id, db) {\n  return db.query('SELECT * FROM users WHERE id = $1', [id]);\n}\n\n// Test with mock\ntest('getUser queries database', async () => {\n  const mockDb = { query: jest.fn().mockResolvedValue({ name: 'Alice' }) };\n  const user = await getUser(1, mockDb);\n  expect(mockDb.query).toHaveBeenCalledWith(\n    'SELECT * FROM users WHERE id = $1', [1]\n  );\n});",
-      "codeLang": "javascript"
-    },
-    {
-      "title": "CI/CD Test Pipeline",
-      "text": "<p>In a professional environment, tests run automatically on every push via <strong>Continuous Integration (CI)</strong>. GitHub Actions, GitLab CI, and CircleCI are popular tools.</p><p>A typical test pipeline:</p><ol><li>Developer pushes code to a branch</li><li>CI server picks up the change</li><li>Installs dependencies (<code>npm install</code>)</li><li>Runs linters (<code>npm run lint</code>)</li><li>Runs unit tests (<code>npm test</code>)</li><li>Runs integration tests (with test database)</li><li>Builds the application</li><li>If all steps pass: deploy or merge</li></ol><p>This catches bugs before they reach production. A red CI should block merging until fixed.</p>",
-      "diagram": {
-        "type": "stepFlow",
-        "config": {
-          "steps": [
-            { "label": "Push Code", "desc": "Developer pushes to branch", "color": "#00E5FF" },
-            { "label": "CI Triggers", "desc": "GitHub Actions detects push", "color": "#8B5CF6" },
-            { "label": "Install", "desc": "npm install / pip install", "color": "#FF3D8A" },
-            { "label": "Lint + Test", "desc": "npm run lint && npm test", "color": "#FFB300" },
-            { "label": "Build", "desc": "npm run build", "color": "#8B5CF6" },
-            { "label": "Deploy", "desc": "If all pass → production", "color": "#00F593" }
-          ]
-        }
-      },
-      "caption": "CI pipeline: every push triggers automated checks before code is merged",
-      "code": "# GitHub Actions workflow (.github/workflows/ci.yml)\nname: CI\non: [push, pull_request]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: '20'\n      - run: npm ci\n      - run: npm run lint\n      - run: npm test\n      - run: npm run build",
-      "codeLang": "yaml",
-      "callout": "CI should be fast (<10 minutes). If tests are slow, they'll be skipped. Pre-commit hooks can catch simple issues before CI even runs.",
+      "caption": "Systematic debugging: don't guess, follow the process",
+      "code": "# Structured logging (Pino)\nconst logger = require('pino')({\n  level: process.env.LOG_LEVEL || 'info',\n  formatters: {\n    level: (label) => ({ level: label })\n  }\n});\n\napp.use((req, res, next) => {\n  req.id = uuid.v4();  // trace ID per request\n  logger.info({ reqId: req.id, path: req.path }, 'request started');\n  next();\n});\n\n# Binary search debug\n$ git bisect start\n$ git bisect bad HEAD       # current commit is broken\n$ git bisect good v1.0.0    # this version worked\n# Git automatically checks out commits to test\n# Run: npm test\n# Mark: git bisect good  OR  git bisect bad",
+      "codeLang": "javascript",
+      "callout": "git bisect is a superpower — it does binary search through your commit history to find exactly when a bug was introduced. Use it.",
       "calloutType": "tip",
-      "calloutTitle": "Fast Feedback"
+      "calloutTitle": "Pro Debugging"
     }
   ]
 }

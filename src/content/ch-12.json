@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "The OSI Model",
-      "text": "<p>The <strong>OSI (Open Systems Interconnection) model</strong> is a conceptual framework that describes how data travels across a network. It has 7 layers, each with a specific job:</p><ol><li><strong>Physical</strong> — Raw bits over wire/radio. Cables, antennas, signal encoding.</li><li><strong>Data Link</strong> — Frames between directly connected nodes. Ethernet, Wi-Fi, MAC addresses.</li><li><strong>Network</strong> — Routing between networks. IP addresses, routing protocols. <strong>This is where the Internet lives.</strong></li><li><strong>Transport</strong> — Reliable delivery between applications. TCP, UDP, ports.</li><li><strong>Session</strong> — Manages connections. TLS handshake, authentication.</li><li><strong>Presentation</strong> — Data encoding/translation. SSL/TLS encryption, JSON parsing.</li><li><strong>Application</strong> — User-facing protocols. HTTP, DNS, FTP, SMTP.</li></ol>",
+      "text": "<p>The OSI model describes how data travels across a network in 7 layers. You only need to care about a few:</p><ul><li><strong>Layer 7 (Application)</strong> — Where your code lives. HTTP, DNS, SMTP.</li><li><strong>Layer 4 (Transport)</strong> — TCP (guaranteed delivery) and UDP (fast, no guarantee). Ports live here.</li><li><strong>Layer 3 (Network)</strong> — IP routing. Getting data from your computer to a server across the world.</li><li><strong>Layers 1-2</strong> — Physical cables and Wi-Fi. Rarely your problem.</li></ul><p>The internet actually uses TCP/IP (a simpler 4-layer model), but OSI helps you debug: \"Can't reach the website? Is it Layer 7 (server crashed?), Layer 4 (port blocked?), or Layer 3 (IP unreachable?)</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -37,7 +37,7 @@
     },
     {
       "title": "HTTP vs WebSockets",
-      "text": "<p><strong>HTTP</strong> is request-response: the client asks, the server answers. The connection closes after each request (in HTTP/1.1 with keep-alive, it stays open briefly, but the pattern is still request-response). This is perfect for APIs and web pages.</p><p><strong>WebSockets</strong> are full-duplex — both client and server can send data at any time, over a single persistent connection. This is ideal for real-time applications: chat, live notifications, gaming, collaborative editing, streaming data.</p><p>The WebSocket handshake starts as HTTP (<code>Upgrade: websocket</code>), then switches to the WebSocket protocol. This allows WebSockets to work through standard HTTP proxies and firewalls.</p>",
+      "text": "<p><strong>HTTP</strong> is like sending a letter — you write, they respond, conversation over. The client asks, the server answers. Great for APIs and web pages where the client controls when data is requested.</p><p><strong>WebSockets</strong> is like a phone call — the line stays open. Both sides can talk at any time. The server can push messages to the client without waiting for a request. This is what makes live chat, real-time notifications, collaborative editing, and gaming possible.</p><p>The WebSocket connection starts as HTTP (an <code>Upgrade: websocket</code> header), then switches protocols. This lets it work through standard firewalls and proxies.</p>",
       "diagram": {
         "type": "comparison",
         "config": {
@@ -72,7 +72,7 @@
     },
     {
       "title": "Load Balancers",
-      "text": "<p><strong>Load balancers</strong> distribute incoming traffic across multiple backend servers. They're essential for scaling, high availability, and zero-downtime deployments.</p><p>Common algorithms:</p><ul><li><strong>Round Robin</strong> — Requests go to each server in turn. Simple but doesn't account for server load.</li><li><strong>Least Connections</strong> — Send to the server with the fewest active connections.</li><li><strong>IP Hash</strong> — Hash the client IP to determine the server. Ensures a client talks to the same server (sticky sessions).</li><li><strong>Weighted</strong> — More powerful servers get more traffic.</li></ul><p>Load balancers also perform health checks — if a server fails, they stop sending traffic to it until it recovers.</p>",
+      "text": "<p>A <strong>load balancer</strong> sits in front of your servers and distributes traffic. It's like having a host at a restaurant who decides which waiter takes your order. If one server goes down, the load balancer stops sending traffic to it — your users never notice.</p><p>Common strategies:</p><ul><li><strong>Round Robin</strong> — Take turns. Simple, but ignores actual server load.</li><li><strong>Least Connections</strong> — Send to the least busy server. Smarter.</li><li><strong>IP Hash</strong> — Same user always goes to the same server (for sticky sessions).</li></ul><p>Load balancers also handle SSL termination (decrypting HTTPS before it reaches your servers) and health checks (pinging servers to make sure they're alive).</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {

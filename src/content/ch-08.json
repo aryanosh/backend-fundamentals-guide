@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "The Login Flow",
-      "text": "<p>The most common auth flow works like this:</p><ol><li>User submits email + password to <code>POST /login</code></li><li>Server hashes the password and compares it against the stored hash</li><li>If it matches, the server creates a <strong>session</strong> or <strong>token</strong> that proves authentication</li><li>The client stores this credential (cookie or localStorage) and sends it with every subsequent request</li><li>The server verifies the credential on each protected request</li></ol><p>This is called <strong>cookie-based</strong> (server stores session) or <strong>token-based</strong> (client stores JWT) authentication.</p>",
+      "text": "<p>Here's how login actually works:</p><ol><li>User sends <code>POST /login</code> with email + password.</li><li>Server hashes the password and compares it to the stored hash.</li><li>If it matches, the server creates a <strong>token</strong> or <strong>session</strong> that proves \"this user is logged in.\"</li><li>The client stores this credential and sends it with every request.</li><li>Server verifies it on each protected request.</li></ol><p><strong>Authentication</strong> (AuthN) = \"Who are you?\" — proving identity. <strong>Authorization</strong> (AuthZ) = \"What can you do?\" — checking permissions. They're different things, and mixing them up is a classic mistake.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
@@ -25,7 +25,7 @@
     },
     {
       "title": "Password Hashing",
-      "text": "<p>Never store passwords in plain text. <strong>Hash</strong> them using a one-way function designed for passwords. Regular hashing algorithms like SHA-256 are too fast — an attacker can try billions of guesses per second. Use <strong>bcrypt</strong>, <strong>argon2</strong>, or <strong>scrypt</strong> — algorithms designed to be slow and memory-hard.</p><p>Each password should have a unique <strong>salt</strong> (random data added before hashing). This prevents rainbow table attacks — even if two users have the same password, their hashes will be different.</p>",
+      "text": "<p>Never store passwords in plain text. Ever. <strong>Hash</strong> them with an algorithm designed for passwords — <strong>bcrypt</strong> or <strong>argon2</strong>. These are intentionally slow (taking ~100ms per hash instead of microseconds) so brute-force attacks are impractical.</p><p>Each password gets a unique <strong>salt</strong> — random data mixed in before hashing. This means even if two users have the same password, their hashes look completely different. The salt is stored INSIDE the hash string, so you don't need a separate salt column.</p><p>Never use SHA-256 or MD5 for passwords. They're fast by design — an attacker can try billions of guesses per second with a GPU.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
@@ -46,7 +46,7 @@
     },
     {
       "title": "Sessions vs JWT Tokens",
-      "text": "<p><strong>Sessions (cookie-based)</strong> — Server stores session data in memory or a database. Client only holds a session ID cookie. Easy to revoke (just delete the session). But requires server-side storage and doesn't work well across multiple servers without a shared session store (like Redis).</p><p><strong>JWT (JSON Web Token)</strong> — All user info is encoded in a signed token that the client stores. The server can verify the token without any database lookup. Stateless and scalable. But tokens are harder to revoke (you need a blocklist) and can grow large.</p>",
+      "text": "<p><strong>Sessions</strong> — The server stores login state. The client just holds a cookie with a session ID. Easy to revoke (delete the session), but needs server-side storage (use Redis for multi-server setups). Traditional, secure, simple.</p><p><strong>JWT (JSON Web Tokens)</strong> — All user info is encoded in a signed token the client holds. The server verifies the signature without any database lookup. Stateless and scalable. But harder to revoke (need a blocklist) and tokens can grow large.</p><p><strong>Which one?</strong> JWTs are popular for APIs and mobile apps. Sessions are simpler for traditional web apps. Many production systems use both.</p>",
       "diagram": {
         "type": "comparison",
         "config": {
@@ -76,7 +76,7 @@
         }
       },
       "caption": "Sessions are server-side and revocable; JWT is stateless and scalable",
-      "detail": "Many modern applications use both: JWT for API authentication (mobile apps, SPAs) and sessions for web apps where server-side revocation is important. The choice depends on your architecture. If you have a single server or sticky sessions, sessions are simpler. If you have many stateless microservices, JWT is more natural. OAuth 2.0 combines both — the authorization server issues tokens that resource servers verify.",
+      "detail": "Many modern applications use both: JWT for API authentication (mobile apps, SPAs) and sessions for web apps where server-side revocation is important. If you have a single server, sessions are simpler. If you have many stateless microservices, JWT is more natural. OAuth 2.0 combines both — the authorization server issues tokens that resource servers verify.",
       "code": "// JWT structure\n// header.payload.signature\n\nconst header = {\n  \"alg\": \"HS256\",\n  \"typ\": \"JWT\"\n};\n\nconst payload = {\n  \"sub\": \"1234567890\",\n  \"name\": \"Alice\",\n  \"role\": \"admin\",\n  \"iat\": 1516239022,\n  \"exp\": 1516325422\n};\n\n// Verify\njwt.verify(token, process.env.JWT_SECRET);",
       "codeLang": "javascript"
     }

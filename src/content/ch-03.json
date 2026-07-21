@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "The Server Loop",
-      "text": "<p>At its core, every server runs a simple infinite loop: <strong>listen → accept → read → process → write → close</strong>. This is the fundamental pattern regardless of framework or language.</p><ol><li><strong>Listen</strong> — Bind to a port and wait for incoming connections</li><li><strong>Accept</strong> — Accept a new TCP connection from a client</li><li><strong>Read</strong> — Read the HTTP request from the connection</li><li><strong>Process</strong> — Route the request to the appropriate handler logic</li><li><strong>Write</strong> — Send the HTTP response back to the client</li><li><strong>Close</strong> — Close the connection (or keep it alive for reuse)</li></ol>",
+      "text": "<p>A server is just a computer that's always on, always connected to the internet, and running an infinite loop:</p><ol><li><strong>Listen</strong> — Sit and wait for someone to connect.</li><li><strong>Accept</strong> — A user's browser wants to talk. Accept the connection.</li><li><strong>Read</strong> — Read the HTTP request.</li><li><strong>Process</strong> — Run your code (route it, query databases, do logic).</li><li><strong>Write</strong> — Send the response back.</li><li><strong>Close</strong> — Clean up. Go back to step 1.</li></ol><p>This is what every web server does, forever. Express? It's just this loop with nice syntax. Django? Same loop. Spring? Same loop. The framework is just decoration.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
@@ -29,7 +29,7 @@
     },
     {
       "title": "The Middleware Pipeline",
-      "text": "<p>Most web frameworks implement a <strong>middleware pipeline</strong> — a chain of functions that process the request in sequence before the final handler runs. Each middleware can:</p><ul><li>Modify the request (add headers, parse body, check auth)</li><li>Short-circuit the chain (return a response early for auth failures)</li><li>Modify the response (add CORS headers, compress output)</li></ul><p>Middleware is how servers handle cross-cutting concerns like logging, authentication, rate limiting, and CORS without cluttering the business logic.</p>",
+      "text": "<p>Before your request reaches your actual code, it passes through a chain of <strong>middleware</strong>. Think of it like an assembly line:</p><ul><li><strong>Logger middleware</strong> — \"I'll record that this request happened.\"</li><li><strong>Auth middleware</strong> — \"Let me check if this user is logged in.\"</li><li><strong>CORS middleware</strong> — \"Let me add the right headers.\"</li><li><strong>Your handler</strong> — \"OK, now I'll do the real work.\"</li></ul><p>Middleware can modify the request, return early (like rejecting an unauthenticated user), or modify the response on its way back out. Every framework has this pattern — sometimes it's called filters, interceptors, or plugins. But it's always the same idea.</p>",
       "diagram": {
         "type": "annotation",
         "config": {

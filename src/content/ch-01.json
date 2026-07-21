@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "DNS — The Phonebook of the Internet",
-      "text": "<p>Every device on the internet needs a unique address — an <strong>IP address</strong> — just like a street address for mail. But humans can't remember strings of numbers like <code>104.244.42.65</code>. That's where <strong>DNS</strong> (Domain Name System) acts as the internet's phonebook, translating names like <code>google.com</code> into IP addresses in milliseconds.</p><p>When you type a domain, your OS first checks its local cache. If not found, it queries the configured DNS resolver which walks a hierarchy: Root → TLD (.com) → Authoritative Nameserver (google.com). Each level returns the next server's address until the final IP is reached. This process completes in 10-50ms for cached results.</p>",
+      "text": "<p>When you type <code>google.com</code> in your browser, your computer doesn't know what that means. Computers only understand numbers — IP addresses like <code>142.250.80.46</code>. So your computer asks a DNS server: \"Hey, what's the IP for google.com?\"</p><p>Think of it like this: you know your friend's name, but you need their phone number to call them. DNS is the contact list. The whole thing takes 10-50ms.</p><p>The flow: <strong>You type google.com → Your computer asks DNS → DNS says \"that's 142.250.80.46\" → Your computer connects to that IP address.</strong></p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
@@ -28,7 +28,7 @@
     },
     {
       "title": "Ports: The Apartment Number",
-      "text": "<p>If an IP address is a building's street address, a <strong>port</strong> is the apartment number. The standard port for web traffic is port 80 (HTTP) and port 443 (HTTPS). Together, an IP and port form a <strong>socket</strong> — the complete destination for your data.</p><p>Ports 0-1023 are well-known ports requiring root/admin privileges to bind. Ports 1024-49151 are registered ports assigned by IANA. Ports 49152-65535 are dynamic/private for temporary use. A socket is uniquely identified by the tuple (src_ip, src_port, dst_ip, dst_port, protocol).</p>",
+      "text": "<p>If an IP address is a building's street address, a <strong>port</strong> is the apartment number. Port 80 is for regular web traffic (HTTP), port 443 for secure traffic (HTTPS). Your database listens on its own ports too — 5432 for PostgreSQL, 3306 for MySQL.</p><p>An IP address + port together form a <strong>socket</strong> — the complete destination for your data. Think of it like mailing a letter: the IP is the street address, the port is the apartment number.</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -45,12 +45,13 @@
         }
       },
       "caption": "IP = building address, Port = apartment number. Together they form a socket.",
+      "detail": "Ports are divided into three ranges: well-known ports (0-1023) require admin privileges to bind — HTTP (80), HTTPS (443), SSH (22), FTP (21). Registered ports (1024-49151) are assigned by IANA for specific services like PostgreSQL (5432) and MySQL (3306). Dynamic ports (49152-65535) are used for temporary client connections. A socket is uniquely identified by the tuple (src_ip, src_port, dst_ip, dst_port, protocol).",
       "code": "$ netstat -tlnp\n$ ss -tlnp\n\n// Node.js server on port 443\nconst net = require('net');\nconst server = net.createServer();\nserver.listen(443, () => {\n  console.log('Listening on port 443');\n});",
       "codeLang": "bash / javascript"
     },
     {
       "title": "TCP Three-Way Handshake",
-      "text": "<p>TCP is like a phone call — before you start talking, you make sure the other person is ready. The <strong>three-way handshake</strong> establishes a reliable connection with three messages exchanged in under 100ms.</p><ol><li><strong>SYN</strong> — Client sends a SYN packet with a random sequence number. \"Can we talk?\"</li><li><strong>SYN-ACK</strong> — Server acknowledges and sends its own sequence number. \"Yes, I'm ready.\"</li><li><strong>ACK</strong> — Client confirms. \"Connection established!\"</li></ol><p>After this, data transfer begins with sequence numbers ensuring ordered delivery. HTTP/2 and HTTP/3 optimize this with connection multiplexing and 0-RTT handshakes.</p>",
+      "text": "<p>TCP is like a phone call — before you start talking, you make sure the other person is ready. The <strong>three-way handshake</strong> establishes a reliable connection with three messages:</p><ol><li><strong>SYN</strong> — \"Can we talk?\" Client sends a request to connect.</li><li><strong>SYN-ACK</strong> — \"Yes, I'm ready.\" Server acknowledges and agrees.</li><li><strong>ACK</strong> — \"Connection established!\" Client confirms.</li></ol><p>Now data can flow. Every TCP connection starts with this handshake. It takes under 100ms.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
@@ -62,7 +63,7 @@
         }
       },
       "caption": "SYN → SYN-ACK → ACK: Three messages establish a reliable TCP connection",
-      "detail": "The TCP three-way handshake establishes a reliable connection before any data is sent. SYN (synchronize) initiates the connection with a random sequence number. SYN-ACK acknowledges receipt and sends the server's own sequence number. ACK confirms both sides are ready. After this, data transfer begins with sequence numbers ensuring ordered delivery.",
+      "detail": "The TCP three-way handshake establishes a reliable connection before any data is sent. SYN (synchronize) initiates the connection with a random sequence number. SYN-ACK acknowledges receipt and sends the server's own sequence number. ACK confirms both sides are ready. After this, data transfer begins with sequence numbers ensuring ordered delivery. HTTP/2 and HTTP/3 optimize this with connection multiplexing and 0-RTT handshakes.",
       "code": "// Go example — handshake happens automatically\npackage main\nimport \"net\"\nfunc main() {\n  conn, _ := net.Dial(\"tcp\", \"google.com:80\")\n  // SYN-ACK happens here\n  conn.Write([]byte(\"GET / HTTP/1.1\\r\\nHost: google.com\\r\\n\\r\\n\"))\n}",
       "codeLang": "go"
     }

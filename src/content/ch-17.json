@@ -1,94 +1,78 @@
 {
   "id": 17,
-  "title": "The Learning Roadmap",
-  "subtitle": "Your 5-phase journey from beginner to confident backend developer",
-  "group": "roadmap",
+  "title": "Monitoring & Observability",
+  "subtitle": "Metrics, logs, traces, alerts, and knowing what your app is doing in production",
+  "group": "scale",
   "sections": [
     {
-      "title": "Phase 1: Foundation (Weeks 1-4)",
-      "text": "<p>Build the core mental model of how the web works. Don't touch frameworks yet — understand the raw machinery.</p><p><strong>Goals:</strong></p><ul><li>Understand DNS, TCP/IP, and HTTP request-response cycle</li><li>Build a raw HTTP server in your chosen language (Node.js http module, Python http.server, Go net/http)</li><li>Understand what the server loop does (listen, accept, read, process, write, close)</li><li>Understand client-server architecture and the difference between frontend and backend</li><li>Learn basic Linux commands (navigate, read files, manage processes)</li></ul><p><strong>Project:</strong> Build a simple CLI tool that fetches a URL and prints the response headers and body.</p>",
-      "diagram": {
-        "type": "timeline",
-        "config": {
-          "events": [
-            { "title": "Week 1-2", "desc": "DNS, TCP/IP, HTTP fundamentals", "color": "#00E5FF", "status": "done" },
-            { "title": "Week 3", "desc": "Build raw HTTP server from scratch", "color": "#8B5CF6", "status": "active" },
-            { "title": "Week 4", "desc": "Linux basics + CLI tools", "color": "#FF3D8A", "status": "locked" }
-          ]
-        }
-      },
-      "caption": "Phase 1: Understand the raw machinery before touching any framework",
-      "code": "# Week 1 project: HTTP inspector\n$ curl -v https://jsonplaceholder.typicode.com/posts/1\n\n# Week 2-3 project: raw HTTP server (Node)\nconst http = require('http');\nhttp.createServer((req, res) => {\n  res.writeHead(200, { 'Content-Type': 'application/json' });\n  res.end(JSON.stringify({ message: 'Hello World' }));\n}).listen(3000);\n\n# Week 4: Linux practice\n$ grep -r \"error\" /var/log/ | wc -l\n$ ps aux | grep node",
-      "codeLang": "bash / javascript"
-    },
-    {
-      "title": "Phase 2: Core (Weeks 5-10)",
-      "text": "<p>Build real applications with databases, APIs, and authentication. This is where you stop being a beginner.</p><p><strong>Goals:</strong></p><ul><li>Learn SQL and relational databases (PostgreSQL recommended)</li><li>Build a REST API with Express (Node), FastAPI (Python), or Gin (Go)</li><li>Implement user registration and login with bcrypt + JWT</li><li>Understand layered architecture (Controller → Service → Repository)</li><li>Add basic caching with Redis</li></ul><p><strong>Project:</strong> Build a task management API with user auth, task CRUD, categories, and search.</p>",
-      "diagram": {
-        "type": "timeline",
-        "config": {
-          "events": [
-            { "title": "Week 5-6", "desc": "SQL + PostgreSQL (tables, joins, indexes)", "color": "#00E5FF", "status": "done" },
-            { "title": "Week 7-8", "desc": "Build REST API with auth + JWT", "color": "#8B5CF6", "status": "active" },
-            { "title": "Week 9-10", "desc": "Add Redis caching + SQL optimization", "color": "#FFB300", "status": "locked" }
-          ]
-        }
-      },
-      "caption": "Phase 2: Build real applications with databases, APIs, and auth",
-      "code": "# Phase 2 project: Task Manager API\n\nPOST /api/auth/register   # Create account\nPOST /api/auth/login      # Get JWT\nGET  /api/tasks           # List user's tasks\nPOST /api/tasks           # Create task\nPUT  /api/tasks/:id       # Update task\nDELETE /api/tasks/:id     # Delete task\n\n# With layered architecture:\n# controllers/  → HTTP handlers\n# services/     → Business logic\n# repositories/ → Database queries\n# middleware/   → Auth, logging, validation",
-      "codeLang": "text"
-    },
-    {
-      "title": "Phase 3: Scale (Weeks 11-16)",
-      "text": "<p>Learn to build applications that handle real traffic with multiple users, security concerns, and team collaboration.</p><p><strong>Goals:</strong></p><ul><li>Learn Git branching strategies and PR workflow</li><li>Write unit, integration, and E2E tests</li><li>Understand security: SQL injection, XSS, CSRF, rate limiting</li><li>Learn Docker for containerization</li><li>Understand load balancing and horizontal scaling concepts</li></ul><p><strong>Project:</strong> Containerize your task manager with Docker, add rate limiting, write tests, and deploy to a VPS.</p>",
-      "diagram": {
-        "type": "timeline",
-        "config": {
-          "events": [
-            { "title": "Week 11-12", "desc": "Git workflows + testing", "color": "#00E5FF", "status": "done" },
-            { "title": "Week 13-14", "desc": "Docker + Docker Compose", "color": "#8B5CF6", "status": "active" },
-            { "title": "Week 15-16", "desc": "Security + deploy to VPS", "color": "#FF3D8A", "status": "locked" }
-          ]
-        }
-      },
-      "caption": "Phase 3: Containerize, test, secure, and deploy to production",
-      "code": "# Docker Compose for your task manager\nversion: '3'\nservices:\n  app:\n    build: .\n    ports:\n      - '3000:3000'\n    depends_on:\n      - db\n      - redis\n  db:\n    image: postgres:16\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n  redis:\n    image: redis:7-alpine\n    \nvolumes:\n  pgdata:",
-      "codeLang": "yaml"
-    },
-    {
-      "title": "Phase 4: DevOps & Architecture (Weeks 17-20)",
-      "text": "<p>Level up from developer to engineer. Learn about system design, monitoring, and advanced deployment strategies.</p><p><strong>Goals:</strong></p><ul><li>Understand architecture patterns (monolith vs microservices, event-driven)</li><li>Learn CI/CD pipelines (GitHub Actions)</li><li>Understand monitoring, logging, and alerting</li><li>Learn a cloud platform (AWS, GCP, or Azure basics)</li><li>Study system design fundamentals (caching, database sharding, CDN)</li></ul><p><strong>Project:</strong> Set up a CI/CD pipeline that automatically deploys your Dockerized app on every push. Add monitoring with Prometheus + Grafana.</p>",
-      "diagram": {
-        "type": "timeline",
-        "config": {
-          "events": [
-            { "title": "Week 17-18", "desc": "CI/CD + GitHub Actions pipeline", "color": "#00E5FF", "status": "done" },
-            { "title": "Week 19", "desc": "Cloud deployment (AWS/GCP basics)", "color": "#8B5CF6", "status": "active" },
-            { "title": "Week 20", "desc": "Monitoring + system design", "color": "#FF3D8A", "status": "locked" }
-          ]
-        }
-      },
-      "caption": "Phase 4: CI/CD pipelines, cloud deployment, and system design thinking"
-    },
-    {
-      "title": "Phase 5: Mastery & Beyond",
-      "text": "<p>At this point, you have the foundation to learn anything in the backend world. The specifics (language, framework, cloud provider) matter less than the mental models you've built.</p><p><strong>What's next:</strong></p><ul><li><strong>Deep dive</strong> — Go deeper into one area: distributed systems, database internals, networking, security</li><li><strong>Contribute</strong> — Open source contributions to backend projects you use</li><li><strong>Teach</strong> — Write blog posts, create tutorials, mentor others. Teaching solidifies knowledge.</li><li><strong>Build</strong> — Launch your own SaaS product. There's no better teacher than running a real production system.</li></ul><p><strong>The big takeaway:</strong> Every server, API, database, and deployment follows the same fundamental patterns we've covered. Frameworks come and go. The fundamentals are forever.</p>",
+      "title": "The Three Pillars of Observability",
+      "text": "<p>When your app is in production, you can't just attach a debugger. You need <strong>observability</strong> — the ability to understand what's happening from the outside. Three pillars:</p><ul><li><strong>Metrics</strong> — Numbers over time. CPU usage, request rate, error rate, latency percentiles. \"How many requests per second?\" Answers: system health and trends.</li><li><strong>Logs</strong> — Individual events with timestamps. \"What happened at 3:14 PM?\" Answers: what went wrong and where. Structured JSON logs with fields, not plain text.</li><li><strong>Traces</strong> — Track a single request across multiple services. Shows you where time is spent. \"Why did this API call take 3 seconds?\" Answers: which service was slow.</li></ul><p>You don't need all three on day one. Start with logs and basic metrics (request rate, error rate, p99 latency). Add traces when you have microservices.</p>",
       "diagram": {
         "type": "infoGrid",
         "config": {
-          "columns": 2,
+          "columns": 3,
           "items": [
-            { "heading": "Deep Dive", "body": "Distributed systems, DB internals, networking protocols, advanced security.", "color": "#00E5FF" },
-            { "heading": "Contribute", "body": "Open source contributions to backend projects. Real-world code reviews.", "color": "#8B5CF6" },
-            { "heading": "Teach", "body": "Blog posts, tutorials, mentoring. Teaching is the best way to learn deeply.", "color": "#00F593" },
-            { "heading": "Build", "body": "Launch your own product. Production experience teaches what tutorials can't.", "color": "#FFB300" }
+            { "heading": "Metrics", "body": "Numbers over time: req/s, error rate, CPU, p99 latency.", "color": "#00E5FF" },
+            { "heading": "Logs", "body": "Structured events with timestamps and context.", "color": "#8B5CF6" },
+            { "heading": "Traces", "body": "End-to-end request journey across services.", "color": "#FF3D8A" }
           ]
         }
       },
-      "caption": "The journey never ends — deep dive, contribute, teach, and build",
-      "callout": "The backend landscape changes every year, but the fundamentals stay the same. DNS, TCP/IP, HTTP, databases, caching, security, and deployment — master these and you can learn any framework in a week.",
+      "caption": "The three pillars: metrics tell you WHAT, logs tell you WHY, traces tell you WHERE",
+      "code": "# Metrics with Prometheus client (Node.js)\nconst client = require('prom-client');\n\nconst httpRequestDuration = new client.Histogram({\n  name: 'http_request_duration_seconds',\n  help: 'Duration of HTTP requests in seconds',\n  labelNames: ['method', 'route', 'status'],\n  buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5]\n});\n\napp.use((req, res, next) => {\n  const end = httpRequestDuration.startTimer();\n  res.on('finish', () => {\n    end({ method: req.method, route: req.route, status: res.statusCode });\n  });\n  next();\n});\n\n# Metrics endpoint\napp.get('/metrics', async (req, res) => {\n  res.set('Content-Type', client.register.contentType);\n  res.end(await client.register.metrics());\n});",
+      "codeLang": "javascript",
+      "callout": "The p99 latency is the most important metric — it tells you the experience of your slowest 1% of users. If p99 is 5 seconds, 1 in 100 users has a terrible experience.",
       "calloutType": "info",
-      "calloutTitle": "The Big Takeaway"
+      "calloutTitle": "Latency Matters"
+    },
+    {
+      "title": "Structured Logging",
+      "text": "<p>Don't write <code>console.log('User logged in', userId)</code>. That's a string you'll have to regex-parse later. Write <strong>structured logs</strong> — JSON objects with fields:</p><pre>{\"level\":\"info\",\"msg\":\"user logged in\",\"userId\":42,\"duration\":120,\"reqId\":\"abc-123\"}</pre><p>Now you can search, filter, and aggregate: \"Show me all errors in the last hour with duration > 1s\" → <code>level:error AND duration:>1000</code>.</p><p>Tools: <strong>Pino</strong> (fast JSON logger for Node), <strong>Winston</strong> (more features), <strong>Bunyan</strong> (legacy). All output JSON. Pair with a log aggregator: ELK (Elasticsearch + Logstash + Kibana), Grafana Loki, or Datadog.</p><p>Always include: <code>level</code>, <code>timestamp</code>, <code>msg</code>, <code>reqId</code> (trace ID), <code>service</code>. Add context like <code>userId</code>, <code>orderId</code>, <code>duration</code>.</p>",
+      "diagram": {
+        "type": "annotation",
+        "config": {
+          "elements": [
+            { "x": 20, "y": 10, "w": 180, "h": 34, "label": "Your App", "color": "#00E5FF" },
+            { "x": 20, "y": 70, "w": 180, "h": 34, "label": "Structured Logs (JSON)", "color": "#8B5CF6" },
+            { "x": 240, "y": 10, "w": 130, "h": 34, "label": "Log Aggregator", "color": "#FF3D8A" },
+            { "x": 240, "y": 70, "w": 130, "h": 34, "label": "Search (Kibana/Loki)", "color": "#00F593" },
+            { "x": 240, "y": 130, "w": 130, "h": 34, "label": "Alerts", "color": "#FFB300" }
+          ],
+          "annotations": [
+            { "target": 1, "text": "log.info, log.error" },
+            { "target": 2, "text": "Collect, index, store" },
+            { "target": 3, "text": "Filter, search, visualize" },
+            { "target": 4, "text": "PagerDuty, Slack" }
+          ]
+        }
+      },
+      "caption": "Structured logs flow from your app to a central aggregator for search and alerting",
+      "code": "# Structured logging with Pino\nconst pino = require('pino');\nconst logger = pino({\n  level: process.env.LOG_LEVEL || 'info',\n  redact: ['req.headers.authorization', 'req.body.password']\n});\n\nlogger.info({ userId: 42, action: 'login' }, 'user logged in');\nlogger.error({ err, orderId: 99 }, 'payment failed');\n\n# Output:\n# {\"level\":30,\"time\":1712345678901,\"pid\":1234,\"hostname\":\"web-1\",\n#  \"userId\":42,\"action\":\"login\",\"msg\":\"user logged in\"}\n\n# Query in Grafana Loki:\n# {app=\"my-service\"} |= `\"action\":\"login\"`\n# {app=\"my-service\"} |= `\"level\":50`   (all errors)\n# {app=\"my-service\"} |= `\"orderId\":99` (specific order)",
+      "codeLang": "javascript",
+      "callout": "Always redact passwords, tokens, and PII from logs. Pino has a built-in redact option. A log leak is a security breach.",
+      "calloutType": "warning",
+      "calloutTitle": "Log Safety"
+    },
+    {
+      "title": "Alerting & Incident Response",
+      "text": "<p>Better to wake up once a month for a real emergency than every night for false alarms. Tune your alerts:</p><ul><li><strong>Page on symptoms, not causes</strong> — Alert when error rate spikes, not when a specific error appears. High error rate is a symptom. A single error might be noise.</li><li><strong>Use thresholds with duration</strong> — \"Error rate > 5% for 5 minutes\" not \"Error rate > 5% instantly\". Short spikes resolve themselves.</li><li><strong>Burn rate alerting</strong> — Alert when you're burning through your error budget faster than expected. 99.9% SLO means 0.1% errors allowed over a month. If you hit 0.05% in one hour, you're on track to breach — page now.</li></ul><p>When something breaks: <strong>Stop → Assess → Fix → Learn</strong>. Don't panic-deploy. Check the dashboard. Read the logs. Understand the scope. Then fix. After the fix, write a postmortem: what happened, why, how it was fixed, how to prevent it.</p>",
+      "diagram": {
+        "type": "stepFlow",
+        "config": {
+          "steps": [
+            { "label": "Something Breaks", "desc": "Alert fires (PagerDuty, Slack)", "color": "#FF3D8A" },
+            { "label": "Assess", "desc": "Check dashboard, logs, traces", "color": "#FFB300" },
+            { "label": "Fix", "desc": "Rollback, feature flag, hotfix", "color": "#00F593" },
+            { "label": "Learn", "desc": "Write postmortem, prevent recurrence", "color": "#00E5FF" }
+          ]
+        }
+      },
+      "caption": "Incident response: stop → assess → fix → learn. Don't skip the postmortem.",
+      "code": "# Burn rate alerting (PromQL)\n# Alert if error rate is above 5% for 5 minutes\n- alert: HighErrorRate\n  expr: |\n    rate(http_requests_total{status=~\"5..\"}[5m])\n    /\n    rate(http_requests_total[5m]) > 0.05\n  for: 5m\n  labels:\n    severity: critical\n  annotations:\n    summary: \"Error rate above 5% for 5 minutes\"\n    description: \"Current error rate: {{ $value | humanizePercentage }}\"\n\n# Postmortem template\n## Summary\n- **Date**:\n- **Duration**:\n- **Impact**: X users affected, Y revenue lost\n\n## Timeline\n- 14:00 — Deployed v2.3.1\n- 14:03 — Alert fired (error rate spike)\n- 14:05 — Rollback initiated\n- 14:08 — Monitoring confirms recovery\n\n## Root Cause\n- Missing null check in payment processing\n- Only affected users with empty discount codes\n\n## Action Items\n- [ ] Add null check and unit test\n- [ ] Add integration test for payment flow\n- [ ] Add canary deployment step to CI",
+      "codeLang": "yaml",
+      "callout": "Every incident should have a blameless postmortem. The question isn't 'who did this' but 'what system failure allowed this to happen'. Fix the process, not the person.",
+      "calloutType": "info",
+      "calloutTitle": "Blameless Culture"
     }
   ]
 }

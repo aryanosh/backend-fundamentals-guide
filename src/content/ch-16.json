@@ -1,72 +1,80 @@
 {
   "id": 16,
-  "title": "DevOps Basics",
-  "subtitle": "Docker, CI/CD pipelines, cloud deployment, and infrastructure as code",
-  "group": "devops",
+  "title": "Deployment & DevOps",
+  "subtitle": "CI/CD pipelines, Docker, environment management, and shipping code to production",
+  "group": "scale",
   "sections": [
     {
-      "title": "Docker — Containers Explained",
-      "text": "<p><strong>Docker</strong> packages your application with all its dependencies into a <strong>container</strong> — a lightweight, portable, self-sufficient unit. A container includes the code, runtime, system tools, and libraries. It runs the same way on your laptop, your teammate's machine, and in production.</p><p>Key concepts:</p><ul><li><strong>Image</strong> — A read-only template with instructions for creating a container. Built from a <code>Dockerfile</code>.</li><li><strong>Container</strong> — A running instance of an image. Each container is isolated but shares the host OS kernel (unlike VMs which include a full OS).</li><li><strong>Dockerfile</strong> — A recipe that describes how to build the image (base OS, install deps, copy code, run command).</li><li><strong>Docker Compose</strong> — Define and run multi-container applications (app + database + cache).</li></ul>",
+      "title": "CI/CD Pipelines",
+      "text": "<p><strong>CI (Continuous Integration)</strong> — Every push to main triggers an automated build and test. If tests fail, the team is notified immediately. This catches bad code before it reaches production.</p><p><strong>CD (Continuous Delivery/Deployment)</strong> — Automated deployment after CI green. <em>Delivery</em> means you manually approve the deploy. <em>Deployment</em> means it goes live automatically.</p><p>A typical pipeline:</p><ol><li>Developer pushes code → GitHub detects push.</li><li>CI runner spins up → installs deps, runs linters, runs tests.</li><li>If tests pass → build Docker image, push to registry.</li><li>If build succeeds → deploy to staging, run integration tests.</li><li>If staging passes → deploy to production (auto or manual gate).</li></ol><p>GitHub Actions, GitLab CI, Jenkins, CircleCI — they all do the same thing. Choose the one that's closest to your repo (GitHub Actions for GitHub repos).</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
           "steps": [
-            { "label": "Dockerfile", "desc": "FROM node:20\nCOPY . .\nRUN npm install\nCMD node app.js", "color": "#00E5FF" },
-            { "label": "docker build", "desc": "Build image from Dockerfile", "color": "#8B5CF6" },
-            { "label": "Image Registry", "desc": "Push to Docker Hub / ECR", "color": "#FF3D8A" },
-            { "label": "docker run", "desc": "Start container from image", "color": "#FFB300" },
-            { "label": "Running Container", "desc": "Isolated process with its own FS", "color": "#00F593" }
+            { "label": "git push", "desc": "Developer pushes code", "color": "#00E5FF" },
+            { "label": "CI Runs", "desc": "lint → test → build", "color": "#8B5CF6" },
+            { "label": "Docker Build", "desc": "Build image, push to registry", "color": "#FF3D8A" },
+            { "label": "Deploy Staging", "desc": "Auto-deploy for testing", "color": "#FFB300" },
+            { "label": "Deploy Prod", "desc": "Manual gate or auto", "color": "#00F593" }
           ]
         }
       },
-      "caption": "Docker build pipeline: Dockerfile → build → registry → run",
-      "code": "# Dockerfile\nFROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --production\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"app.js\"]\n\n# Build and run\n$ docker build -t my-app .\n$ docker run -p 3000:3000 my-app\n\n# Docker Compose\nversion: '3'\nservices:\n  app:\n    build: .\n    ports:\n      - '3000:3000'\n    depends_on:\n      - db\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_PASSWORD: secret",
-      "codeLang": "dockerfile / yaml",
-      "callout": "Containers are NOT virtual machines. They share the host OS kernel and start in milliseconds. VMs include a full OS and can take minutes to boot.",
-      "calloutType": "info",
-      "calloutTitle": "Containers vs VMs"
+      "caption": "A typical CI/CD pipeline — from git push to production deployment",
+      "code": "# GitHub Actions CI/CD workflow\nname: CI/CD Pipeline\non:\n  push:\n    branches: [main]\n  pull_request:\n    branches: [main]\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - run: npm ci\n      - run: npm run lint\n      - run: npm test\n\n  deploy:\n    needs: test\n    if: github.ref == 'refs/heads/main'\n    runs-on: ubuntu-latest\n    steps:\n      - name: Deploy to production\n        run: |\n          echo \"Deploying...\"\n          # your deploy script here",
+      "codeLang": "yaml",
+      "callout": "CI should be fast — aim for under 5 minutes. If tests are slow, split them into parallel jobs. A slow CI means developers stop waiting for it and push broken code.",
+      "calloutType": "warning",
+      "calloutTitle": "Keep CI Fast"
     },
     {
-      "title": "CI/CD Pipeline",
-      "text": "<p><strong>CI/CD</strong> (Continuous Integration / Continuous Deployment) automates the process from code commit to production deployment.</p><ul><li><strong>CI</strong> — Every push triggers automated builds and tests. Catch bugs early.</li><li><strong>CD</strong> — After CI passes, deploy automatically to staging/production. No manual steps.</li></ul><p>A complete pipeline: Code → Commit → CI (lint, test, build) → CD (deploy to staging, run smoke tests, deploy to production). This enables multiple deployments per day with confidence.</p>",
+      "title": "Docker & Containers",
+      "text": "<p>Docker packages your app with everything it needs — Node.js, Python, system libraries, config files — into a <strong>container</strong>. A container runs the same on your laptop, a coworker's machine, and a production server.</p><p>Key concepts:</p><ul><li><strong>Dockerfile</strong> — A recipe for building your image. Start with a base image (like <code>node:20-alpine</code>), copy your code, install dependencies, define the start command.</li><li><strong>Image</strong> — The built package (read-only). Shared via a registry (Docker Hub, GitHub Container Registry, or AWS ECR).</li><li><strong>Container</strong> — A running instance of an image. Each container is isolated — its own filesystem, network, and processes.</li><li><strong>docker-compose</strong> — Define multiple containers (app + database + cache) in a YAML file. Start everything with one command.</li></ul>",
       "diagram": {
-        "type": "timeline",
+        "type": "annotation",
         "config": {
-          "events": [
-            { "title": "Code Commit", "desc": "Developer pushes to main", "color": "#00E5FF", "status": "done" },
-            { "title": "CI Build", "desc": "Lint + Test + Build", "color": "#8B5CF6", "status": "done" },
-            { "title": "Deploy Staging", "desc": "Auto-deploy to staging env", "color": "#FF3D8A", "status": "active" },
-            { "title": "Smoke Tests", "desc": "Quick sanity checks", "color": "#FFB300", "status": "locked" },
-            { "title": "Deploy Production", "desc": "Rolling update to prod", "color": "#00F593", "status": "locked" }
+          "elements": [
+            { "x": 20, "y": 10, "w": 130, "h": 34, "label": "Dockerfile", "color": "#00E5FF" },
+            { "x": 170, "y": 10, "w": 130, "h": 34, "label": "docker build", "color": "#8B5CF6" },
+            { "x": 320, "y": 10, "w": 130, "h": 34, "label": "Image", "color": "#FF3D8A" },
+            { "x": 320, "y": 64, "w": 130, "h": 34, "label": "Container", "color": "#00F593" },
+            { "x": 320, "y": 118, "w": 130, "h": 34, "label": "Container", "color": "#FFB300" },
+            { "x": 320, "y": 172, "w": 130, "h": 34, "label": "Container", "color": "#8B5CF6" }
+          ],
+          "annotations": [
+            { "target": 0, "text": "Recipe file" },
+            { "target": 1, "text": "Build process" },
+            { "target": 2, "text": "Built artifact (read-only)" },
+            { "target": 3, "text": "Running instance" }
           ]
         }
       },
-      "caption": "CI/CD pipeline: from commit to production, all automated",
-      "code": "# Complete CI/CD with GitHub Actions\nname: Deploy\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci\n      - run: npm test\n      - run: npm run build\n      \n      - name: Deploy to production\n        uses: appleboy/ssh-action@v1\n        with:\n          host: ${{ secrets.HOST }}\n          script: |\n            cd /var/www/app\n            git pull\n            docker compose up -d --build",
-      "codeLang": "yaml"
+      "caption": "Dockerfile → build → image (stored) → container (running)",
+      "code": "# Dockerfile\nFROM node:20-alpine\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci --only=production\nCOPY . .\nEXPOSE 3000\nCMD [\"node\", \"server.js\"]\n\n# docker-compose.yml\nversion: '3.9'\nservices:\n  app:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      - DATABASE_URL=postgres://user:pass@db:5432/app\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_PASSWORD: pass\n    volumes:\n      - pgdata:/var/lib/postgresql/data\n\nvolumes:\n  pgdata:",
+      "codeLang": "dockerfile",
+      "callout": "Use multi-stage builds to keep images small. A production Node.js image should be under 200MB. Use .dockerignore to avoid copying node_modules and build artifacts.",
+      "calloutType": "tip",
+      "calloutTitle": "Image Size"
     },
     {
-      "title": "Cloud Deployment Options",
-      "text": "<p>Once your app is containerized, you can deploy it to any cloud provider. Each offers different levels of abstraction:</p><ul><li><strong>VPS (DigitalOcean, Linode, Hetzner)</strong> — A virtual machine you manage entirely. Full control, full responsibility. Install Docker, run containers. Cheapest option.</li><li><strong>PaaS (Heroku, Railway, Fly.io)</strong> — Just push your code, the platform handles servers, scaling, and networking. Less control, easy setup. Good for MVPs.</li><li><strong>Container Orchestration (AWS ECS, Google Cloud Run, Kubernetes)</strong> — Managed container platforms. Handle scaling, load balancing, and rollbacks automatically. Kubernetes is the industry standard but complex.</li><li><strong>Serverless (AWS Lambda, Cloudflare Workers)</strong> — Run functions without managing servers. Pay per execution. Great for event-driven workloads and APIs with variable traffic.</li></ul>",
+      "title": "Environment Management",
+      "text": "<p>Every environment (development, staging, production) has different config — database URLs, API keys, feature flags. Never hardcode these.</p><ul><li><strong>Environment Variables</strong> — <code>DATABASE_URL=postgres://...</code> passed via the OS. Read them with <code>process.env.DATABASE_URL</code> (Node), <code>os.getenv()</code> (Python), or <code>System.getenv()</code> (Java).</li><li><strong>.env files</strong> — Local config file (never committed to Git!). Loaded by your framework (dotenv in Node, python-dotenv in Python).</li><li><strong>Secret Management</strong> — For production secrets, use a vault: AWS Secrets Manager, HashiCorp Vault, GitHub Secrets, or Doppler. Never put real secrets in .env files.</li></ul><p>Use <strong>feature flags</strong> to toggle behavior without redeploying. LaunchDarkly, Unleash, or a simple database table. Roll out features to 10% of users first, then 50%, then 100%.</p>",
       "diagram": {
         "type": "infoGrid",
         "config": {
           "columns": 2,
           "items": [
-            { "heading": "VPS", "body": "Full control, full responsibility. DigitalOcean, Linode, Hetzner. Cheapest option.", "color": "#00E5FF" },
-            { "heading": "PaaS", "body": "Just push code. Heroku, Railway, Fly.io. Good for MVPs and small teams.", "color": "#8B5CF6" },
-            { "heading": "Orchestration", "body": "Kubernetes, ECS, Cloud Run. Auto-scaling, rollbacks, complex setup.", "color": "#FF3D8A" },
-            { "heading": "Serverless", "body": "Lambda, Cloudflare Workers. Pay per execution. Event-driven, variable traffic.", "color": "#00F593" }
+            { "heading": "Dev", "body": "Local .env file. Loose security. Fast iteration.", "color": "#00E5FF" },
+            { "heading": "Staging", "body": "Mirrors production. Real secrets. For final testing.", "color": "#8B5CF6" },
+            { "heading": "Production", "body": "Live traffic. Secrets in vault. Strict access.", "color": "#FF3D8A" },
+            { "heading": "Feature Flags", "body": "Toggle features without deploy. Roll out gradually.", "color": "#00F593" },
+            { "heading": "Env Vars", "body": "DATABASE_URL, API_KEY — read from OS at startup.", "color": "#FFB300" },
+            { "heading": "Secrets Vault", "body": "AWS Secrets Manager, Vault, Doppler. Rotate regularly.", "color": "#8B5CF6" }
           ]
         }
       },
-      "caption": "Deployment options range from full-control VPS to fully managed serverless",
-      "detail": "Start with the simplest option that meets your needs. For most backend projects, a VPS with Docker Compose is the sweet spot: cheap, simple, and flexible. As your application grows, migrate to Kubernetes for orchestration or serverless for specific functions. The key is keeping deployment simple — if deploying is scary or error-prone, invest in CI/CD automation first.",
-      "code": "# Deploy with Docker Compose to a VPS\n$ ssh user@server\n$ git clone https://github.com/yourapp\n$ cd yourapp\n\n# docker-compose.yml — one command to start everything\ndocker compose up -d\n\n# Update production with zero downtime\ngit pull\ndocker compose build\ndocker compose up -d --no-deps app\n\n# View logs\ndocker compose logs -f app",
-      "codeLang": "bash",
-      "callout": "Don't start with Kubernetes. Start with Docker Compose on a single VPS. It handles 99% of use cases with 1% of the complexity.",
-      "calloutType": "tip",
-      "calloutTitle": "Start Simple"
+      "caption": "Each environment has its own config — keep them separate but consistent",
+      "code": "# .env (local, never committed)\nDATABASE_URL=postgres://localhost:5432/myapp\nREDIS_URL=redis://localhost:6379\n\n# .env.example (committed to repo as template)\nDATABASE_URL=postgres://user:pass@host:5432/db\nREDIS_URL=redis://host:6379\n\n# Access in code\nconst db = new Database({\n  url: process.env.DATABASE_URL,\n  pool: { min: 2, max: 10 }\n});\n\n# Feature flag example\nif (featureFlags.isEnabled('new-checkout-flow')) {\n  return renderNewCheckout(user);\n}\nreturn renderOldCheckout(user);",
+      "codeLang": "javascript"
     }
   ]
 }

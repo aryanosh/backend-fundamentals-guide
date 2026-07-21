@@ -26,10 +26,89 @@ export default function HubPage() {
 
   return (
     <div style={{ padding: '32px 20px 80px', maxWidth: 900, margin: '0 auto' }}>
+      <Link to="/flow" style={{ textDecoration: 'none', display: 'block', marginBottom: 32 }}>
+        <div style={{
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          border: '1px solid var(--glass-border)',
+          padding: '20px 24px',
+          transition: 'all 250ms',
+          cursor: 'pointer',
+        }}
+          onMouseEnter={e => {
+            const el = e.currentTarget
+            el.style.borderColor = 'var(--glass-border-hover)'
+            el.style.boxShadow = '0 4px 24px var(--glow-cyan)'
+            el.style.transform = 'translateY(-2px)'
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget
+            el.style.borderColor = 'var(--glass-border)'
+            el.style.boxShadow = 'none'
+            el.style.transform = 'translateY(0)'
+          }}
+        >
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 16,
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 10,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--accent-cyan)10',
+              border: '1px solid var(--accent-cyan)30',
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <ellipse cx="12" cy="12" rx="4" ry="10"/>
+                <path d="M2 12h20"/>
+              </svg>
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--accent-cyan)',
+                marginBottom: 4,
+              }}>
+                INTERACTIVE DEMO
+              </div>
+              <div style={{
+                fontSize: 16, fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+                color: 'var(--text)',
+                marginBottom: 4,
+              }}>
+                How the Internet Actually Works
+              </div>
+              <div style={{
+                fontSize: 11, color: 'var(--text-muted)',
+                fontFamily: 'var(--font-sans)',
+                lineHeight: 1.4,
+              }}>
+                An interactive animated journey — from typing a URL to the page loading. Follow the request through DNS, ISP, backbone, CDN, load balancer, servers, database, and back.
+              </div>
+            </div>
+            <div style={{
+              fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--accent-cyan)',
+              whiteSpace: 'nowrap',
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              LAUNCH
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 3L9 7L5 11"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </Link>
+
       <header style={{ marginBottom: 40, textAlign: 'center' }}>
         <h1 style={{
           fontFamily: 'var(--font-display)',
-          fontSize: 36, fontWeight: 700, letterSpacing: '0.06em',
+          fontSize: 40, fontWeight: 700, letterSpacing: '0.06em',
           margin: 0,
           color: 'var(--text)',
         }}>
@@ -86,10 +165,12 @@ export default function HubPage() {
                 const card = (
                   <div style={{
                     padding: '14px 12px',
-                    border: `1px solid ${completed ? 'var(--complete-dim)' : available ? 'var(--border)' : 'var(--border)'}`,
-                    background: 'var(--bg-panel)',
+                    border: `1px solid ${completed ? 'var(--complete-dim)' : 'var(--border)'}`,
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
                     opacity: available ? 1 : 0.35,
-                    transition: 'all 200ms',
+                    transition: 'all 250ms',
                     position: 'relative',
                     overflow: 'hidden',
                   }}>
@@ -112,7 +193,7 @@ export default function HubPage() {
                     </div>
                     <div style={{
                       fontSize: 13, fontWeight: 600,
-                      fontFamily: 'var(--font-mono)',
+                      fontFamily: 'var(--font-display)',
                       color: available ? 'var(--text)' : 'var(--text-dim)',
                       lineHeight: 1.3, marginBottom: 6,
                     }}>
@@ -121,7 +202,7 @@ export default function HubPage() {
                     <div style={{
                       fontSize: 10,
                       color: 'var(--text-dim)',
-                      fontFamily: 'var(--font-mono)',
+                      fontFamily: 'var(--font-sans)',
                       lineHeight: 1.4,
                     }}>
                       {ch.subtitle}
@@ -132,7 +213,7 @@ export default function HubPage() {
                       fontFamily: 'var(--font-mono)', textTransform: 'uppercase',
                       color,
                     }}>
-                      {completed ? '✓ COMPLETE' : available ? '[ ENTER ]' : 'LOCKED'}
+                      {completed ? 'COMPLETE' : available ? 'OPEN CHAPTER' : 'LOCKED'}
                     </div>
                   </div>
                 )
@@ -150,7 +231,8 @@ export default function HubPage() {
                       const el = e.currentTarget.firstChild as HTMLElement
                       if (el) {
                         el.style.borderColor = completed ? 'var(--complete)' : groupColor
-                        el.style.boxShadow = `0 0 16px ${completed ? 'var(--complete-dim)' : 'var(--glow-cyan)'}`
+                        el.style.boxShadow = `0 4px 24px ${completed ? 'var(--complete-dim)' : 'var(--glow-cyan)'}`
+                        el.style.transform = 'translateY(-2px)'
                       }
                     }}
                     onMouseLeave={e => {
@@ -158,6 +240,7 @@ export default function HubPage() {
                       if (el) {
                         el.style.borderColor = completed ? 'var(--complete-dim)' : 'var(--border)'
                         el.style.boxShadow = 'none'
+                        el.style.transform = 'translateY(0)'
                       }
                     }}
                   >

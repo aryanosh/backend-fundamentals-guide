@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "The Cache Layers",
-      "text": "<p>Every request that doesn't hit a cache is a wasted opportunity. Caching happens at multiple layers simultaneously:</p><ol><li><strong>Browser Cache</strong> — The browser stores static assets (images, CSS, JS) locally based on <code>Cache-Control</code> headers. A <code>max-age=31536000</code> means cache for a year.</li><li><strong>CDN Cache</strong> — Content Delivery Networks (Cloudflare, Fastly, Akamai) cache responses at edge locations close to the user. Your server handles far fewer requests.</li><li><strong>Application Cache</strong> — Your server caches computed results (database queries, rendered templates) in memory or Redis. Avoids recomputing expensive operations.</li><li><strong>Database Cache</strong> — PostgreSQL and MySQL have internal buffer caches for frequently accessed data pages.</li></ol>",
+      "text": "<p>Caching means storing frequently used data somewhere fast so you don't have to recompute or re-fetch it. Caching happens everywhere:</p><ol><li><strong>Browser Cache</strong> — Stores images, CSS, JS locally. Headers like <code>Cache-Control: max-age=31536000</code> tell the browser \"keep this for a year.\"</li><li><strong>CDN Cache</strong> — Content Delivery Networks (Cloudflare, Fastly) cache responses at servers close to the user. Your server handles far fewer requests.</li><li><strong>Application Cache</strong> — Your server caches database results in RAM using Redis or Memcached. Sub-millisecond responses instead of 50ms database queries.</li><li><strong>Database Cache</strong> — PostgreSQL and MySQL have internal caches too. Frequently accessed data stays in memory.</li></ol><p>Every layer you add makes your app faster and your database happier.</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -31,7 +31,7 @@
     },
     {
       "title": "Cache Invalidation",
-      "text": "<p>There are only two hard things in computer science: cache invalidation and naming things. Invalidating a cache means ensuring stale data isn't served to users.</p><p>Common strategies:</p><ul><li><strong>TTL (Time To Live)</strong> — Set an expiration time. Simple but can serve stale data until the TTL expires.</li><li><strong>Write-through</strong> — Update the cache whenever the database is updated. Always fresh but more complex.</li><li><strong>Cache-aside</strong> — Application checks cache first, falls back to database on miss, and updates the cache. Most common pattern.</li><li><strong>Event-driven</strong> — When data changes, publish an event (via Redis pub/sub or message queue) that invalidates related cache keys.</li></ul>",
+      "text": "<p>There are only two hard things in computer science: cache invalidation and naming things. How do you make sure users don't see stale data?</p><ul><li><strong>TTL (Time To Live)</strong> — Set a timer. \"Cache this for 5 minutes.\" Simple, but users might see 5-minute-old data.</li><li><strong>Cache-aside</strong> — Check cache first. On miss, query DB, update cache. Most common pattern.</li><li><strong>Write-through</strong> — Update cache whenever DB changes. Always fresh, but more complex.</li><li><strong>Event-driven</strong> — When data changes, publish an event that tells caches to update themselves.</li></ul><p>The simplest approach that works: cache-aside with a reasonable TTL. Start there, get more sophisticated only when needed.</p>",
       "diagram": {
         "type": "comparison",
         "config": {
@@ -67,7 +67,7 @@
     },
     {
       "title": "Redis — The Swiss Army Knife of Caching",
-      "text": "<p><strong>Redis</strong> is an in-memory data store that's incredibly fast (sub-millisecond latency). It's used for caching, session storage, rate limiting, real-time leaderboards, message queues, and more.</p><p>Key features: data structures (strings, hashes, lists, sets, sorted sets), TTL with automatic eviction, pub/sub messaging, persistence (optional), and Lua scripting for atomic operations.</p><p>Redis is single-threaded (for commands), which makes it predictable. Don't run slow commands like <code>KEYS *</code> in production — use <code>SCAN</code> instead.</p>",
+      "text": "<p><strong>Redis</strong> is an in-memory data store with sub-millisecond latency. It's the most popular tool for application caching, but it can do much more:</p><ul><li><strong>Cache</strong> — Store API responses, DB query results, rendered HTML. Everything has a TTL.</li><li><strong>Sessions</strong> — Store user sessions across multiple server instances.</li><li><strong>Rate Limiting</strong> — Track request counts per user/IP using INCR + EXPIRE.</li><li><strong>Queues</strong> — Use lists (LPUSH/BRPOP) for background job processing.</li><li><strong>Pub/Sub</strong> — Real-time messaging between services.</li><li><strong>Real-time Leaderboards</strong> — Sorted sets with ZADD/ZRANGE for scores and rankings.</li></ul><p>Redis is single-threaded for commands, which makes it predictable. Just don't run <code>KEYS *</code> in production — use <code>SCAN</code>.</p>",
       "diagram": {
         "type": "infoGrid",
         "config": {

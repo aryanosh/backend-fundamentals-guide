@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 export default function TopNav() {
@@ -7,7 +8,7 @@ export default function TopNav() {
       height: 44,
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '0 20px',
-      background: 'rgba(10,12,20,0.92)',
+      background: 'var(--bg-overlay)',
       backdropFilter: 'blur(12px)',
       WebkitBackdropFilter: 'blur(12px)',
       borderBottom: '1px solid var(--border)',
@@ -37,16 +38,22 @@ export default function TopNav() {
 }
 
 function NavBtn({ to, label }: { to: string; label: string }) {
+  const [hover, setHover] = useState(false)
   return (
-    <Link to={to} style={{
-      fontFamily: 'var(--font-mono)',
-      fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
-      color: 'var(--text-muted)',
-      textDecoration: 'none',
-      padding: '4px 10px',
-      border: '1px solid var(--border)',
-      transition: 'all 150ms',
-    }}>
+    <Link to={to}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      aria-label={`Navigate to ${label}`}
+      style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
+        color: hover ? 'var(--accent-cyan)' : 'var(--text-muted)',
+        textDecoration: 'none',
+        padding: '4px 10px',
+        border: `1px solid ${hover ? 'var(--glass-border-hover)' : 'var(--border)'}`,
+        background: hover ? 'var(--glass-bg-hover)' : 'transparent',
+        transition: 'all 150ms',
+      }}>
       {label}
     </Link>
   )

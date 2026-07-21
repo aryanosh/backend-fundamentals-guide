@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "Anatomy of an HTTP Request",
-      "text": "<p>Every time your browser loads a page, it sends an <strong>HTTP request</strong>. A request has four parts: <strong>Method</strong> (what to do), <strong>URL</strong> (where to do it), <strong>Headers</strong> (metadata), and optionally a <strong>Body</strong> (data).</p><p>The most common methods are <code>GET</code> (retrieve data), <code>POST</code> (create data), <code>PUT</code> (replace data), <code>PATCH</code> (update data), and <code>DELETE</code> (remove data). Each has specific semantics about safety and idempotency.</p><p>Headers carry critical metadata: <code>Content-Type</code> tells the server how the body is formatted, <code>Authorization</code> carries credentials, <code>User-Agent</code> identifies the client, and <code>Accept</code> specifies what formats the client understands.</p>",
+      "text": "<p>Every time you load a webpage, your browser sends an <strong>HTTP request</strong>. A request has four parts:</p><ul><li><strong>Method</strong> — What to do. GET (read), POST (create), PUT (replace), PATCH (update), DELETE (remove).</li><li><strong>URL</strong> — Where to do it. <code>/api/users</code> tells the server which resource.</li><li><strong>Headers</strong> — Metadata. Content-Type, Authorization, and other instructions.</li><li><strong>Body</strong> — The data (only for POST, PUT, PATCH). Usually JSON.</li></ul><p>That's it. Every single request you'll ever build follows this structure.</p>",
       "diagram": {
         "type": "svg",
         "config": {
@@ -20,7 +20,7 @@
     },
     {
       "title": "HTTP Status Codes",
-      "text": "<p>Every HTTP response includes a <strong>status code</strong> — a three-digit number that tells the client what happened. Codes are grouped into five classes:</p><ul><li><strong>1xx (Informational)</strong> — Request received, continuing. Rarely seen in practice.</li><li><strong>2xx (Success)</strong> — The request succeeded. <code>200 OK</code>, <code>201 Created</code>, <code>204 No Content</code>.</li><li><strong>3xx (Redirection)</strong> — Further action needed. <code>301 Moved Permanently</code>, <code>302 Found</code>, <code>304 Not Modified</code>.</li><li><strong>4xx (Client Error)</strong> — The request was bad. <code>400 Bad Request</code>, <code>401 Unauthorized</code>, <code>403 Forbidden</code>, <code>404 Not Found</code>, <code>429 Too Many Requests</code>.</li><li><strong>5xx (Server Error)</strong> — The server failed. <code>500 Internal Server Error</code>, <code>502 Bad Gateway</code>, <code>503 Service Unavailable</code>.</li></ul>",
+      "text": "<p>Every HTTP response has a <strong>status code</strong> — a three-digit number that tells the client what happened:</p><ul><li><strong>2xx (Success)</strong> — It worked. <code>200 OK</code>, <code>201 Created</code>.</li><li><strong>3xx (Redirection)</strong> — Go somewhere else. <code>301 Moved</code>, <code>304 Not Modified</code>.</li><li><strong>4xx (Client Error)</strong> — You messed up. <code>400 Bad Request</code>, <code>401 Unauthorized</code>, <code>404 Not Found</code>.</li><li><strong>5xx (Server Error)</strong> — We messed up. <code>500 Internal Server Error</code>, <code>503 Unavailable</code>.</li></ul><p>If you memorize nothing else, remember: 2xx = success, 4xx = client's fault, 5xx = server's fault. Everything else is a variation.</p>",
       "diagram": {
         "type": "infoGrid",
         "config": {
@@ -41,7 +41,7 @@
     },
     {
       "title": "The Full Request-Response Cycle",
-      "text": "<p>Here's what happens when you press Enter after typing a URL:</p><ol><li>Browser checks its local DNS cache — if missing, queries the DNS resolver</li><li>TCP three-way handshake establishes a connection to the server's IP on port 443 (HTTPS)</li><li>TLS handshake negotiates encryption keys (2 round trips for TLS 1.3)</li><li>Browser sends the HTTP request (method, URL, headers, optional body)</li><li>Server processes the request — routes it, executes logic, queries databases</li><li>Server sends back an HTTP response (status code, headers, body)</li><li>Browser parses the response, renders HTML, fetches additional resources</li></ol><p>This entire cycle typically completes in 200-500ms. HTTP/2 reduces overhead with multiplexed streams, and HTTP/3 (QUIC) eliminates head-of-line blocking.</p>",
+      "text": "<p>Here's what happens when you press Enter after typing a URL:</p><ol><li><strong>DNS Lookup</strong> — Your computer figures out the server's IP address.</li><li><strong>TCP Handshake</strong> — SYN → SYN-ACK → ACK. Connection established.</li><li><strong>TLS Negotiation</strong> — If HTTPS, the two sides agree on encryption keys.</li><li><strong>Send Request</strong> — Your HTTP request goes to the server.</li><li><strong>Server Processes</strong> — Routes it, runs code, queries databases.</li><li><strong>Response</strong> — Server sends back data. Browser renders it.</li></ol><p>This whole cycle takes 200-500ms. You've done it thousands of times today without thinking about it.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {

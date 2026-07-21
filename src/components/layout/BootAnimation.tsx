@@ -25,9 +25,12 @@ export default function BootAnimation() {
 
   return (
     <div
+      role="button"
+      tabIndex={0}
+      aria-label="Dismiss boot screen"
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: '#0A0C14',
+        background: 'var(--bg)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)',
         fontSize: 13, lineHeight: 1.8, padding: 24,
@@ -36,6 +39,12 @@ export default function BootAnimation() {
       onClick={() => {
         sessionStorage.setItem('bt-booted', '1')
         setHidden(true)
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          sessionStorage.setItem('bt-booted', '1')
+          setHidden(true)
+        }
       }}
     >
       <div style={{ maxWidth: 480, width: '100%' }}>

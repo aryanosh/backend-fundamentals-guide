@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "The Layered Architecture",
-      "text": "<p>Professional backend applications use a <strong>layered architecture</strong> to separate concerns. The most common pattern is a three-layer model: <strong>Controller → Service → Repository</strong>. Each layer has a specific responsibility:</p><ul><li><strong>Controller</strong> — Handles HTTP request/response. Parses input, validates format, returns status codes. No business logic.</li><li><strong>Service</strong> — Contains business rules, orchestrates operations, enforces policies.</li><li><strong>Repository</strong> — Abstracts data access. Talks to databases, APIs, or files. Only one layer touches the database.</li></ul><p>This separation makes your code testable, maintainable, and swappable. You can switch databases without touching business logic.</p>",
+      "text": "<p>Real applications organize code into <strong>layers</strong>. Think of it like a restaurant:</p><ul><li><strong>Controller</strong> — The waiter. Takes your order, brings your food. Handles HTTP stuff but never touches the kitchen.</li><li><strong>Service</strong> — The chef. Decides what to cook, applies the rules. \"This order needs gluten-free bread.\"</li><li><strong>Repository</strong> — The pantry. Knows where ingredients are stored. Talks to the database so nobody else has to.</li></ul><p>This separation keeps your code organized. You can change the database without touching the chef's recipes. You can change the menu without touching the pantry. Each layer has one job.</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -34,7 +34,7 @@
     },
     {
       "title": "The Food Delivery Example",
-      "text": "<p>Let's trace a complete flow through the layers using a real example: a food delivery app submitting an order.</p><ol><li><strong>Controller</strong> receives <code>POST /orders</code> with the cart items, validates the JSON format, and passes the parsed order to the service.</li><li><strong>Service</strong> calculates the total, checks inventory, applies discounts, verifies the payment, and calls the repository.</li><li><strong>Repository</strong> inserts the order into the database, creates order-item records, and returns the created order ID.</li><li>The response flows back through each layer: repository returns data, service formats it, controller sends the 201 response.</li></ol>",
+      "text": "<p>Let's trace a real order through the layers. A user places an order in a food delivery app:</p><ol><li><strong>Controller</strong> receives <code>POST /orders</code> with the cart. It checks the JSON is valid and passes the data to the service.</li><li><strong>Service</strong> calculates the total, checks stock, applies discounts, verifies the payment. This is where the real decisions happen.</li><li><strong>Repository</strong> saves the order to the database, creates item records. It just stores things.</li><li>The response flows back: data → formatted → sent as <code>201 Created</code>.</li></ol><p>Each layer is replaceable. Want to switch from PostgreSQL to MongoDB? Only the repository changes. Add audit logging? Just the service. This is how professional codebases work.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {

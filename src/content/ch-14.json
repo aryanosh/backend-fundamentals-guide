@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "How Git Stores Data",
-      "text": "<p>Git is a <strong>snapshot-based</strong> version control system. Every commit is a snapshot of your entire project at that point in time. Git doesn't store changes (diffs) — it stores full snapshots but compresses identical files with references.</p><p><strong>The three trees:</strong></p><ul><li><strong>Working Directory</strong> — The files you're editing on disk</li><li><strong>Staging Area (Index)</strong> — Files you've marked for the next commit</li><li><strong>Repository (.git)</strong> — The committed snapshots</li></ul><p>Every commit has a unique SHA-1 hash (like <code>a1b2c3d4...</code>) that identifies it. The commit includes the author, timestamp, message, and a pointer to its parent commit(s). This chain of commits forms the project history.</p>",
+      "text": "<p>Git takes <strong>snapshots</strong> of your project. Every commit is a full picture of every file at that moment. Git doesn't store diffs — it stores snapshots and uses clever compression to avoid duplication.</p><p>Three areas you work with:</p><ul><li><strong>Working Directory</strong> — The files you're editing right now.</li><li><strong>Staging Area</strong> — Files you've marked for the next commit (<code>git add</code>).</li><li><strong>Repository</strong> — The permanent history (<code>git commit</code>).</li></ul><p>Every commit has a unique hash (like <code>a1b2c3d</code>) and points to its parent. This chain is your entire project history. You can jump to any point in time, create branches from any commit, and never lose anything.</p>",
       "diagram": {
         "type": "timeline",
         "config": {
@@ -25,7 +25,7 @@
     },
     {
       "title": "Branching & Merging",
-      "text": "<p><strong>Branches</strong> are lightweight pointers to specific commits. Creating a branch is instant — it's just a 41-byte file with a commit hash. This makes branching cheap and encourages frequent branching.</p><p>Common branching strategies:</p><ul><li><strong>Git Flow</strong> — <code>main</code> (production), <code>develop</code> (integration), feature branches. Complex but structured.</li><li><strong>GitHub Flow</strong> — Everything branches from <code>main</code>. Feature branch → PR → merge to main. Deploy from main. Simpler.</li><li><strong>Trunk-based</strong> — Short-lived feature branches merged to main multiple times daily. Continuous integration.</li></ul><p>Merging combines changes from one branch into another. <strong>Fast-forward</strong> merges happen when there's no divergence. <strong>Three-way merges</strong> create a merge commit when branches have diverged.</p>",
+      "text": "<p>A <strong>branch</strong> is just a pointer to a commit. Creating one is instant — Git doesn't copy files, it just writes a 41-byte reference. This makes branching cheap and encourages you to do it often.</p><p><strong>GitHub Flow</strong> (easiest for most teams):</p><ol><li>Branch off <code>main</code>: <code>git checkout -b feature-login</code></li><li>Make changes, commit, push.</li><li>Open a Pull Request on GitHub.</li><li>Team reviews and approves.</li><li>Merge to <code>main</code>. Deploy.</li></ol><p><strong>Merging</strong> combines branches. If both branches changed the same file in different ways, you get a <strong>merge conflict</strong>. You fix it by editing the file to keep what you want, then commit the fix. Conflicts aren't scary — they just mean two people edited the same lines.</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -52,7 +52,7 @@
     },
     {
       "title": "Working with Remotes (GitHub)",
-      "text": "<p><strong>Remotes</strong> are copies of your repository hosted elsewhere — GitHub, GitLab, Bitbucket, or your own server. <code>origin</code> is the default name for your primary remote.</p><p>Team collaboration workflow:</p><ol><li><code>git clone</code> — Copy the repository to your machine</li><li><code>git checkout -b feature</code> — Create a feature branch</li><li><code>git push -u origin feature</code> — Push your branch to GitHub</li><li>Open a <strong>Pull Request (PR)</strong> — Propose your changes</li><li>Team reviews, comments, requests changes</li><li>Merge the PR — Changes land in main</li><li><code>git pull</code> — Everyone gets the latest code</li></ol><p>Write good commit messages: short summary (50 chars), blank line, detailed body. This helps your team understand why changes were made.</p>",
+      "text": "<p><strong>Remotes</strong> are copies of your repo on GitHub, GitLab, or Bitbucket. <code>origin</code> is the default name for your main remote.</p><p>How teams collaborate:</p><ol><li><code>git clone</code> the repo to your machine.</li><li>Create a branch for your feature.</li><li>Commit your changes locally.</li><li><code>git push</code> your branch to GitHub.</li><li>Open a <strong>Pull Request (PR)</strong> — a proposal to merge your code.</li><li>Teammates review, comment, request changes.</li><li>Merge the PR. Your code is now in <code>main</code>.</li></ol><p>Write good commit messages: a short summary line (50 chars max), a blank line, then a detailed body explaining WHAT and WHY. Your future self will thank you.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {

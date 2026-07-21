@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "SQL Injection",
-      "text": "<p><strong>SQL injection</strong> occurs when user input is directly concatenated into SQL queries. An attacker can input <code>'; DROP TABLE users; --</code> to delete tables, or <code>' OR '1'='1</code> to bypass authentication.</p><p>The fix is simple: <strong>parameterized queries</strong> (prepared statements). Never interpolate user input directly into SQL strings. ORMs like Prisma, Sequelize, and TypeORM handle this automatically, but raw queries still need care.</p><p>Always validate and sanitize inputs. A good rule: trust nothing from the client.</p>",
+      "text": "<p><strong>SQL injection</strong> is when an attacker puts SQL code into your input fields. Imagine a login form where the password field contains <code>' OR '1'='1</code> — if you're naively building SQL strings, this becomes <code>SELECT * FROM users WHERE email = 'admin@site.com' AND password = '' OR '1'='1'</code>. That returns every user. They're in.</p><p>The fix is simple and non-negotiable: <strong>parameterized queries</strong> (also called prepared statements). User input is treated as data, not code. Every database library supports this. ORMs handle it automatically.</p><p>Rule of thumb: never build SQL strings by concatenating user input. Ever.</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -31,7 +31,7 @@
     },
     {
       "title": "XSS, CSRF & Common Attacks",
-      "text": "<p><strong>XSS (Cross-Site Scripting)</strong> — Attacker injects JavaScript into a page viewed by other users. Stored XSS (saved in database, executed on load) and Reflected XSS (in URL, executed once). Prevent by escaping all user-generated content.</p><p><strong>CSRF (Cross-Site Request Forgery)</strong> — Attacker tricks a logged-in user into performing an action (like changing their email) without consent. Prevent with anti-CSRF tokens or SameSite cookies.</p><p><strong>Rate Limiting</strong> — Limit requests per IP to prevent brute force attacks, DDoS, and API abuse. Implement using token bucket or sliding window algorithm. Redis is commonly used for distributed rate limiting.</p>",
+      "text": "<p><strong>XSS (Cross-Site Scripting)</strong> — Attacker injects JavaScript into your pages. Someone writes <code>&lt;script&gt;steal(cookies)&lt;/script&gt;</code> in a comment, and every visitor runs it. Prevent by escaping all user-generated content and using Content-Security-Policy headers.</p><p><strong>CSRF (Cross-Site Request Forgery)</strong> — Attacker tricks a logged-in user into clicking a link that performs an action (like changing their email). Prevent with CSRF tokens (every framework has this built-in) and SameSite cookies.</p><p><strong>Rate Limiting</strong> — Limit how many requests one IP can make per minute. Without it, an attacker can try millions of passwords (brute force) or overwhelm your server (DDoS). Use the token bucket algorithm with Redis.</p>",
       "diagram": {
         "type": "infoGrid",
         "config": {
@@ -52,7 +52,7 @@
     },
     {
       "title": "OWASP Top 10 & Security Mindset",
-      "text": "<p>The <strong>OWASP Top 10</strong> is the standard awareness document for web application security. The current top risks include:</p><ol><li>Broken Access Control — Users accessing data they shouldn't</li><li>Cryptographic Failures — Weak encryption, exposed secrets</li><li>Injection — SQL, NoSQL, OS command injection</li><li>Insecure Design — Missing security in architecture</li><li>Security Misconfiguration — Default passwords, verbose errors</li></ol><p>Security isn't a feature — it's a mindset. Never trust input. Principle of least privilege. Encrypt everything in transit (HTTPS/TLS). Hash passwords. Keep dependencies updated. Log suspicious activity.</p>",
+      "text": "<p>The <strong>OWASP Top 10</strong> is the industry-standard list of web security risks. The top ones to know:</p><ol><li><strong>Broken Access Control</strong> — Users accessing data they shouldn't. Check permissions on every request.</li><li><strong>Crypto Failures</strong> — Weak encryption, exposed secrets. Use HTTPS everywhere, never roll your own crypto.</li><li><strong>Injection</strong> — SQL, NoSQL, OS commands. Parameterize everything.</li><li><strong>Insecure Design</strong> — Security holes in architecture. Threat model early.</li><li><strong>Misconfiguration</strong> — Default passwords, verbose errors. Harden your setup.</li></ol><p>Security is a mindset: trust nothing, validate everything, encrypt all traffic, hash all passwords, and keep dependencies updated. Use Dependabot, run <code>npm audit</code>, and enable 2FA on everything.</p>",
       "diagram": {
         "type": "timeline",
         "config": {

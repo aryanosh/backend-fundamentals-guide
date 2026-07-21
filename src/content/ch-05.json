@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "Stack vs Heap Memory",
-      "text": "<p>Your program's memory is divided into two main regions: the <strong>stack</strong> and the <strong>heap</strong>.</p><p><strong>Stack</strong> — Fast, thread-local memory that stores function call frames, local variables, and return addresses. Each function call pushes a frame onto the stack. When the function returns, the frame is popped. Stack memory is automatically managed and extremely fast, but limited in size (~1-8 MB per thread).</p><p><strong>Heap</strong> — Shared memory where dynamically allocated objects live. You control when memory is allocated and freed. Heap allocation is slower but you can store large amounts of data. In languages like C, you manually manage heap with <code>malloc</code>/<code>free</code>. In garbage-collected languages like JavaScript and Go, the runtime handles it.</p>",
+      "text": "<p>Your program's memory is like a desk (stack) and a warehouse (heap).</p><p><strong>Stack</strong> — Your desk. Small, fast, organized. When you call a function, you put what you need on the desk. When the function finishes, you clear it. This happens automatically and instantly. But space is limited (~1-8 MB per thread).</p><p><strong>Heap</strong> — The warehouse. Big, shared, slower. You store objects and complex data here. You control when things go in and come out. In JavaScript/Python/Go, the garbage collector cleans up for you. In C, you do it yourself with <code>malloc</code>/<code>free</code>.</p><p>Stack overflow happens when you put too much on the desk (think infinite recursion). Memory leaks happen when you fill the warehouse and forget to take things out.</p>",
       "diagram": {
         "type": "comparison",
         "config": {
@@ -41,7 +41,7 @@
     },
     {
       "title": "Processes vs Threads",
-      "text": "<p>A <strong>process</strong> is an independent program with its own memory space, file handles, and execution state. Processes are isolated from each other — one crashing doesn't affect others. Communication between processes (IPC) requires explicit mechanisms like pipes, sockets, or shared memory.</p><p>A <strong>thread</strong> is a lightweight unit of execution within a process. Threads in the same process share memory, making communication trivial but introducing synchronization problems. Threads are cheaper to create than processes but require careful handling of shared state.</p><p>Modern web servers use a thread pool (one thread per request) or an event loop (single thread, async I/O) approach. Node.js famously uses the latter — a single thread handles thousands of concurrent connections via asynchronous I/O.</p>",
+      "text": "<p>A <strong>process</strong> is a running program — like a whole restaurant with its own kitchen, staff, and entrance. Processes are isolated: if one crashes, others keep running.</p><p>A <strong>thread</strong> is one worker inside that restaurant. Multiple threads share the same kitchen (memory) and can communicate instantly, but they can also step on each other's toes (race conditions).</p><p>Node.js uses one thread with an event loop (one super-efficient waiter). Java uses many threads (many waiters). Go uses goroutines (lightweight virtual waiters). Each approach has tradeoffs, but they all handle thousands of users.</p>",
       "diagram": {
         "type": "comparison",
         "config": {
@@ -69,14 +69,14 @@
         }
       },
       "caption": "Processes are isolated and heavyweight; threads are shared and lightweight",
-      "detail": "The choice between processes and threads depends on your workload. CPU-bound work benefits from multiple processes (to avoid GIL in Python) or threads (in languages with true parallelism like Go). I/O-bound work benefits from async/await or event loops regardless of thread count. The key insight: threads share memory (which is dangerous but efficient), processes don't (which is safe but slower).",
+      "detail": "The choice between processes and threads depends on your workload. CPU-bound work benefits from multiple processes (to avoid GIL in Python) or threads (in languages with true parallelism like Go). I/O-bound work benefits from async/await or event loops regardless of thread count.",
       "callout": "Node.js uses a single-threaded event loop + worker pool for async I/O. Go uses goroutines (lightweight threads). Python uses threads but they're limited by the GIL for CPU work.",
       "calloutType": "info",
       "calloutTitle": "Language Approaches"
     },
     {
       "title": "Blocking vs Non-Blocking",
-      "text": "<p><strong>Blocking</strong> — When your code waits for an operation to complete before continuing. If you call <code>readFileSync</code>, the thread sits idle until the file is read. This wastes CPU time and reduces throughput.</p><p><strong>Non-blocking</strong> — The operation is initiated, your code continues executing, and you're notified when the result is ready (via callback, promise, or event). This allows a single thread to handle thousands of concurrent operations.</p><p>Most modern frameworks are non-blocking. Express + Node.js with async/await, Python with asyncio, Java with virtual threads (Project Loom), and Go goroutines all use non-blocking I/O under the hood.</p>",
+      "text": "<p><strong>Blocking</strong> is like a cashier who stops breathing until the customer finishes paying. The thread sits idle, doing nothing, waiting for the database/file/API to respond. This wastes time.</p><p><strong>Non-blocking</strong> is like a cashier who says \"I'll check on that order later\" and helps the next customer while the kitchen cooks. The thread starts an operation, moves on to other work, and comes back when the result is ready.</p><p>This is why Node.js can handle thousands of connections with a single thread — it never waits. When your code does <code>await db.query()</code>, the thread doesn't sit there — it goes and processes another request.</p>",
       "diagram": {
         "type": "comparison",
         "config": {

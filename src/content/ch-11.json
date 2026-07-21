@@ -6,7 +6,7 @@
   "sections": [
     {
       "title": "Monolith vs Microservices",
-      "text": "<p><strong>Monolithic architecture</strong> — All code lives in a single deployable unit. A monolith is simpler to develop, test, and deploy. Everything runs in one process, so there's no network overhead between components. Great for startups and small teams.</p><p><strong>Microservices</strong> — Each component is a separate service with its own API, database, and deployment pipeline. Services communicate over the network (HTTP/REST, gRPC, message queues). Scales independently but introduces complexity: network latency, data consistency, service discovery, monitoring, and distributed debugging.</p><p>The rule: start with a monolith, extract services as needed. Premature microservices are the #1 architecture mistake.</p>",
+      "text": "<p><strong>Monolith</strong> — Everything in one big app. One codebase, one deployment, one database. Simple to build, test, and deploy. Perfect for startups and small teams. The only problem: when it grows, everything is tangled together.</p><p><strong>Microservices</strong> — Each feature is its own mini-app with its own API, database, and deployment. Services talk over the network. Scales independently but adds massive complexity: network issues, data consistency, monitoring, debugging across services.</p><p><strong>The rule:</strong> Start with a monolith. Only extract services when you have a clear reason. Premature microservices are the #1 architecture mistake juniors make.</p>",
       "diagram": {
         "type": "comparison",
         "config": {
@@ -42,7 +42,7 @@
     },
     {
       "title": "MVC — Model-View-Controller",
-      "text": "<p><strong>MVC</strong> is the most widely used architectural pattern in web frameworks (Rails, Django, Laravel, ASP.NET).</p><ul><li><strong>Model</strong> — Handles data and business rules. Represents the database schema and includes validation, relationships, and queries.</li><li><strong>View</strong> — Renders the user interface. Templates (HTML, JSON, XML) that present data to the user.</li><li><strong>Controller</strong> — Receives input, coordinates between Model and View, and returns the response.</li></ul><p>MVC enforces separation of concerns. Controllers should be thin — just enough code to call the right model and render the right view.</p>",
+      "text": "<p>MVC is the most common pattern in web frameworks (Rails, Django, Laravel, Spring). It splits your app into three parts:</p><ul><li><strong>Model</strong> — Your data and business rules. Represents database tables, handles validation and queries.</li><li><strong>View</strong> — What the user sees. HTML templates or JSON responses.</li><li><strong>Controller</strong> — The middleman. Receives requests, calls the right Model code, and returns the right View.</li></ul><p>Think of it like a restaurant: the Controller is the waiter (takes orders, serves food), the Model is the recipe book (knows how things work), and the View is the plate (how it looks to the customer). Keep controllers thin — they should just connect Models to Views, nothing more.</p>",
       "diagram": {
         "type": "annotation",
         "config": {
@@ -66,7 +66,7 @@
     },
     {
       "title": "Event-Driven Architecture",
-      "text": "<p>In an <strong>event-driven architecture</strong>, components communicate by emitting and consuming events (messages). When something happens (order placed, email sent, payment received), the component publishes an event. Other components subscribe to relevant events and react.</p><p>This decouples producers from consumers. The order service doesn't need to know about the email service — it just publishes an <code>order.placed</code> event. The email service picks it up and sends a confirmation.</p><p>Message queues (RabbitMQ, Kafka, AWS SQS) are the backbone of event-driven systems. Kafka excels at high-throughput event streaming with persistence. RabbitMQ is better for complex routing and RPC-style messaging.</p>",
+      "text": "<p>Instead of services calling each other directly, they <strong>publish events</strong> to a message queue. Other services <strong>subscribe</strong> to events they care about. When an order is placed, the Order Service doesn't need to know about the Email Service, Inventory Service, or Analytics Service — it just publishes <code>order.placed</code> and everyone who cares picks it up.</p><p><strong>RabbitMQ</strong> is great for complex routing and RPC. <strong>Kafka</strong> is built for high-throughput event streaming with replay capability. Both let services be decoupled — if the Email Service is down, events wait in the queue until it recovers.</p><p>This pattern shines when many services need to react to the same events. It's complex but gives you resilience and independent scaling.</p>",
       "diagram": {
         "type": "stepFlow",
         "config": {
@@ -80,7 +80,7 @@
         }
       },
       "caption": "Event-driven: one event (order.placed) triggers multiple independent services",
-      "detail": "Event-driven architecture shines when you have services that need to react to the same events in different ways. The key advantage is temporal decoupling — services don't need to be running at the same time. If the email service is down, the order event stays in the queue. When it comes back up, it processes the backlog. This improves resilience and allows each service to scale independently based on its own load.",
+      "detail": "Event-driven architecture's key advantage is temporal decoupling — services don't need to be running at the same time. If the email service is down, the order event stays in the queue. When it comes back up, it processes the backlog. This improves resilience and allows each service to scale independently based on its own load.",
       "code": "# Publishing an event (Node.js + Kafka)\nconst { Kafka } = require('kafkajs');\n\nconst kafka = new Kafka({ brokers: ['localhost:9092'] });\nconst producer = kafka.producer();\n\nawait producer.connect();\nawait producer.send({\n  topic: 'orders',\n  messages: [\n    { value: JSON.stringify({ orderId: 123, userId: 456 }) }\n  ]\n});\n\n# Consuming events\nconst consumer = kafka.consumer({ groupId: 'email-group' });\nawait consumer.subscribe({ topic: 'orders' });\nawait consumer.run({\n  eachMessage: async ({ message }) => {\n    const order = JSON.parse(message.value);\n    await sendConfirmationEmail(order);\n  }\n});",
       "codeLang": "javascript"
     }
